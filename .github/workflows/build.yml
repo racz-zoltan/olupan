@@ -1,0 +1,78 @@
+name: Build (SRI, service worker)
+
+# A src/ változásakor újraépíti a public/ mappát: SRI-hashek az index.html-ben,
+# service worker gyorsítótár-verzió a tartalom hash-éből, subsetelt betűk, ikon-sprite.
+# Ha a public/ változott, visszacommitolja – a Vercel ezt a commitot telepíti.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tools/**"
+      - "package.json"
+      - "package-lock.json"
+      - "requirements.txt"
+      - ".github/workflows/build.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tools/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Ikonok és betűk (npm)
+        run: npm ci
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: fontTools
+        run: pip install -r requirements.txt
+
+      - name: Build
+        run: python tools/build.py
+
+      - name: Szintaxis-ellenőrzés
+        run: |
+          node --check public/assets/app.js
+          node --check public/sw.js
+          grep -q 'integrity="sha384-' public/index.html
+
+      - name: public/ visszacommitolása
+        if: github.event_name != 'pull_request'
+        run: |
+          if [ -n "$(git status --porcelain public)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public
+            git commit -m "build: public/ frissítése (SRI, SW-verzió) [skip ci]"
+            git push
+          else
+            echo "A public/ naprakész – nincs mit commitolni."
+          fi
+
+      - name: PR-ben jelezze, ha a public/ elavult
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -n "$(git status --porcelain public)" ]; then
+            echo "::notice::A public/ a merge után automatikusan újraépül."
+          fi
