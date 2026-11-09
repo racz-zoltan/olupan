@@ -189,7 +189,6 @@ svg .ttx{fill:var(--kj-text);font:500 15px var(--mono)}
 #rest{position:fixed;left:10px;right:10px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:7;background:var(--kj-sheet);border:1px solid var(--kj-blue-line);border-radius:12px;padding:8px 12px;display:none;align-items:center;gap:8px;overflow:hidden;max-width:740px;margin:0 auto;box-shadow:0 8px 24px rgba(2,6,23,.18)}
 #rest.on{display:flex}
 body.resting{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
-#rest.over{border-color:var(--kj-gold-line);background:var(--kj-gold-soft)}#rest.over b{color:var(--kj-gold-line)}#rest.over #restbar,#rest.over .adj{display:none}
 #restbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--kj-blue);transform-origin:left center;transition:transform 1s linear}
 #rest b{font:600 22px var(--mono);flex:1;color:var(--kj-blue-line)}
 #rest .lbl{font-size:12px;color:var(--kj-muted);line-height:1.2;max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -187,7 +187,6 @@ svg .ttx{fill:var(--kj-text);font:500 15px var(--mono)}
 #rest{position:fixed;left:10px;right:10px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:7;background:var(--kj-sheet);border:1px solid var(--kj-blue-line);border-radius:12px;padding:8px 12px;display:none;align-items:center;gap:8px;overflow:hidden;max-width:740px;margin:0 auto;box-shadow:0 8px 24px rgba(2,6,23,.18)}
 #rest.on{display:flex}
 body.resting{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
-#rest.over{border-color:var(--kj-gold-line);background:var(--kj-gold-soft)}#rest.over b{color:var(--kj-gold-line)}#rest.over #restbar,#rest.over .adj{display:none}
 #restbar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--kj-blue);transform-origin:left center;transition:transform 1s linear}
 #rest b{font:600 22px var(--mono);flex:1;color:var(--kj-blue-line)}
 #rest .lbl{font-size:12px;color:var(--kj-muted);line-height:1.2;max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -203,7 +202,7 @@ body.resting{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 <!--@ICONS@-->
 <header><h1 id="title">Olupan</h1><span id="hdr"></span></header>
 <main></main>
-<div id="rest"><div id="restbar"></div><svg class="ic" style="color:var(--kj-blue-line)"><use href="#i-timer"/></svg><div><div class="lbl" id="restlbl">Pihenő</div><div class="lbl" id="restex"></div></div><b id="restt">0:00</b><button class="btn sm adj" data-click="adjRest(-15)">−15</button><button class="btn sm adj" data-click="adjRest(15)">+15</button><button class="btn sm ico" data-click="stopRest()" aria-label="Pihenő leállítása"><svg class="ic sm"><use href="#i-x"/></svg></button></div>
+<div id="rest"><div id="restbar"></div><svg class="ic" style="color:var(--kj-blue-line)"><use href="#i-timer"/></svg><div><div class="lbl">Pihenő</div><div class="lbl" id="restex"></div></div><b id="restt">0:00</b><button class="btn sm" data-click="adjRest(-15)">−15</button><button class="btn sm" data-click="adjRest(15)">+15</button><button class="btn sm ico" data-click="stopRest()" aria-label="Pihenő leállítása"><svg class="ic sm"><use href="#i-x"/></svg></button></div>
 <nav>
 <button data-t="workout" data-click="go('workout')"><svg class="ic"><use href="#i-dumbbell"/></svg>Edzés</button>
 <button data-t="food" data-click="go('food')"><svg class="ic"><use href="#i-utensils"/></svg>Étkezés</button>
@@ -338,7 +337,7 @@ function applyTheme(){const t=curTheme(),de=document.documentElement;de.dataset.
 mq.addEventListener?.('change',()=>{if(!S.settings.theme)applyTheme()});
 
 /* ===== Állapot ===== */
-let tab='workout',calMonth=null,calSel=today(),bodyDate=today(),statRange=90,strEx=null,strMetric='e',rest=null,restOver=null,tplDraft=null,pickCb=null,pickCancel=null;
+let tab='workout',calMonth=null,calSel=today(),bodyDate=today(),statRange=90,strEx=null,strMetric='e',rest=null,tplDraft=null,pickCb=null,pickCancel=null;
 const exById=id=>S.exercises.find(e=>e.id===id);
 const exName=id=>exById(id)?.name||'(törölt gyakorlat)';
 const exRest=id=>exById(id)?.rest??S.settings.rest??90;
@@ -397,7 +396,7 @@ function setStrEx(id){strEx=id;render()}
 function showStr(id){strEx=id;render();document.getElementById('strcard')?.scrollIntoView({behavior:'smooth'})}
 function setRange(v){statRange=v;render()}
 function goToday(){selDay(today())}
-function stopRest(){rest=null;restOver=null;tick()}
+function stopRest(){rest=null;tick()}
 function pickForTpl(){pickExercise(tplAddEx,renderTpl)}
 function pickForActive(){pickExercise(addExToActive)}
 function dlgBackdrop(){dlgClose(dlgDefault)}
@@ -582,7 +581,7 @@ async function saveAsTemplate(wid){const w=S.workouts.find(x=>x.id===wid);const 
 async function delWorkout(wid){const w=S.workouts.find(x=>x.id===wid);if(!await ask(`Törlöd a(z) <b>${esc(w.name)}</b> edzést (${fmtDate(w.start)})?`,{title:'Edzés törlése',ok:'Törlés',danger:true}))return;S.workouts=S.workouts.filter(x=>x.id!==wid);save();render()}
 
 /* ===== Pihenőidő ===== */
-function startRest(exId){const t=exRest(exId);if(!t)return;restOver=null;rest={end:Date.now()+t*1000,total:t,ex:exName(exId)};tick()}
+function startRest(exId){const t=exRest(exId);if(!t)return;rest={end:Date.now()+t*1000,total:t,ex:exName(exId)};tick()}
 function adjRest(d){if(!rest)return;rest.end+=d*1000;rest.total=Math.max(rest.total+d,1);tick()}
 async function setExRest(exId){
   const ex=exById(exId);if(!ex)return;
@@ -687,19 +686,11 @@ function setSound(v){S.settings.sound=v;save();render();if(v)chime(v)}
 function testSound(){unlockAudio();chime()}
 function tick(){
   if(S.active){const t=dur(Date.now()-S.active.start);const a=$('#elapsed'),b=$('#elapsed2');if(a)a.textContent=t;if(b)b.textContent=t}
-  else restOver=null;
-  const rb=$('#rest');
+  const rb=$('#rest');document.body.classList.toggle('resting',!!rest);
   if(rest){const left=Math.ceil((rest.end-Date.now())/1000);
-    if(left<=0){const late=-left;lastRestEx=rest.ex||'';
-      /* Ha az app közben fel volt függesztve (háttér), a lejárt pihenő sávként megmarad, amíg a következő sorozatot
-         be nem pipálod vagy be nem zárod – egy rövid felugró üzenetet könnyű lenne nem észrevenni. */
-      if(late>5&&S.active)restOver={end:rest.end,ex:rest.ex||''};
-      rest=null;try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}chime();restNotif();
-      if(!restOver)toast('Pihenő vége – következő sorozat')}
-    else{rb.classList.add('on');rb.classList.remove('over');$('#restlbl').textContent=L('Pihenő','Rest');$('#restt').textContent=dur(left*1000);$('#restex').textContent=rest.ex||'';$('#restbar').style.transform=`scaleX(${Math.min(1,left/rest.total).toFixed(4)})`}}
-  if(!rest&&restOver){rb.classList.add('on','over');$('#restlbl').textContent=L('Pihenő lejárt','Rest over');$('#restt').textContent='+'+dur(Date.now()-restOver.end);$('#restex').textContent=restOver.ex}
-  else if(!rest)rb.classList.remove('on','over');
-  document.body.classList.toggle('resting',!!(rest||restOver));
+    if(left<=0){const late=-left;lastRestEx=rest.ex||'';rest=null;rb.classList.remove('on');try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}chime();restNotif();toast(late>5?L(`Pihenő vége (${late<90?late+' mp':Math.round(late/60)+' perc'}e lejárt)`,`Rest ended ${late<90?late+' s':Math.round(late/60)+' min'} ago`):'Pihenő vége – következő sorozat')}
+    else{rb.classList.add('on');$('#restt').textContent=dur(left*1000);$('#restex').textContent=rest.ex||'';$('#restbar').style.transform=`scaleX(${Math.min(1,left/rest.total).toFixed(4)})`}}
+  else rb.classList.remove('on');
 }
 setInterval(tick,1000);
 
