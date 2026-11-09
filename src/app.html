@@ -971,6 +971,8 @@ function claudeInstr(){
   const t=targets(),g=EN[GOALS.find(x=>x[0]===t.goal)?.[1]||'Szinten tartás']||'Maintain';
   return `This project is for logging my meals in the Olupan app.
 
+My own recipes: if a food I mention is in the project's recipes.md file (by name or nickname), calculate from that recipe's ingredients instead of a general estimate, and don't ask about the preparation. Calculate each ingredient (raw weights), add them up, divide by the number of servings, then multiply by how much I ate. If I give a new recipe in the chat, use it from then on, and on request give back the full updated recipe file so I can replace the project file.
+
 When I send a photo of food, or describe what I ate:
 1. Identify the foods and estimate the portions. If a portion or the preparation (oil, butter, sauce, sugar) is genuinely uncertain, ask briefly first – at most 2 questions. If I give grams, use them.
 2. For each item, calculate energy (kcal), macros (protein, carbs, fat) and fiber, in grams. Use standard European nutrient values, and take into account whether the weight is raw or cooked.
@@ -996,6 +998,8 @@ function claudeInstrHu(){
   const t=targets(),g=GOALS.find(x=>x[0]===t.goal)?.[1]||'Szinten tartás';
   return `Ez a projekt az étkezéseim naplózására szolgál az Olupan appban.
 
+Saját receptek: ha egy általam említett étel szerepel a projekt receptek.md fájljában (névvel vagy becenévvel), a recept hozzávalóiból számolj, ne általános becsléssel, és ne kérdezz vissza az elkészítésre. Számold ki a hozzávalókat egyenként (nyers tömegek), add össze, oszd el az adagszámmal, majd szorozd azzal, amennyit ettem. Ha a beszélgetésben új receptet adok meg, onnantól azzal is számolj, és kérésre add vissza a teljes, frissített receptfájlt, hogy lecserélhessem a projekt fájlját.
+
 Amikor fotót küldök az ételről, vagy leírom/elmondom, mit ettem:
 1. Azonosítsd az ételeket, és becsüld meg az adagokat. Ha egy adag vagy az elkészítés (olaj, vaj, szósz, cukor) érdemben bizonytalan, előbb kérdezz vissza röviden, legfeljebb 2 kérdéssel. Ha grammban megadom, azzal számolj.
 2. Tételenként számold ki az energiát (kcal), a makrókat (fehérje, szénhidrát, zsír) és a rostot, grammban. Magyar/európai tápanyagértékekkel számolj, és vedd figyelembe, hogy nyers vagy főtt tömegről van-e szó.
@@ -1017,6 +1021,70 @@ Példa:
 
 A célom: ${g}.${t.kcal?` ${t.goal==='lose'?'Napi keretem':'Javasolt napi bevitelem'} (tájékoztató): ${t.kcal} kcal, ${t.p} g fehérje, ${t.c} g szénhidrát, ${t.f} g zsír, legalább ${t.fib} g rost. Ha ugyanebben a beszélgetésben több étkezést is küldök, kérésre összesítsd a napi bevitelt. Ítélkezés nélkül, tárgyilagosan fogalmazz.`:''}`;
 }
+function recipesMd(){
+  if(LANG==='en')return`# My recipes
+
+If a food I mention is in this list (by name or nickname), calculate from the recipe's ingredients, not from a general estimate, and don't ask about the preparation.
+- Calculate energy (kcal), protein, carbs, fat and fiber for each ingredient (raw weights, standard European nutrient values), add them up, then divide by the number of servings.
+- If I give servings ("1 serving", "half a serving", "1.5 servings"), multiply the per-serving values.
+- If I give grams, calculate against the finished weight; if the recipe has no finished weight, ask for it.
+- If I give the nutrition values of an ingredient (e.g. from the label), use those.
+- Always use the same ingredient values for the same recipe.
+- In the summary, briefly list the values per ingredient and the per-serving total.
+- In the code block, the name is the recipe name with the portion, e.g. "Breakfast porridge 1 serving", on a single line, not per ingredient.
+
+---
+
+## Breakfast porridge
+Nicknames: porridge, oats
+Servings: 1
+Ingredients:
+- 50 g rolled oats
+- 250 ml water
+- 28 g whey protein powder
+- 60 g frozen blueberries
+
+---
+
+## [Recipe name]
+Nicknames:
+Servings:
+Finished weight (optional, needed for portions given in grams):
+Ingredients:
+- 
+`;
+  return`# Saját receptjeim
+
+Ha egy általam említett étel szerepel ebben a listában (névvel vagy becenévvel), a recept hozzávalóiból számolj, ne általános becsléssel, és ne kérdezz vissza az elkészítésre.
+- Számold ki hozzávalónként az energiát (kcal), a fehérjét, a szénhidrátot, a zsírt és a rostot (nyers tömegek, magyar/európai tápanyagértékek), add össze, majd oszd el az adagszámmal.
+- Ha adagot mondok („1 adag”, „fél adag”, „1,5 adag”), az egy adagra jutó értéket szorozd fel.
+- Ha grammot mondok, a kész tömegre vetítve számolj; ha a receptnél nincs kész tömeg, kérdezz rá.
+- Ha egy hozzávalónál megadom a tápértéket (pl. a csomagolásról), azzal számolj.
+- Ugyanarra a receptre mindig ugyanazokkal a hozzávaló-értékekkel számolj.
+- Az összefoglalóban röviden írd ki a hozzávalónkénti értékeket és az egy adagra jutó összeget.
+- A kódblokkban a megnevezés a recept neve legyen az adaggal, pl. „Reggeli zabkása 1 adag”, egyetlen sorban, nem hozzávalónként.
+
+---
+
+## Reggeli zabkása
+Becenevek: zabkása, zabi
+Adag: 1
+Hozzávalók:
+- 50 g zabpehely
+- 250 ml víz
+- 28 g tejsavó fehérjepor
+- 60 g fagyasztott áfonya
+
+---
+
+## [Recept neve]
+Becenevek:
+Adag:
+Kész tömeg (nem kötelező, a grammban megadott adaghoz kell):
+Hozzávalók:
+- 
+`}
+async function downloadRecipes(){if(await shareOrDownload(LANG==='en'?'recipes.md':'receptek.md',recipesMd(),'text/plain','Olupan – receptek'))toast('Receptfájl elkészült')}
 async function copyInstr(){const ta=$('#instrText');try{await navigator.clipboard.writeText(ta.value);toast('Utasítás a vágólapon')}catch(e){ta.focus();ta.select();toast('Jelöld ki és másold ki kézzel')}}
 function foodHelp(){
   openModal(`<h2>Étkezésnapló Claude-dal</h2>
@@ -1026,10 +1094,11 @@ function foodHelp(){
   <li>Nyisd meg a Claude-ot. A projektet legkényelmesebb a <b>claude.ai</b> weboldalon létrehozni, de a mobilappban is megy, ha ott is elérhető.</li>
   <li>Bal oldali menü → <b>Projektek</b> → <b>Új projekt</b>. Név: pl. <i>Étkezésnapló</i>.</li>
   <li>A projekt oldalán keresd az <b>Utasítások</b> (Instructions / „Projekt utasításainak beállítása”) részt, és illeszd be a lenti szöveget. A <b>Másolás</b> gomb a vágólapra teszi.</li>
+  <li>A projekt Context (fájlok) részéhez add hozzá a receptfájlt, amelyet a lenti Receptfájl letöltése gombbal kapsz. Ebbe kerülnek a saját receptjeid: elég a hozzávalókat felsorolni, a kalóriát, a makrókat és a rostot Claude számolja ki.</li>
   <li>Mentsd. A projekt ezután a telefonos Claude appban is megjelenik a Projektek között.</li>
   <li>Másold ki a projekt címét a böngésző címsorából (<code class="mono">https://claude.ai/project/…</code>), és illeszd be a Beállítások → <b>Claude-projekt linkje</b> mezőbe. Ekkor az Étkezés fülön megjelenik a <b>Claude</b> gomb.</li></ol>
   <textarea id="instrText" rows="9" readonly style="font-size:13px">${esc(claudeInstr())}</textarea>
-  <div class="row end" style="margin-top:8px"><button class="btn p sm" data-click="copyInstr()">${I('copy','sm')} Másolás</button></div>
+  <div class="row end" style="margin-top:8px;gap:8px"><button class="btn sm" data-click="downloadRecipes()">${I('download','sm')} Receptfájl letöltése</button><button class="btn p sm" data-click="copyInstr()">${I('copy','sm')} Másolás</button></div>
   <div class="hint">Az utasítás tartalmazza a mostani javasolt napi bevitelt is. Ha a Beállításokban módosítod a profilodat, másold ki és illeszd be újra.</div>
   <h3 style="margin-top:14px">2. Használat étkezésenként</h3>
   <ol class="small" style="padding-left:20px;line-height:1.6">
@@ -1037,6 +1106,7 @@ function foodHelp(){
   <li><b>Fotó:</b> a + vagy kamera ikonnal készíts képet a tányérról. <b>Szöveg vagy hang:</b> írd be vagy diktáld, pl. „reggelire 60 g zabpehely 2 dl tejjel és egy banán”.</li>
   <li>Ha Claude visszakérdez az adagra, válaszolj. A válasz végén lévő kódblokk sarkában lévő <b>másolás</b> ikonnal másold ki.</li>
   <li>Olupan → <b>Étkezés</b> → <b>Beillesztés Claude-ból</b>. Mentés előtt megmutatja a tételeket, és a már rögzítetteket kihagyja.</li></ol>
+  <p class="hint">Saját recept: írd azt, hogy „reggelire 1 adag zabkása”, és Claude a receptfájl hozzávalóiból számol. Új receptet a beszélgetésben is megadhatsz; ha szeretnéd, hogy minden beszélgetésben elérhető legyen, kérd el a frissített receptfájlt, és cseréld le vele a projektben lévőt.</p>
   <p class="hint">Tipp: grammban vagy darabban megadott adaggal sokkal pontosabb a becslés, mint fotóval. A rejtett olaj, a szósz és az adagméret miatt a fotós becslés könnyen 20–30%-ot téved. Ha a vágólapról nem sikerül a beolvasás, a Beillesztés ablakba kézzel is bemásolhatod.</p>
   <div class="row end"><button class="btn p" data-click="closeModal()">Rendben</button></div>`);
 }
