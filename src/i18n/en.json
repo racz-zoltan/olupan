@@ -867,5 +867,6 @@
  "Receptfájl letöltése": "Download recipe file",
  "Receptfájl elkészült": "Recipe file ready",
  "Olupan – receptek": "Olupan – recipes",
- "Saját recept: írd azt, hogy „reggelire 1 adag zabkása”, és Claude a receptfájl hozzávalóiból számol. Új receptet a beszélgetésben is megadhatsz; ha szeretnéd, hogy minden beszélgetésben elérhető legyen, kérd el a frissített receptfájlt, és cseréld le vele a projektben lévőt.": "Own recipes: write “1 serving of breakfast porridge for breakfast”, and Claude calculates from the recipe file’s ingredients. You can also give a new recipe in the chat; to make it available in every chat, ask for the updated recipe file and replace the one in the project."
+ "Saját recept: írd azt, hogy „reggelire 1 adag zabkása”, és Claude a receptfájl hozzávalóiból számol. Új receptet a beszélgetésben is megadhatsz; ha szeretnéd, hogy minden beszélgetésben elérhető legyen, kérd el a frissített receptfájlt, és cseréld le vele a projektben lévőt.": "Own recipes: write “1 serving of breakfast porridge for breakfast”, and Claude calculates from the recipe file’s ingredients. You can also give a new recipe in the chat; to make it available in every chat, ask for the updated recipe file and replace the one in the project.",
+ "Pihenő lejárt": "Rest over"
 }
