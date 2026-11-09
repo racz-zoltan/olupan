@@ -186,6 +186,9 @@ svg .ttx{fill:var(--kj-text);font:500 15px var(--mono)}
 .exi:hover{border-color:var(--kj-blue-line);background:var(--kj-blue-soft)}
 .li{padding:8px 0;border-bottom:1px solid var(--kj-border);flex-wrap:nowrap}
 .li:last-child{border-bottom:0}
+.note{display:flex;gap:8px;align-items:flex-start;margin-top:10px;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}.note>span{flex:1;min-width:0}.note>.ic{margin-top:3px;color:var(--kj-muted);flex:none}
+.calnav{display:inline-flex;gap:4px;margin-right:4px}.calnav .btn:disabled{opacity:.35}
+.card.flash{box-shadow:0 0 0 2px var(--kj-focus);transition:box-shadow .3s}
 #rest{position:fixed;left:10px;right:10px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:7;background:var(--kj-sheet);border:1px solid var(--kj-blue-line);border-radius:12px;padding:8px 12px;display:none;align-items:center;gap:8px;overflow:hidden;max-width:740px;margin:0 auto;box-shadow:0 8px 24px rgba(2,6,23,.18)}
 #rest.on{display:flex}
 body.resting{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
