@@ -605,6 +605,9 @@ async function setExRest(exId){
 /* Hang: iOS-en az AudioContext csak felhasználói érintésre indulhat el, ezért egyetlen
    kontextust használunk, amit minden érintéskor feloldunk (resume + néma puffer). */
 let AC=null;
+/* iOS (Safari 17+): „ambient” hangmunkamenet – az Olupan hangjai keverednek a háttérben szóló zenével (Spotify stb.),
+   nem állítják le. A némító kapcsoló ilyenkor az app hangjait is némítja. */
+try{if(navigator.audioSession)navigator.audioSession.type='ambient'}catch(e){}
 function audioCtx(){if(!AC){const K=window.AudioContext||window.webkitAudioContext;if(!K)return null;try{AC=new K()}catch(e){return null}}return AC}
 /* Csak érintésre (felhasználói gesztusban) fut: ha iOS-en a hang „megszakított” állapotban ragadt, új hangkörnyezetet nyit.
    A háttérbe tételt és a visszatérést szándékosan nem befolyásolja. */
