@@ -85,6 +85,11 @@ for f in ICONDIR.iterdir(): shutil.copy(f, A / f.name)
 
 head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 <meta name="description" content="Olupan – offline edzésnapló: sablonok, testadatok, étkezés, naptár, erőtrendek és személyes rekordok. Minden adat a készüléken marad.">
+<link rel="canonical" href="https://olupan.com/">
+<meta property="og:title" content="Olupan">
+<meta property="og:description" content="Offline edzésnapló – minden adat a készüléken marad. Offline workout log – your data stays on your device.">
+<meta property="og:url" content="https://olupan.com/">
+<meta property="og:image" content="https://olupan.com/assets/icon-512.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
@@ -107,7 +112,71 @@ manifest = {"id": "/", "name": "Olupan", "short_name": "Olupan", "lang": "hu",
                       {"src": "/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
 (PUB / "manifest.webmanifest").write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
 
-core = ["/", "/index.html", "/manifest.webmanifest"] + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file())
+# ========== 3. tájékoztató oldalak (útmutató, adatkezelés, jogi nyilatkozat), két nyelven ==========
+P = SRC / "pages"; cfg = json.loads((P / "config.json").read_text(encoding="utf-8"))
+if not cfg.get("contact_email"):
+    print("FIGYELEM: src/pages/config.json → contact_email üres; a jogi oldalakon helyőrző jelenik meg.")
+    cfg["contact_email"] = "[KAPCSOLATI E-MAIL]"
+cfg["site_short"] = cfg["site"].replace("https://", "")
+lcss = (P / "legal.css").read_text(encoding="utf-8").replace("/*@FONTS@*/", "\n".join(f for f in ff_files if "Instrument Sans" in f or "Bricolage" in f)).encode()
+ljs = (P / "legal.js").read_text(encoding="utf-8").encode()
+(A / "legal.css").write_bytes(lcss); (A / "legal.js").write_bytes(ljs)
+DOCS = {"guide": {"hu": ("utmutato.html", "Felhasználói útmutató"), "en": ("guide.html", "User guide")},
+        "privacy": {"hu": ("adatvedelem.html", "Adatkezelési tájékoztató"), "en": ("privacy.html", "Privacy Policy")},
+        "disclaimer": {"hu": ("jogi-nyilatkozat.html", "Jogi nyilatkozat"), "en": ("disclaimer.html", "Disclaimer")}}
+LOGO = ('<svg viewBox="0 0 64 64" aria-hidden="true"><mask id="lm" maskUnits="userSpaceOnUse" x="-8" y="-8" width="80" height="80">'
+        '<rect x="-8" y="-8" width="80" height="80" fill="#fff"/><rect x="5.5" y="4" width="21" height="12" rx="4" fill="#000" stroke="#000" stroke-width="3"/>'
+        '<rect x="5.5" y="48" width="21" height="12" rx="4" fill="#000" stroke="#000" stroke-width="3"/></mask>'
+        '<g mask="url(#lm)" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">'
+        '<path d="M16 10H47a5 5 0 0 1 5 5v34a5 5 0 0 1-5 5H16"/><path d="M25 24h17M25 32h11"/></g>'
+        '<g class="la"><rect x="5.5" y="4" width="21" height="12" rx="4"/><rect x="5.5" y="48" width="21" height="12" rx="4"/></g>'
+        '<path class="ls" d="M16 12v40" stroke-width="5" stroke-linecap="round"/></svg>')
+PAGES = []
+for key, langs in DOCS.items():
+    for lang, (fname, title) in langs.items():
+        other = "en" if lang == "hu" else "hu"
+        body = (P / f"{key}.{lang}.html").read_text(encoding="utf-8")
+        for k, v in cfg.items(): body = body.replace("{{" + k + "}}", str(v))
+        t = (lambda hu, en: hu if lang == "hu" else en)
+        nav = " ".join(f'<a href="/{DOCS[k][lang][0]}">{DOCS[k][lang][1]}</a>' for k in DOCS if k != key)
+        page = f'''<!DOCTYPE html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
+<title>{title} – Olupan</title>
+<meta name="description" content="Olupan – {title}">
+<link rel="canonical" href="{cfg["site"]}/{fname}">
+<link rel="alternate" hreflang="{other}" href="{cfg["site"]}/{DOCS[key][other][0]}">
+<link rel="alternate" hreflang="{lang}" href="{cfg["site"]}/{fname}">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
+<meta name="theme-color" content="#0a0f1e">
+<script src="/assets/legal.js" integrity="{sri(ljs)}" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/legal.css" integrity="{sri(lcss)}" crossorigin="anonymous">
+</head>
+<body>
+<header><div class="bar">
+<a class="brand" href="/">{LOGO}<span>Olupan</span></a><span class="sp"></span>
+<nav class="lang" aria-label="{t("Nyelv", "Language")}">{"<span>HU</span>" if lang == "hu" else f'<a href="/{DOCS[key]["hu"][0]}" hreflang="hu" lang="hu">HU</a>'}{"<span>EN</span>" if lang == "en" else f'<a href="/{DOCS[key]["en"][0]}" hreflang="en" lang="en">EN</a>'}</nav>
+</div></header>
+<main>
+<p><a class="back" href="/">← {t("Vissza az appba", "Back to the app")}</a></p>
+<article>
+{body}
+</article>
+</main>
+<footer>
+<nav>{nav}</nav>
+<p>© 2026 {cfg["controller"]} · Olupan</p>
+</footer>
+</body>
+</html>
+'''
+        (PUB / fname).write_text(page, encoding="utf-8"); PAGES.append("/" + fname)
+
+core = ["/", "/index.html", "/manifest.webmanifest"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file())
 ver = hashlib.sha256(b"".join((PUB / p.lstrip("/")).read_bytes() for p in core if p != "/")).hexdigest()[:12]
 sw = f"""/* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
 const CACHE='olupan-{ver}';

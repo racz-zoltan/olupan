@@ -856,5 +856,11 @@
 "A gombok, a kiválasztott elemek és az aktív menüpont színe, világos és sötét módban is.": "Colour of buttons, selected items and the active tab, in both light and dark mode.",
 "Mintaadat csak üres naplóba tölthető be": "Sample data can only be loaded into an empty log",
 "iPhone-on a némítás (csengő ki / Action gomb) a hangot is elnémítja, és a hangerőt a médiahangerő szabályozza. Lezárt képernyőnél vagy háttérben a böngésző szünetelteti az időzítőt – ezt a lenti ébren tartás megelőzi.": "On iPhone, silent mode (ring switch / Action button) also mutes the sound, and the level follows the media volume. With the screen locked or in the background the browser pauses the timer – keeping the screen awake (below) prevents this.",
-"Olupan mentés": "Olupan backup"
+"Olupan mentés": "Olupan backup",
+"Tudnivalók": "About",
+"Felhasználói útmutató": "User guide",
+"Adatkezelési tájékoztató": "Privacy Policy",
+"Jogi nyilatkozat": "Disclaimer",
+"Az Olupan nem orvosi alkalmazás; a javasolt értékek tájékoztató becslések.": "Olupan is not a medical app; suggested values are informational estimates.",
+"© 2026 Rácz Zoltán · Ikonok: Lucide (ISC) · Betűk: Instrument Sans, Bricolage Grotesque, JetBrains Mono (OFL)": "© 2026 Zoltán Rácz · Icons: Lucide (ISC) · Fonts: Instrument Sans, Bricolage Grotesque, JetBrains Mono (OFL)"
 }

@@ -137,6 +137,7 @@ tr.done .chk{background:var(--kj-green-fill);color:var(--kj-green-ink);border-co
 .exl span:last-child{text-align:right;font-family:var(--mono);font-size:12px;color:var(--kj-muted);padding-top:1px}
 .badge{display:inline-flex;align-items:center;gap:5px;background:var(--kj-gold-soft);color:var(--kj-gold);border:1px solid var(--kj-gold-line);border-radius:999px;padding:4px 12px;font-size:12px;font-weight:500;margin:8px 8px 0 0}
 .chip.tchip{background:transparent;font-weight:500}.chip.tchip.off{color:var(--kj-muted);border-color:var(--kj-border);opacity:.6}.chip.tchip.off svg{opacity:.5}
+.infolinks{display:flex;flex-direction:column}.infolink{display:flex;align-items:center;gap:8px;padding:12px 0;border-top:1px solid var(--kj-border);color:var(--kj-text);text-decoration:none;font:500 15px var(--ui)}.infolink:first-child{border-top:0}.infolink span{flex:1}.infolink svg{color:var(--kj-muted)}
 .privlist{list-style:none;margin:0;padding:0;display:grid;gap:12px}.privli{display:flex;gap:8px;align-items:flex-start;line-height:1.5}.privic{flex:none;color:var(--kj-blue-line);margin-top:2px}
 .csvgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}.csvgrid .btn{justify-content:flex-start;white-space:normal;line-height:1.25;padding:8px 12px}.csvgrid small{font-size:11px;font-weight:500}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}

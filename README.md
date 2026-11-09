@@ -13,6 +13,7 @@ src/
   app.html          az app teljes forrása (HTML + CSS + JS, egy fájlban)
   i18n/en.json      angol szótár (magyar forrásszöveg → angol)
   icons/            app-ikonok (PNG) és favicon (SVG)
+  pages/            tájékoztató oldalak: útmutató, adatkezelés, jogi nyilatkozat (hu + en), config.json, legal.css/js
 tools/
   build.py          src/ → public/ (SRI, service worker, betű-subset, ikon-sprite)
 public/             a kész, kiszolgált oldal – a GitHub Actions generálja, kézzel ne szerkeszd
@@ -20,6 +21,16 @@ public/             a kész, kiszolgált oldal – a GitHub Actions generálja, 
   build.yml         push után újraépíti a public/-t, és visszacommitolja
 vercel.json         Vercel-beállítás: a public/ kiszolgálása, biztonsági fejlécek
 ```
+
+## Tájékoztató oldalak
+
+| | Magyar | English |
+|---|---|---|
+| Felhasználói útmutató | `/utmutato.html` | `/guide.html` |
+| Adatkezelési tájékoztató | `/adatvedelem.html` | `/privacy.html` |
+| Jogi nyilatkozat | `/jogi-nyilatkozat.html` | `/disclaimer.html` |
+
+Tartalmuk a `src/pages/<név>.<nyelv>.html` fájlokban van, a közös fejlécet, nyelvváltót és láblécet a build adja hozzá. A `src/pages/config.json` tartalmazza az adatkezelő nevét, a **kapcsolati e-mail-címet** (`contact_email`) és a hatálybalépés dátumát – ha az e-mail üres, a build figyelmeztet, és az oldalakon helyőrző jelenik meg. Az app a Beállítások végén, a „Tudnivalók” kártyán az aktuális nyelvű oldalakra linkel; az oldalak a service worker gyorsítótárában vannak, így offline is megnyílnak.
 
 ## Fejlesztés
 
