@@ -124,8 +124,10 @@ ljs = (P / "legal.js").read_text(encoding="utf-8").encode()
 DOCS = {"guide": {"hu": ("utmutato.html", "Felhasználói útmutató"), "en": ("guide.html", "User guide")},
         "privacy": {"hu": ("adatvedelem.html", "Adatkezelési tájékoztató"), "en": ("privacy.html", "Privacy Policy")},
         "disclaimer": {"hu": ("jogi-nyilatkozat.html", "Jogi nyilatkozat"), "en": ("disclaimer.html", "Disclaimer")}}
-LOGO = ('<svg viewBox="0 0 100 100" aria-hidden="true"><path class="ls" d="M22 46 L30 22 L41 38 L50 18 L59 38 L72 8 L79.56 51.69 A30 30 0 1 1 22 46 Z" fill="none" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>'
-        '<circle class="la" cx="50" cy="61" r="7"/></svg>')
+LOGO = ('<svg viewBox="0 0 64 64" aria-hidden="true"><mask id="lm" maskUnits="userSpaceOnUse" x="-8" y="-8" width="80" height="80"><rect x="-8" y="-8" width="80" height="80" fill="#fff"/>'
+        '<rect x="5.5" y="4" width="21" height="12" rx="4" stroke="#000" stroke-width="3"/><rect x="5.5" y="48" width="21" height="12" rx="4" stroke="#000" stroke-width="3"/></mask>'
+        '<g mask="url(#lm)" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path class="lp" d="M16 10H47a5 5 0 0 1 5 5v34a5 5 0 0 1-5 5H16"/><path class="lp" d="M25 24h17M25 32h11"/></g>'
+        '<rect class="la" x="5.5" y="4" width="21" height="12" rx="4"/><rect class="la" x="5.5" y="48" width="21" height="12" rx="4"/><path class="ls" d="M16 12v40" stroke-width="5.5" stroke-linecap="round"/></svg>')
 PAGES = []
 for key, langs in DOCS.items():
     for lang, (fname, title) in langs.items():
