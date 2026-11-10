@@ -31,7 +31,7 @@
   --kj-violet:#7c3aed;--kj-violet-soft:rgba(124,58,237,.12);
   --kj-green:#047857;--kj-green-line:#059669;--kj-green-soft:rgba(16,185,129,.14);--kj-green-fill:#34d399;--kj-green-ink:#022c22;
   --kj-track:rgba(15,23,42,.10);--kj-focus:rgba(34,211,238,.35);--kj-scrim:rgba(15,23,42,.45);
-  --c-weight:#65a30d;--c-fat:#ea580c;--c-waist:#0d9488;--c-steps:#2e6b45;--c-workout:#e11d48;--c-kcal:#2563eb;--c-protein:#7c3aed;--c-carb:#d97706;--c-fatm:#0891b2;--c-fiber:#059669;--c-cardio:#db2777;--c-volume:#991b1b;
+  --c-weight:#65a30d;--c-fat:#ea580c;--c-waist:#0d9488;--c-steps:#0891b2;--c-workout:#e11d48;--c-kcal:#2563eb;--c-protein:#7c3aed;--c-carb:#d97706;--c-fatm:#db2777;--c-fiber:#059669;--c-cardio:#db2777;--c-volume:#991b1b;
 }
 [data-theme="dark"]{
   --kj-bg:#1c2128;
@@ -48,7 +48,7 @@
   --kj-violet:#a78bfa;--kj-violet-soft:rgba(167,139,250,.14);
   --kj-green:#6ee7b7;--kj-green-line:#34d399;--kj-green-soft:rgba(16,185,129,.16);
   --kj-track:rgba(203,213,225,.16);--kj-focus:rgba(34,211,238,.30);--kj-scrim:rgba(8,10,14,.66);
-  --c-weight:#a3e635;--c-fat:#fb923c;--c-waist:#2dd4bf;--c-steps:#5a9f72;--c-workout:#fb7185;--c-kcal:#60a5fa;--c-protein:#a78bfa;--c-carb:#fbbf24;--c-fatm:#22d3ee;--c-fiber:#34d399;--c-cardio:#f472b6;--c-volume:#dc2626;
+  --c-weight:#a3e635;--c-fat:#fb923c;--c-waist:#2dd4bf;--c-steps:#22d3ee;--c-workout:#fb7185;--c-kcal:#60a5fa;--c-protein:#a78bfa;--c-carb:#fbbf24;--c-fatm:#f472b6;--c-fiber:#34d399;--c-cardio:#f472b6;--c-volume:#dc2626;
 }
 [data-accent="orange"]{--kj-blue:#c2410c;--kj-blue-ink:#fff7ed;--kj-blue-line:#c2410c;--kj-blue-soft:rgba(234,88,12,.12);--kj-focus:rgba(234,88,12,.30)}
 [data-theme="dark"][data-accent="orange"]{--kj-blue:#c2410c;--kj-blue-ink:#fff7ed;--kj-blue-line:#f97316;--kj-blue-soft:rgba(234,88,12,.16);--kj-focus:rgba(249,115,22,.32)}
@@ -172,7 +172,6 @@ tr.done .chk{background:var(--kj-green-fill);color:var(--kj-green-ink);border-co
 /* dupla koppintásos nagyítás kikapcsolása, a kétujjas nagyítás megmarad */
 html,body,*{touch-action:manipulation}
 svg.chart{width:100%;height:auto;display:block;touch-action:pan-y}
-svg.gauge{width:100%;max-width:330px;height:auto;display:block;margin:6px auto 0}
 svg .gl{stroke:var(--kj-border);stroke-width:1}
 svg .ax{fill:var(--kj-muted);font:500 15px var(--mono)}
 svg .bv{fill:var(--kj-text);font:600 13px var(--mono);paint-order:stroke;stroke:var(--kj-tt);stroke-width:4px;stroke-linejoin:round}
@@ -242,14 +241,13 @@ body.home header h1{display:flex;flex-direction:column;line-height:1.15}
 .macs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:16px}
 .mac{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
 .mbox{position:relative;width:100%;height:64px;border-radius:14px;overflow:hidden;background:color-mix(in srgb,var(--mc) 5%,transparent);border:1px solid color-mix(in srgb,var(--mc) 16%,transparent);box-sizing:border-box}
-.mac.over .mbox{border-color:color-mix(in srgb,var(--mc) 60%,transparent)}
 .mfill{position:absolute;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--mc) 14%,transparent);transition:height .4s}
 .mic{position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;color:color-mix(in srgb,var(--mc) 45%,transparent)}
 .mic>.ic{position:absolute;left:0;top:0;width:28px;height:28px}
 .mclip{position:absolute;left:0;bottom:0;width:28px;overflow:hidden;color:var(--mc)}
 .mclip .ic{position:absolute;left:0;bottom:0;width:28px;height:28px}
 .ic.filled{fill:currentColor;fill-opacity:.85}
-.mbadge{position:absolute;top:4px;right:4px;padding:0 5px;border-radius:8px;background:var(--mc);color:#fff;font:600 10px/16px var(--mono)}
+.mbadge{position:absolute;bottom:4px;right:4px;padding:0 5px;border-radius:8px;background:var(--mc);color:#fff;font:600 10px/16px var(--mono)}
 .ml{font-size:11px;color:var(--kj-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .mv{font:400 12px var(--mono);color:var(--kj-muted);white-space:nowrap}.mv b{color:var(--kj-text);font-weight:600}.mac.over .mv b{color:var(--mc)}
 .stepic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:color-mix(in srgb,var(--c-steps) 14%,transparent);color:var(--c-steps);flex:none}

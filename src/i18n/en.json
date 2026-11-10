@@ -1010,5 +1010,22 @@
  "Ingyenes, nincs appon belüli vásárlás és fiók – az adatok az eszközödön maradnak, és offline is működik.": "Free, no in-app purchases or account – your data stays on your device, and it works offline.",
  "Telepítés": "Install",
  "Részletek": "Details",
- "Most nem": "Not now"
+ "Most nem": "Not now",
+ "Terpeszugrás (jumping jack)": "Jumping jacks",
+ "Guggolásos felugrás": "Jump squat",
+ "Magastérd-emelés helyben": "High knees",
+ "Kitöréses váltóugrás": "Jumping lunges",
+ "Tabata (HIIT) – saját testsúly": "Tabata (HIIT) – bodyweight",
+ "Tabata: gyakorlatonként 8 kör – 20 mp maximális tempó, 10 mp pihenő (a pihenőidő 10 mp-re van állítva). A gyakorlatok között 1 perc pihenő. Sorozatonként a 20 mp alatt elért ismétlésszámot rögzítsd.": "Tabata: 8 rounds per exercise – 20 s at maximum effort, 10 s rest (the rest timer is set to 10 s). Rest 1 minute between exercises. For each set, log the reps you did in the 20 s.",
+ "Előbb add meg a Claude-projekt linkjét. A terv kérése ugyanabba a projektbe megy, mint az étkezésnapló.": "Add your Claude project link first. Plan requests go to the same project as your food log.",
+ "Claude-projekt beállítása": "Set up Claude project",
+ "Ebben a csoportban már nincs sablon.": "There are no templates left in this group.",
+ "Még nincs befejezett edzés.": "No finished workouts yet.",
+ "A javasolt napi bevitelhez töltsd ki a profilodat. A Claude-projekt útmutatója és a menüjavaslat csak utána érhető el, mert a napi célok is belekerülnek.": "Fill in your profile to get a suggested daily intake. The Claude project guide and meal suggestions become available after that, because they include your daily targets.",
+ "Profil kitöltése": "Fill in profile",
+ "A profil kitöltése után érhető el.": "Available once your profile is filled in.",
+ "Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.": "The guide becomes available once your profile is filled in, because the project instructions include your daily targets.",
+ "Előbb töltsd ki a profilodat": "Fill in your profile first",
+ "Előbb add meg a Claude-projekt linkjét": "Add your Claude project link first",
+ "Vissza": "Back"
 }
