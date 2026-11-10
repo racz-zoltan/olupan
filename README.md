@@ -46,6 +46,10 @@ A szerkesztés mindig a `src/`-ben történik. Pushkor a **Build** workflow újr
 ### Új szöveg a felületen
 A forrásnyelv a magyar. Angol módban az app a `src/i18n/en.json` szótár alapján fordít (a megjelenő szövegeket és a `placeholder` / `aria-label` / `title` attribútumokat). Új magyar szöveg mellé az angol párját is fel kell venni, különben angolul is magyarul jelenik meg. A dátum- és számformátum, a relatív idő, a CSV és a Claude-utasítás nyelvfüggése a forrásban van (`L()`, `LOC()`).
 
+### Tárolás
+
+Az adatok az eszközön maradnak. Fő tár az IndexedDB (`olupan` adatbázis, `kv` tároló, `state` kulcs: `{json, ts}`); a localStorage (`olupan.v1` + `olupan.v1.ts`) tükörként megmarad, amíg az adat elfér benne. Induláskor az app azonnal a localStorage-ből tölt, majd az IndexedDB-t is beolvassa: a frissebb időbélyegű nyer. Az első indulás az új tárral átemeli a meglévő adatot, és visszaolvasással ellenőrzi. Ha az IndexedDB nem érhető el, a localStorage marad. Az `olupan.ui` kulcs csak a témát és a kiemelőszínt tárolja a tájékoztató oldalaknak.
+
 ### Biztonság
 - Szigorú CSP (`script-src 'self'`, nincs inline script), SRI a CSS-en és a JS-en.
 - Nincs inline eseménykezelő: a `data-click` / `data-input` / … attribútumokból a build engedélylistát készít, csak ezek a függvények hívhatók.

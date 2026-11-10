@@ -21,7 +21,7 @@ ICONDIR = SRC / "icons"
 ICONS = ["dumbbell","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
-         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen"]
+         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down"]
 LATIN = "U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2019,U+201C-201E,U+2026,U+2212,U+2022,U+2192,U+2191,U+2193,U+00D7,U+0394,U+2248,U+2264,U+2265"
 HU = "U+0150,U+0151,U+0170,U+0171"
 FONTS = [("Instrument Sans", w, "instrument-sans") for w in (400, 500, 600)] + \
@@ -41,7 +41,7 @@ def sri(data): return "sha384-" + base64.b64encode(hashlib.sha384(data).digest()
 
 src = (SRC / "app.html").read_text(encoding="utf-8")
 syms = []
-for n in ICONS:
+for n in dict.fromkeys(ICONS):
     inner = re.search(r"<svg[^>]*>(.*)</svg>", (NM / f"lucide-static/icons/{n}.svg").read_text(), re.S).group(1)
     syms.append(f'<symbol id="i-{n}" viewBox="0 0 24 24">{re.sub(r"\s+", " ", inner).strip()}</symbol>')
 src = src.replace("<!--@ICONS@-->", '<svg width="0" height="0" style="position:absolute" aria-hidden="true">' + "".join(syms) + "</svg>")
@@ -106,7 +106,7 @@ html = html.replace('<meta name="apple-mobile-web-app-capable" content="yes">\n'
 manifest = {"id": "/", "name": "Olupan", "short_name": "Olupan", "lang": "hu",
             "description": "Offline edzésnapló – sablonok, testadatok, étkezés, statisztikák. Minden adat a készüléken marad.",
             "start_url": "/", "scope": "/", "display": "standalone",
-            "background_color": "#0a0f1e", "theme_color": "#0a0f1e", "categories": ["health", "fitness"],
+            "background_color": "#1c2128", "theme_color": "#1c2128", "categories": ["health", "fitness"],
             "icons": [{"src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
@@ -124,13 +124,8 @@ ljs = (P / "legal.js").read_text(encoding="utf-8").encode()
 DOCS = {"guide": {"hu": ("utmutato.html", "Felhasználói útmutató"), "en": ("guide.html", "User guide")},
         "privacy": {"hu": ("adatvedelem.html", "Adatkezelési tájékoztató"), "en": ("privacy.html", "Privacy Policy")},
         "disclaimer": {"hu": ("jogi-nyilatkozat.html", "Jogi nyilatkozat"), "en": ("disclaimer.html", "Disclaimer")}}
-LOGO = ('<svg viewBox="0 0 64 64" aria-hidden="true"><mask id="lm" maskUnits="userSpaceOnUse" x="-8" y="-8" width="80" height="80">'
-        '<rect x="-8" y="-8" width="80" height="80" fill="#fff"/><rect x="5.5" y="4" width="21" height="12" rx="4" fill="#000" stroke="#000" stroke-width="3"/>'
-        '<rect x="5.5" y="48" width="21" height="12" rx="4" fill="#000" stroke="#000" stroke-width="3"/></mask>'
-        '<g mask="url(#lm)" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">'
-        '<path d="M16 10H47a5 5 0 0 1 5 5v34a5 5 0 0 1-5 5H16"/><path d="M25 24h17M25 32h11"/></g>'
-        '<g class="la"><rect x="5.5" y="4" width="21" height="12" rx="4"/><rect x="5.5" y="48" width="21" height="12" rx="4"/></g>'
-        '<path class="ls" d="M16 12v40" stroke-width="5" stroke-linecap="round"/></svg>')
+LOGO = ('<svg viewBox="0 0 100 100" aria-hidden="true"><path class="ls" d="M22 46 L30 22 L41 38 L50 18 L59 38 L72 8 L79.56 51.69 A30 30 0 1 1 22 46 Z" fill="none" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>'
+        '<circle class="la" cx="50" cy="61" r="7"/></svg>')
 PAGES = []
 for key, langs in DOCS.items():
     for lang, (fname, title) in langs.items():
@@ -152,7 +147,7 @@ for key, langs in DOCS.items():
 <link rel="alternate" hreflang="{lang}" href="{cfg["site"]}/{fname}">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-<meta name="theme-color" content="#0a0f1e">
+<meta name="theme-color" content="#1c2128">
 <script src="/assets/legal.js" integrity="{sri(ljs)}" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/assets/legal.css" integrity="{sri(lcss)}" crossorigin="anonymous">
 </head>
