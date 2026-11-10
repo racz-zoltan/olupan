@@ -1027,5 +1027,11 @@
  "Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.": "The guide becomes available once your profile is filled in, because the project instructions include your daily targets.",
  "Előbb töltsd ki a profilodat": "Fill in your profile first",
  "Előbb add meg a Claude-projekt linkjét": "Add your Claude project link first",
- "Vissza": "Back"
+ "Vissza": "Back",
+ "Egyéb kívánság vagy stílus": "Other wishes or style",
+ "Konyhai eszközeim": "My kitchen equipment",
+ "Jelöld be, ami van. Ha bármit bejelölsz, Claude csak ezekkel számol, és a többit nem használja.": "Select what you have. If you select anything, Claude only plans with these and leaves out the rest.",
+ "Egyéb eszköz (nem kötelező)": "Other equipment (optional)",
+ "Bemelegítő": "Warm-up",
+ "Bemelegítő sorozat hozzáadva – nem számít a volumenbe és a rekordokba": "Warm-up set added – it doesn’t count towards volume or records"
 }

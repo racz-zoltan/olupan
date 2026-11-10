@@ -634,7 +634,7 @@ function sanitizeState(d){
   if(!d||typeof d!=='object'||!Array.isArray(d.exercises)||!Array.isArray(d.workouts))throw new Error('format');
   const map={},fix=id=>{const k=String(id);if(!map[k])map[k]=ID_RE.test(k)?k:uid();return map[k]};
   const o={v:num(d.v,1,99)||2,settings:{rest:num(d.settings?.rest,0,1800)??90,sound:num(d.settings?.sound,0,3)??3,claudeUrl:typeof d.settings?.claudeUrl==='string'&&/^https:\/\/claude\.ai\/[\w\-./?=&#%~]*$/.test(d.settings.claudeUrl)?d.settings.claudeUrl.slice(0,300):null,stepGoal:num(d.settings?.stepGoal,0,100000)??0,wakeLock:d.settings?.wakeLock!==false,uiSound:d.settings?.uiSound!==false,typeSound:d.settings?.typeSound!==false,doneSound:d.settings?.doneSound!==false,haptic:d.settings?.haptic!==false,restNotify:d.settings?.restNotify===true,accent:['orange','pink'].includes(d.settings?.accent)?d.settings.accent:'cyan',lang:['hu','en'].includes(d.settings?.lang)?d.settings.lang:null,startTab:START_TABS.some(x=>x[0]===d.settings?.startTab)?d.settings.startTab:'workout',theme:['light','dark'].includes(d.settings?.theme)?d.settings.theme:null,lastBackup:num(d.settings?.lastBackup,0,9e15)||undefined,installHide:num(d.settings?.installHide,0,9e15)||undefined,adaptSeen:typeof d.settings?.adaptSeen==='string'&&DATE_RE.test(d.settings.adaptSeen)?d.settings.adaptSeen:undefined,bar:[20,15,10,7].includes(+d.settings?.bar)?+d.settings.bar:undefined,plates:Array.isArray(d.settings?.plates)?d.settings.plates.map(Number).filter(v=>[25,20,15,10,5,2.5,1.25,0.5].includes(v)):undefined,foodPrefs:(()=>{const f=d.settings?.foodPrefs;if(!f||typeof f!=='object')return undefined;const keys=(a,list)=>(Array.isArray(a)?a:[]).filter(x=>list.some(y=>y[0]===x));
-  return{diet:keys(f.diet,PREF_DIET),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
+  return{diet:keys(f.diet,PREF_DIET),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),wish:str(f.wish||'',300),eq:keys(f.eq,PREF_EQUIP),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(e.kind==='cardio')x.kind='cardio';const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
   const sets=a=>(Array.isArray(a)?a:[]).map(s=>{const x={w:num(s?.w,0,2000)??0,r:num(s?.r,0,10000)??0};if(s?.wu===true)x.wu=true;return x});
   const notes=(a,withW)=>(Array.isArray(a)?a:[]).filter(n=>n&&n.text).map(n=>{const x={id:fix(n.id||uid()),ts:num(n.ts,0,9e15)||Date.now(),text:str(n.text,2000)};if(withW)x.wid=n.wid?fix(n.wid):null;return x});
@@ -870,12 +870,12 @@ function vMethods(){const en=LANG==='en',X=(h,e)=>en?e:h,f=v=>String(v).replace(
   <p>${X('Az együttmozgás nem bizonyít ok-okozati kapcsolatot.','Moving together doesn’t prove cause and effect.')}</p>`)
   +sec(X('Étkezés becslése Claude-dal','Food estimates with Claude'),`<p>${X('A fotó vagy leírás alapján becsült tápértékek akár 20–30%-kal is eltérhetnek a valóságtól. A receptfájlból számolt értékek egyenletesebbek, mert ugyanazokból a hozzávalókból, ugyanúgy számolnak; a csomagoláson szereplő tápérték megadásával pontosabbak lesznek.','Nutrition estimated from a photo or description can be 20–30% off. Values calculated from the recipe file are more consistent because they use the same ingredients the same way; giving the nutrition label values makes them more accurate.')}</p>`)
   +sec(X('Források','Sources'),`<ul class="refs">
-  <li>Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. <i>Am J Clin Nutr</i> 1990;51(2):241–247.</li>
-  <li>Jäger R, Kerksick CM, Campbell BI et al. International Society of Sports Nutrition Position Stand: protein and exercise. <i>J Int Soc Sports Nutr</i> 2017;14:20.</li>
-  <li>EFSA Panel on Dietetic Products, Nutrition and Allergies. Scientific Opinion on Dietary Reference Values for fats. <i>EFSA Journal</i> 2010;8(3):1461.</li>
-  <li>Institute of Medicine. <i>Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and Amino Acids.</i> National Academies Press, 2005.</li>
-  <li>Hall KD. What is the required energy deficit per unit weight loss? <i>Int J Obes</i> 2008;32(3):573–576.</li>
-  <li>Epley B. <i>Poundage Chart.</i> Boyd Epley Workout, Lincoln, NE, 1985.</li></ul>
+  <li>Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. <i>Am J Clin Nutr</i> 1990;51(2):241–247. <a href="https://doi.org/10.1093/ajcn/51.2.241" target="_blank" rel="noopener">doi:10.1093/ajcn/51.2.241</a></li>
+  <li>Jäger R, Kerksick CM, Campbell BI et al. International Society of Sports Nutrition Position Stand: protein and exercise. <i>J Int Soc Sports Nutr</i> 2017;14:20. <a href="https://doi.org/10.1186/s12970-017-0177-8" target="_blank" rel="noopener">doi:10.1186/s12970-017-0177-8</a></li>
+  <li>EFSA Panel on Dietetic Products, Nutrition and Allergies. Scientific Opinion on Dietary Reference Values for fats, including saturated fatty acids, polyunsaturated fatty acids, monounsaturated fatty acids, trans fatty acids, and cholesterol. <i>EFSA Journal</i> 2010;8(3):1461. <a href="https://doi.org/10.2903/j.efsa.2010.1461" target="_blank" rel="noopener">doi:10.2903/j.efsa.2010.1461</a></li>
+  <li>Institute of Medicine. <i>Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and Amino Acids.</i> Washington, DC: The National Academies Press; 2005. <a href="https://doi.org/10.17226/10490" target="_blank" rel="noopener">doi:10.17226/10490</a></li>
+  <li>Hall KD. What is the required energy deficit per unit weight loss? <i>Int J Obes</i> 2008;32(3):573–576. <a href="https://doi.org/10.1038/sj.ijo.0803720" target="_blank" rel="noopener">doi:10.1038/sj.ijo.0803720</a></li>
+  <li>Epley B. Poundage Chart. In: <i>Boyd Epley Workout.</i> Lincoln, NE: Body Enterprises; 1985. p. 86.</li></ul>
   <p class="hint">${X('A források a módszerek eredetét jelölik; az app egyszerűsített, tájékoztató alkalmazásukat végzi, nem helyettesíti a szakember tanácsát.','The sources indicate where the methods come from; the app applies them in a simplified, informational way and doesn’t replace professional advice.')}</p>`);
 }
 /* ===== Telepítési ajánló: eszköz és böngésző szerinti lépések, amíg az app böngészőben fut ===== */
@@ -1009,7 +1009,7 @@ function vActive(){
       <td><input type="text" inputmode="decimal" autocomplete="off" value="${hu(s.w,2)}" placeholder="${p?hu(p.w,2):''}" data-input="setVal(${i},${j},'w',this.value)" aria-label="${cd?'Táv (km)':'Súly'}"></td>
       <td><input type="number" inputmode="numeric" step="1" min="0" value="${s.r}" placeholder="${p?p.r:''}" data-input="setVal(${i},${j},'r',this.value)" aria-label="${cd?'Idő (perc)':'Ismétlés'}"></td>
       <td><button class="chk" data-click="toggleSet(${i},${j})" aria-label="Sorozat kész">${I('check','sm')}</button></td></tr>`}).join('')})()}
-    </table><div class="row" style="margin-top:8px"><button class="btn sm" data-click="addSet(${i})">${I('plus','sm')} Sorozat</button><button class="btn sm" data-click="rmSet(${i})">${I('minus','sm')} Sorozat</button>${isBarbell(e.exId)?`<button class="btn sm" data-click="plateCalc(${i})">${I('disc','sm')} Tárcsák</button>`:''}${i<a.exercises.length-1?`<button class="btn sm${e.ss?' sson':''}" data-click="toggleSS(${i})" aria-pressed="${!!e.ss}" aria-label="Szuperszett a következő gyakorlattal">${I('link','sm')}</button>`:''}<span class="sp"></span>
+    </table><div class="row" style="margin-top:8px"><button class="btn sm" data-click="addSet(${i})">${I('plus','sm')} Sorozat</button><button class="btn sm" data-click="rmSet(${i})">${I('minus','sm')} Sorozat</button><button class="btn sm" data-click="addWu(${i})">${I('plus','sm')} Bemelegítő</button>${isBarbell(e.exId)?`<button class="btn sm" data-click="plateCalc(${i})">${I('disc','sm')} Tárcsák</button>`:''}${i<a.exercises.length-1?`<button class="btn sm${e.ss?' sson':''}" data-click="toggleSS(${i})" aria-pressed="${!!e.ss}" aria-label="Szuperszett a következő gyakorlattal">${I('link','sm')}</button>`:''}<span class="sp"></span>
     <span class="mut small">${pb&&cd?`${I('trophy','sm')} <span class="mono">${pb.w?fmt(pb.w,1)+' km · ':''}${pb.r} perc</span>`:pb?(pb.w?`${I('trophy','sm')} <span class="mono">${fmt(pb.w)} kg · 1RM ~${fmt(pb.e,0)}</span>`:`${I('trophy','sm')} <span class="mono">${pb.r} ism.</span>`):'Első alkalom'}</span></div></div>`;
   });
   h+=`<button class="btn block gold" data-click="pickForActive()">${I('plus')} Gyakorlat hozzáadása</button>
@@ -1029,6 +1029,9 @@ function toggleSet(i,j){
   save();
   const row=$('#r'+i+'_'+j);row.classList.toggle('done',s.done);const ins=row.querySelectorAll('input');ins[0].value=s.w;ins[1].value=s.r;updAvol();
 }
+/* Bemelegítő sorozat a munkasorozatok elé: az első munkasorozat súlyának kb. fele, 2,5 kg-ra kerekítve */
+function addWu(i){const e=S.active.exercises[i],cd=isCardio(e.exId),k=e.sets.findIndex(s=>!s.wu),f=e.sets[k]||{},w=parseFloat(f.w)||0;
+  e.sets.splice(k<0?e.sets.length:k,0,{w:cd||!w?'':Math.max(0,Math.round(w*.5/2.5)*2.5),r:cd?'':(f.r?Math.max(5,+f.r):8),done:false,wu:true});save();render();toast('Bemelegítő sorozat hozzáadva – nem számít a volumenbe és a rekordokba')}
 function addSet(i){const sets=S.active.exercises[i].sets;const l=sets[sets.length-1];sets.push({w:l?l.w:'',r:l?l.r:'',done:false});save();render()}
 function rmSet(i){const sets=S.active.exercises[i].sets;if(sets.length)sets.pop();save();render()}
 function moveEx(i,d){const a=S.active.exercises,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];save();render()}
@@ -1593,10 +1596,11 @@ Elkészítés:
 `}
 async function downloadRecipes(){if(await shareOrDownload(LANG==='en'?'recipes.md':'receptek.md',recipesMd(),'text/plain','Olupan – receptek'))toast('Receptfájl elkészült')}
 /* ===== Menüjavaslat: az app állítja össze a kérést (keret, mai étkezés, preferenciák), a szabályok a projekt-utasításban vannak ===== */
-const PREF_DIET=[['dairy','Tejmentes','Dairy-free'],['sugar','Hozzáadott cukor nélkül','No added sugar'],['meat','Húsmentes','Meat-free'],['vegetarian','Vegetáriánus','Vegetarian'],['vegan','Vegán','Vegan'],['pesc','Halat eszik, húst nem','Pescatarian'],['egg','Tojásmentes','Egg-free'],['pork','Sertéshúsmentes','Pork-free']];
+const PREF_DIET=[['dairy','Tejmentes','Dairy-free'],['sugar','Hozzáadott cukor nélkül','No added sugar'],['meat','Húsmentes','Meat-free'],['vegetarian','Vegetáriánus','Vegetarian'],['vegan','Vegán','Vegan'],['pesc','Halat eszik, húst nem','Pescatarian'],['egg','Tojásmentes','Egg-free'],['pork','Sertéshúsmentes','Pork-free'],['gluten','Gluténmentes','Gluten-free']];
+const PREF_EQUIP=[['oven','Sütő','Oven'],['stove','Tűzhely / főzőlap','Hob / stove'],['micro','Mikrohullámú sütő','Microwave'],['airfryer','Air fryer','Air fryer'],['robot','Konyhai robotgép','Food processor / stand mixer'],['blender','Turmix / botmixer','Blender / stick blender'],['pressure','Kukta / multicooker','Pressure cooker / multicooker'],['slow','Lassúfőző','Slow cooker'],['grill','Kontakt grill','Contact grill'],['toaster','Kenyérpirító','Toaster']];
 const PREF_STYLE=[['budget','Takarékos','Budget-friendly'],['prep','Több napra előre elkészíthető','Make-ahead'],['quick','Gyors (20 perc alatt)','Quick (under 20 min)'],['dishes','Kevés mosogatás','Few dishes'],['hu','Magyaros','Hungarian-style'],['season','Szezonális','Seasonal'],['protein','Fehérjedús','High-protein']];
 const PREF_SKILL=[['beginner','Kezdő','Beginner'],['intermediate','Haladó','Intermediate'],['confident','Rutinos','Confident']];
-function fprefs(){const d={diet:[],style:[],avoid:'',skill:'intermediate',people:1,meals:4,equipment:''};return Object.assign(d,S.settings.foodPrefs||{})}
+function fprefs(){const d={diet:[],style:[],avoid:'',wish:'',skill:'intermediate',people:1,meals:4,eq:[],equipment:''};return Object.assign(d,S.settings.foodPrefs||{})}
 function setFPref(k,v){const p=fprefs();if(k==='people'||k==='meals')v=Math.max(1,Math.min(k==='people'?8:6,parseInt(v)||1));else v=String(v||'').slice(0,300).trim();p[k]=v;S.settings.foodPrefs=p;save()}
 function toggleFPref(k,v){const p=fprefs(),a=new Set(p[k]);a.has(v)?a.delete(v):a.add(v);p[k]=[...a];S.settings.foodPrefs=p;save();render()}
 function vFoodPrefs(){const p=fprefs(),lbl=x=>LANG==='en'?x[2]:x[1];
@@ -1605,10 +1609,12 @@ function vFoodPrefs(){const p=fprefs(),lbl=x=>LANG==='en'?x[2]:x[1];
   <label>Étrend</label>${chips('diet',PREF_DIET)}
   <label for="favoid">Kerülendő összetevők</label><input id="favoid" maxlength="300" value="${esc(p.avoid)}" placeholder="${esc(L('pl. gomba, koriander, földimogyoró','e.g. mushrooms, coriander, peanuts'))}" data-change="setFPref('avoid',this.value)">
   <label>Stílus</label>${chips('style',PREF_STYLE)}
+  <label for="fwish">Egyéb kívánság vagy stílus</label><input id="fwish" maxlength="300" value="${esc(p.wish)}" placeholder="${esc(L('pl. indiai jellegű, kóser, mediterrán','e.g. Indian-style, kosher, Mediterranean'))}" data-change="setFPref('wish',this.value)">
   <label for="fskill">Főzési gyakorlat</label><select id="fskill" data-change="setFPref('skill',this.value)">${PREF_SKILL.map(x=>`<option value="${x[0]}" ${p.skill===x[0]?'selected':''}>${esc(lbl(x))}</option>`).join('')}</select>
   <div class="grid2" style="gap:10px"><div><label for="fpeople">Hány főre főzöl</label><input id="fpeople" type="number" inputmode="numeric" min="1" max="8" value="${p.people}" data-change="setFPref('people',this.value)"></div>
   <div><label for="fmeals">Étkezés naponta</label><input id="fmeals" type="number" inputmode="numeric" min="1" max="6" value="${p.meals}" data-change="setFPref('meals',this.value)"></div></div>
-  <label for="fequip">Konyhai eszközök (nem kötelező)</label><input id="fequip" maxlength="300" value="${esc(p.equipment)}" placeholder="${esc(L('pl. airfryer, multicooker','e.g. air fryer, multicooker'))}" data-change="setFPref('equipment',this.value)"></div>`}
+  <label>Konyhai eszközeim</label><div class="hint" style="margin:-2px 0 6px">Jelöld be, ami van. Ha bármit bejelölsz, Claude csak ezekkel számol, és a többit nem használja.</div>${chips('eq',PREF_EQUIP)}
+  <label for="fequip">Egyéb eszköz (nem kötelező)</label><input id="fequip" maxlength="300" value="${esc(p.equipment)}" placeholder="${esc(L('pl. wok, sous-vide, gofrisütő','e.g. wok, sous-vide, waffle maker'))}" data-change="setFPref('equipment',this.value)"></div>`}
 function menuPrompt(kind){
   const p=fprefs(),t=targets(),en=LANG==='en',lbl=x=>en?x[2]:x[1],td=today(),items=dayMeals(td),s=sumMeals(items);
   const mac=o=>`${fmt(o.kcal,0)} kcal, ${en?'protein':'fehérje'} ${fmt(o.p,0)} g, ${en?'carbs':'szénhidrát'} ${fmt(o.c,0)} g, ${en?'fat':'zsír'} ${fmt(o.f,0)} g, ${en?'fiber':'rost'} ${fmt(o.fib,0)} g`;
@@ -1625,8 +1631,12 @@ function menuPrompt(kind){
   lines.push(L2('Étrend: ','Diet: ')+(pick('diet',PREF_DIET)||L2('nincs megkötés','no restrictions')));
   if(p.avoid)lines.push(L2('Kerülendő: ','Avoid: ')+p.avoid);
   if(p.style.length)lines.push(L2('Stílus: ','Style: ')+pick('style',PREF_STYLE));
+  if(p.wish)lines.push(L2('Egyéb kívánság: ','Other wishes: ')+p.wish);
   lines.push(L2('Főzési gyakorlat: ','Cooking level: ')+lbl(PREF_SKILL.find(x=>x[0]===p.skill)||PREF_SKILL[1]));
-  if(p.equipment)lines.push(L2('Eszközök: ','Equipment: ')+p.equipment);
+  if(p.eq.length){const no=PREF_EQUIP.filter(x=>!p.eq.includes(x[0])).map(lbl).join(', ');
+    lines.push(L2('Konyhai eszközeim: ','My kitchen equipment: ')+pick('eq',PREF_EQUIP)+(p.equipment?', '+p.equipment:''));
+    if(no)lines.push(L2('Nincs (ne használd): ','I don’t have (don’t use): ')+no);}
+  else if(p.equipment)lines.push(L2('Eszközök: ','Equipment: ')+p.equipment);
   lines.push('');
   lines.push(kind==='rest'?L2('Javasolj 2–3 lehetőséget a nap hátralévő részére, hogy a napi keretbe és a makrókba beleférjek.','Suggest 2–3 options for the rest of the day that fit my daily target and macros.'):kind==='day'?L2('Állíts össze egy teljes napi menüt receptekkel.','Put together a full daily menu with recipes.'):L2('Állíts össze egy 7 napos menüt receptekkel és bevásárlólistával.','Put together a 7-day menu with recipes and a shopping list.'));
   return lines.join('\n');
