@@ -114,8 +114,8 @@ label{display:block;font:500 13px var(--ui);color:var(--kj-muted);margin:12px 0 
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}main [id]{scroll-margin-top:84px}
 .instcard{border-color:var(--kj-blue-line)}.instic{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:var(--kj-blue-soft);color:var(--kj-blue-line);flex:none}
 .meth p{font-size:14px;line-height:1.55;margin:8px 0}.fx{margin:10px 0;padding:10px 12px;border-radius:10px;background:var(--kj-surface);border:1px solid var(--kj-border);font:12.5px/1.55 var(--mono);white-space:pre-wrap;overflow-x:auto}.refs{margin:6px 0 0;padding-left:18px;font-size:13px;line-height:1.5}.refs li{margin-bottom:6px}
-.setno{min-width:30px;height:30px;border-radius:8px;border:1px solid transparent;background:none;color:var(--kj-muted);font:600 13px var(--mono);cursor:pointer;padding:0}
-tr.wu .setno{background:color-mix(in srgb,var(--kj-gold) 16%,transparent);border-color:color-mix(in srgb,var(--kj-gold) 40%,transparent);color:var(--kj-gold)}
+.setno{min-width:30px;height:30px;border-radius:8px;border:1px dashed var(--kj-border-strong);background:none;color:var(--kj-muted);font:600 13px var(--mono);cursor:pointer;padding:0}
+tr.wu .setno{background:color-mix(in srgb,var(--kj-gold) 16%,transparent);border-color:color-mix(in srgb,var(--kj-gold) 55%,transparent);color:var(--kj-gold)}
 .wutag{display:inline-block;margin-right:3px;padding:0 4px;border-radius:4px;background:color-mix(in srgb,var(--kj-gold) 16%,transparent);color:var(--kj-gold);font:600 11px var(--mono)}
 .sugg{display:flex;align-items:center;gap:8px;margin:10px 0 2px;padding:8px 10px;border-radius:12px;background:var(--kj-surface);font-size:14px;line-height:1.35}.sugg>.ic{color:var(--kj-green)}.sugg>span{flex:1;min-width:0}
 .plviz{display:flex;align-items:center;justify-content:center;gap:3px;height:90px;margin-bottom:8px}.plviz i{display:grid;place-items:center;width:22px;border-radius:4px;background:var(--kj-blue-soft);border:1px solid var(--kj-blue-line);font:600 10px var(--mono);font-style:normal;writing-mode:vertical-rl}.plbar{width:80px;height:10px;border-radius:3px;background:var(--kj-border-strong)}
@@ -882,7 +882,9 @@ function vMethods(){const en=LANG==='en',X=(h,e)=>en?e:h,f=v=>String(v).replace(
 let installEvt=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(tab==='home')render()});
 window.addEventListener('appinstalled',()=>{installEvt=null;if(tab==='home')render()});
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-function installHow(){const ua=navigator.userAgent,ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),and=/Android/.test(ua);
+/* iPhone/iPad (az iPadOS asztali Safari-azonosítóval is) – az Egészség app csak itt érhető el */
+const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function installHow(){const ua=navigator.userAgent,ios=IS_IOS,and=/Android/.test(ua);
   const share=I('share','sm'),B=t=>`<b>${t}</b>`;
   if(/FBAN|FBAV|Instagram|Messenger|Line\/|GSA\/|; wv\)/.test(ua))return L(`Ez egy alkalmazáson belüli böngésző. Nyisd meg az oldalt ${ios?'Safariban':'Chrome-ban'} (menü → ${B('Megnyitás böngészőben')}), és onnan telepítsd.`,`This is an in-app browser. Open the page in ${ios?'Safari':'Chrome'} (menu → ${B('Open in browser')}) and install it from there.`);
   if(ios)return /CriOS|FxiOS|EdgiOS/.test(ua)?L(`Koppints a címsorban a ${B('Megosztás')} ${share} ikonra, majd: ${B('Hozzáadás a Főképernyőhöz')}.`,`Tap ${B('Share')} ${share} in the address bar, then ${B('Add to Home Screen')}.`)
@@ -1009,7 +1011,7 @@ function vActive(){
       <td><input type="text" inputmode="decimal" autocomplete="off" value="${hu(s.w,2)}" placeholder="${p?hu(p.w,2):''}" data-input="setVal(${i},${j},'w',this.value)" aria-label="${cd?'Táv (km)':'Súly'}"></td>
       <td><input type="number" inputmode="numeric" step="1" min="0" value="${s.r}" placeholder="${p?p.r:''}" data-input="setVal(${i},${j},'r',this.value)" aria-label="${cd?'Idő (perc)':'Ismétlés'}"></td>
       <td><button class="chk" data-click="toggleSet(${i},${j})" aria-label="Sorozat kész">${I('check','sm')}</button></td></tr>`}).join('')})()}
-    </table><div class="row" style="margin-top:8px"><button class="btn sm" data-click="addSet(${i})">${I('plus','sm')} Sorozat</button><button class="btn sm" data-click="rmSet(${i})">${I('minus','sm')} Sorozat</button><button class="btn sm" data-click="addWu(${i})">${I('plus','sm')} Bemelegítő</button>${isBarbell(e.exId)?`<button class="btn sm" data-click="plateCalc(${i})">${I('disc','sm')} Tárcsák</button>`:''}${i<a.exercises.length-1?`<button class="btn sm${e.ss?' sson':''}" data-click="toggleSS(${i})" aria-pressed="${!!e.ss}" aria-label="Szuperszett a következő gyakorlattal">${I('link','sm')}</button>`:''}<span class="sp"></span>
+    </table><div class="row" style="margin-top:8px"><button class="btn sm" data-click="addSet(${i})">${I('plus','sm')} Sorozat</button><button class="btn sm" data-click="rmSet(${i})">${I('minus','sm')} Sorozat</button>${isBarbell(e.exId)?`<button class="btn sm" data-click="plateCalc(${i})">${I('disc','sm')} Tárcsák</button>`:''}${i<a.exercises.length-1?`<button class="btn sm${e.ss?' sson':''}" data-click="toggleSS(${i})" aria-pressed="${!!e.ss}" aria-label="Szuperszett a következő gyakorlattal">${I('link','sm')}</button>`:''}<span class="sp"></span>
     <span class="mut small">${pb&&cd?`${I('trophy','sm')} <span class="mono">${pb.w?fmt(pb.w,1)+' km · ':''}${pb.r} perc</span>`:pb?(pb.w?`${I('trophy','sm')} <span class="mono">${fmt(pb.w)} kg · 1RM ~${fmt(pb.e,0)}</span>`:`${I('trophy','sm')} <span class="mono">${pb.r} ism.</span>`):'Első alkalom'}</span></div></div>`;
   });
   h+=`<button class="btn block gold" data-click="pickForActive()">${I('plus')} Gyakorlat hozzáadása</button>
@@ -1029,9 +1031,6 @@ function toggleSet(i,j){
   save();
   const row=$('#r'+i+'_'+j);row.classList.toggle('done',s.done);const ins=row.querySelectorAll('input');ins[0].value=s.w;ins[1].value=s.r;updAvol();
 }
-/* Bemelegítő sorozat a munkasorozatok elé: az első munkasorozat súlyának kb. fele, 2,5 kg-ra kerekítve */
-function addWu(i){const e=S.active.exercises[i],cd=isCardio(e.exId),k=e.sets.findIndex(s=>!s.wu),f=e.sets[k]||{},w=parseFloat(f.w)||0;
-  e.sets.splice(k<0?e.sets.length:k,0,{w:cd||!w?'':Math.max(0,Math.round(w*.5/2.5)*2.5),r:cd?'':(f.r?Math.max(5,+f.r):8),done:false,wu:true});save();render();toast('Bemelegítő sorozat hozzáadva – nem számít a volumenbe és a rekordokba')}
 function addSet(i){const sets=S.active.exercises[i].sets;const l=sets[sets.length-1];sets.push({w:l?l.w:'',r:l?l.r:'',done:false});save();render()}
 function rmSet(i){const sets=S.active.exercises[i].sets;if(sets.length)sets.pop();save();render()}
 function moveEx(i,d){const a=S.active.exercises,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];save();render()}
@@ -1402,7 +1401,7 @@ function vFood(){
   <div class="row" style="margin-bottom:8px;flex-wrap:nowrap">${S.settings.claudeUrl?`<a class="btn" href="${esc(S.settings.claudeUrl)}" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} Claude</a>`:''}<button class="btn p" style="flex:1;min-width:0" data-click="pasteMeals()">${I('clipboard-paste','sm')} Beillesztés${S.settings.claudeUrl?'':' Claude-ból'}</button><button class="btn ico" data-click="foodHelp()" aria-label="Súgó: Claude-projekt" ${t.kcal?'':'disabled'}>${I('circle-help','sm')}</button></div>
   <div class="row" style="margin-bottom:12px;flex-wrap:nowrap"><button class="btn" style="flex:1;min-width:0" data-click="quickLog()">${I('history','sm')} Gyors rögzítés</button><button class="btn" data-click="addMeal()">${I('plus','sm')} Kézi</button></div>`;
   h+=`<div class="card"><div class="row" style="flex-wrap:nowrap;margin-bottom:10px"><h2 style="flex:1;margin:0;font-size:17px">Menüjavaslat</h2><button class="btn sm ico" data-click="openSub('food','fprefs')" aria-label="Étkezési preferenciák">${I('settings','sm')}</button></div>
-  <button class="btn block" data-click="askMenu('rest')" ${t.kcal?'':'disabled'}>Mit egyek még ma?</button><div class="grid2" style="margin-top:8px"><button class="btn" data-click="askMenu('day')" ${t.kcal?'':'disabled'}>Napi menü</button><button class="btn" data-click="askMenu('week')" ${t.kcal?'':'disabled'}>Heti menü</button></div>${t.kcal?'':`<div class="hint" style="margin-top:8px">A profil kitöltése után érhető el.</div>`}</div>`;
+  <button class="btn block" data-click="askMenu('rest')" ${t.kcal?'':'disabled'}>Mit egyek még ma?</button><div class="grid2" style="margin-top:8px"><button class="btn" data-click="askMenu('day')" ${t.kcal?'':'disabled'}>Napi menü</button><button class="btn" data-click="askMenu('week')" ${t.kcal?'':'disabled'}>Heti menü</button></div><button class="btn block" style="margin-top:8px" data-click="askMenu('ideas')" ${t.kcal?'':'disabled'}>${I('lightbulb','sm')} Egyéb receptötletek</button>${t.kcal?'':`<div class="hint" style="margin-top:8px">A profil kitöltése után érhető el.</div>`}</div>`;
   const trend=`<div class="card"><h2 style="font-size:17px">Utolsó 7 nap</h2>${foodTrend(7)}</div>`;
   for(const[k,l]of MEALS){const g=items.filter(m=>m.meal===k);if(!g.length)continue;const gs=sumMeals(g);
     h+=`<div class="card"><div class="row"><h2 style="flex:1;margin:0;font-size:17px">${l}</h2><span class="mono small mut">${fmt(gs.kcal,0)} kcal</span></div>
@@ -1598,7 +1597,7 @@ async function downloadRecipes(){if(await shareOrDownload(LANG==='en'?'recipes.m
 /* ===== Menüjavaslat: az app állítja össze a kérést (keret, mai étkezés, preferenciák), a szabályok a projekt-utasításban vannak ===== */
 const PREF_DIET=[['dairy','Tejmentes','Dairy-free'],['sugar','Hozzáadott cukor nélkül','No added sugar'],['meat','Húsmentes','Meat-free'],['vegetarian','Vegetáriánus','Vegetarian'],['vegan','Vegán','Vegan'],['pesc','Halat eszik, húst nem','Pescatarian'],['egg','Tojásmentes','Egg-free'],['pork','Sertéshúsmentes','Pork-free'],['gluten','Gluténmentes','Gluten-free']];
 const PREF_EQUIP=[['oven','Sütő','Oven'],['stove','Tűzhely / főzőlap','Hob / stove'],['micro','Mikrohullámú sütő','Microwave'],['airfryer','Air fryer','Air fryer'],['robot','Konyhai robotgép','Food processor / stand mixer'],['blender','Turmix / botmixer','Blender / stick blender'],['pressure','Kukta / multicooker','Pressure cooker / multicooker'],['slow','Lassúfőző','Slow cooker'],['grill','Kontakt grill','Contact grill'],['toaster','Kenyérpirító','Toaster']];
-const PREF_STYLE=[['budget','Takarékos','Budget-friendly'],['prep','Több napra előre elkészíthető','Make-ahead'],['quick','Gyors (20 perc alatt)','Quick (under 20 min)'],['dishes','Kevés mosogatás','Few dishes'],['hu','Magyaros','Hungarian-style'],['season','Szezonális','Seasonal'],['protein','Fehérjedús','High-protein']];
+const PREF_STYLE=[['budget','Takarékos','Budget-friendly'],['prep','Több napra előre elkészíthető','Make-ahead'],['quick','Gyors (20 perc alatt)','Quick (under 20 min)'],['handsoff','Otthagyhatós (kevés aktív munka)','Hands-off (little active time)'],['dishes','Kevés mosogatás','Few dishes'],['hu','Magyaros','Hungarian-style'],['season','Szezonális','Seasonal'],['protein','Fehérjedús','High-protein']];
 const PREF_SKILL=[['beginner','Kezdő','Beginner'],['intermediate','Haladó','Intermediate'],['confident','Rutinos','Confident']];
 function fprefs(){const d={diet:[],style:[],avoid:'',wish:'',skill:'intermediate',people:1,meals:4,eq:[],equipment:''};return Object.assign(d,S.settings.foodPrefs||{})}
 function setFPref(k,v){const p=fprefs();if(k==='people'||k==='meals')v=Math.max(1,Math.min(k==='people'?8:6,parseInt(v)||1));else v=String(v||'').slice(0,300).trim();p[k]=v;S.settings.foodPrefs=p;save()}
@@ -1620,14 +1619,14 @@ function menuPrompt(kind){
   const mac=o=>`${fmt(o.kcal,0)} kcal, ${en?'protein':'fehérje'} ${fmt(o.p,0)} g, ${en?'carbs':'szénhidrát'} ${fmt(o.c,0)} g, ${en?'fat':'zsír'} ${fmt(o.f,0)} g, ${en?'fiber':'rost'} ${fmt(o.fib,0)} g`;
   const pick=(k,list)=>list.filter(x=>p[k].includes(x[0])).map(lbl).join(', ');
   const L2=(h,e)=>en?e:h,lines=[];
-  lines.push(kind==='rest'?L2('Menüjavaslat – mit egyek még ma?','Meal suggestion – what should I eat for the rest of today?'):kind==='day'?L2('Menüjavaslat – napi menü','Meal suggestion – daily menu'):L2('Menüjavaslat – heti menü (7 nap)','Meal suggestion – weekly menu (7 days)'));
+  lines.push(kind==='ideas'?L2('Receptötletek','Recipe ideas'):kind==='rest'?L2('Menüjavaslat – mit egyek még ma?','Meal suggestion – what should I eat for the rest of today?'):kind==='day'?L2('Menüjavaslat – napi menü','Meal suggestion – daily menu'):L2('Menüjavaslat – heti menü (7 nap)','Meal suggestion – weekly menu (7 days)'));
   lines.push('');
   lines.push(t.kcal?L2('Napi keret: ','Daily target: ')+mac(t):L2('Napi keret: nincs megadva – kérdezz rá, mielőtt javasolsz.','Daily target: not set – ask me before suggesting.'));
   if(kind==='rest'){const now=new Date();
     lines.push(L2(`Ma (${td}, ${fmtTime(now)}) eddig: `,`Today (${td}, ${fmtTime(now)}) so far: `)+(items.length?mac(s):L2('még semmi','nothing yet')));
     if(items.length)lines.push(L2('Amit ma ettem: ','What I ate today: ')+items.slice(0,12).map(m=>m.name).join('; '));
     if(t.kcal)lines.push(L2('Még hátra: ','Remaining: ')+mac({kcal:Math.max(0,t.kcal-s.kcal),p:Math.max(0,t.p-s.p),c:Math.max(0,t.c-s.c),f:Math.max(0,t.f-s.f),fib:Math.max(0,t.fib-s.fib)}));}
-  lines.push(L2('Étkezés naponta: ','Meals per day: ')+p.meals+' · '+L2('hány főre: ','servings for: ')+p.people);
+  lines.push(kind==='ideas'?L2('Hány főre: ','Servings for: ')+p.people:L2('Étkezés naponta: ','Meals per day: ')+p.meals+' · '+L2('hány főre: ','servings for: ')+p.people);
   lines.push(L2('Étrend: ','Diet: ')+(pick('diet',PREF_DIET)||L2('nincs megkötés','no restrictions')));
   if(p.avoid)lines.push(L2('Kerülendő: ','Avoid: ')+p.avoid);
   if(p.style.length)lines.push(L2('Stílus: ','Style: ')+pick('style',PREF_STYLE));
@@ -1638,11 +1637,14 @@ function menuPrompt(kind){
     if(no)lines.push(L2('Nincs (ne használd): ','I don’t have (don’t use): ')+no);}
   else if(p.equipment)lines.push(L2('Eszközök: ','Equipment: ')+p.equipment);
   lines.push('');
-  lines.push(kind==='rest'?L2('Javasolj 2–3 lehetőséget a nap hátralévő részére, hogy a napi keretbe és a makrókba beleférjek.','Suggest 2–3 options for the rest of the day that fit my daily target and macros.'):kind==='day'?L2('Állíts össze egy teljes napi menüt receptekkel.','Put together a full daily menu with recipes.'):L2('Állíts össze egy 7 napos menüt receptekkel és bevásárlólistával.','Put together a 7-day menu with recipes and a shopping list.'));
+  lines.push(p.style.includes('hu')?L2('Legyen változatos, ne ismételd a legtipikusabb fogásokat.','Keep it varied; don’t repeat the most typical dishes.')
+    :L2('Ne a hagyományos magyar konyhára építs (pl. pörkölt, főzelék, töltött vagy székelykáposzta) – legyen változatos, modern, nemzetközi konyha, hacsak külön nem kérem.','Don’t default to traditional Hungarian dishes – keep it varied, modern and international unless I ask otherwise.'));
+  if(p.style.includes('handsoff'))lines.push(L2('Otthagyhatós: kevés aktív munka (befűszerezem, összekeverem, felteszem vagy beteszem a sütőbe, és magától elkészül) – a teljes idő lehet hosszabb. Mindegyiknél add meg az aktív és a teljes időt.','Hands-off: little active work (season, mix, put on the hob or in the oven and it cooks itself) – total time can be longer. Give active and total time for each.'));
+  lines.push(kind==='ideas'?L2('Adj 10 receptötletet: 5 melegen és 5 hidegen fogyasztható ételt; legyen köztük gyors, akár főzés nélkül elkészíthető is. Mindegyikhez: rövid leírás, fő hozzávalók, aktív és teljes idő, becsült kcal és makrók adagonként. Részletes receptet csak akkor írj, ha kérem.','Give me 10 recipe ideas: 5 served warm and 5 served cold, including some quick or no-cook ones. For each: a short description, main ingredients, active and total time, estimated kcal and macros per serving. Only write a full recipe if I ask.'):kind==='rest'?L2('Javasolj 2–3 lehetőséget a nap hátralévő részére, hogy a napi keretbe és a makrókba beleférjek.','Suggest 2–3 options for the rest of the day that fit my daily target and macros.'):kind==='day'?L2('Állíts össze egy teljes napi menüt receptekkel.','Put together a full daily menu with recipes.'):L2('Állíts össze egy 7 napos menüt receptekkel és bevásárlólistával.','Put together a 7-day menu with recipes and a shopping list.'));
   return lines.join('\n');
 }
 function askMenu(kind){if(!targets().kcal){toast('Előbb töltsd ki a profilodat');return}const txt=menuPrompt(kind),url=S.settings.claudeUrl;
-  openModal(`<h2>${kind==='rest'?'Mit egyek még ma?':kind==='day'?'Napi menü':'Heti menü'}</h2>
+  openModal(`<h2>${kind==='ideas'?'Egyéb receptötletek':kind==='rest'?'Mit egyek még ma?':kind==='day'?'Napi menü':'Heti menü'}</h2>
   <div class="hint" style="margin-top:-4px">Ezt a kérést másolja ki az app a Claude-projektedbe. Beillesztés előtt átírhatod.</div>
   <textarea id="menuText" rows="12" style="width:100%;margin-top:8px;font:13px/1.45 var(--mono)">${esc(txt)}</textarea>
   ${url?'':`<div class="hint">Add meg a Claude-projekt linkjét a Beállítások → Étkezés részben, és a gomb meg is nyitja.</div>`}
@@ -1787,10 +1789,10 @@ function vBody(){
   <details class="morex" ${BODY_X.some(([k])=>e[k]!=null)?'open':''}><summary>További testméretek (cm)</summary><div class="grid2" style="margin-top:4px">${BODY_X.map(([k,l,id])=>{const lastX=[...sorted].reverse().find(b=>b[k]!=null);return `<div><label for="${id}">${l}</label><input id="${id}" type="text" inputmode="decimal" autocomplete="off" value="${hu(e[k])}" placeholder="${lastX?hu(lastX[k]):''}"></div>`}).join('')}</div></details>
   <label for="bst">Lépésszám</label><input id="bst" type="number" step="1" min="0" inputmode="numeric" value="${e.steps??''}" placeholder="pl. 8500">
   <div class="row" style="margin-top:14px">${e.date?`<button class="btn d" data-click="delBody('${e.date}')">${I('trash-2','sm')} Törlés</button>`:''}<span class="sp"></span><button class="btn p" data-click="saveBody()">${I('save','sm')} ${e.date?'Frissítés':'Mentés'}</button></div></div>
-  <div class="card"><div class="row" style="flex-wrap:nowrap"><h2 style="flex:1;margin:0">Egészség app</h2><button class="btn sm ico" data-click="stepsHelp()" aria-label="Súgó: lépések átvétele">${I('circle-help','sm')}</button></div>
+  ${IS_IOS?`  <div class="card"><div class="row" style="flex-wrap:nowrap"><h2 style="flex:1;margin:0">Egészség app</h2><button class="btn sm ico" data-click="stepsHelp()" aria-label="Súgó: lépések átvétele">${I('circle-help','sm')}</button></div>
   <div class="row" style="margin-top:10px;flex-wrap:nowrap"><button class="btn sm p" style="flex:1" data-click="openHealthFile()">${I('folder-open','sm')} Fájl</button><button class="btn sm" style="flex:1" data-click="pasteSteps()">${I('clipboard-paste','sm')} Beillesztés</button><input type="file" id="impHealth" accept=".txt,.csv,text/plain,text/csv" style="display:none" data-change="importHealthFile(this)"></div>
   <div class="hint" style="margin:6px 0 10px">Lépésszám, testsúly és testzsír az iPhone Egészség appjából, Parancsok segítségével (leírás a ? gomb alatt) – vagy rögzítsd kézzel fent.</div>
-</div>
+</div>`:''}
   <h3 style="margin:16px 2px 10px">Testsúly</h3>
   <div class="grid3" style="margin-bottom:8px">${stat('Utolsó súly',lastW?fmtF(lastW.weight)+' kg':null)}${stat('7 napos átlag',ws.length?fmtF(avgLast(ws,7))+' kg':null)}${stat('Δ 30 nap',d30==null?null:sgn(d30)+' kg',dcls(d30))}</div>
   <div class="grid3" style="margin-bottom:12px">${trendStat('Trend 14 nap',lastDays(ws,14),'kg/hét')}${trendStat('Trend 30 nap',lastDays(ws,30),'kg/hét')}${trendStat('Trend 90 nap',lastDays(ws,90),'kg/hét')}</div>
