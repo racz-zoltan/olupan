@@ -1042,5 +1042,9 @@
  "Mi van kéznél?": "What do you have at hand?",
  "Hol vagy, mit tudsz venni? (nem kötelező)": "Where are you, what can you buy? (optional)",
  "Legalább az egyiket töltsd ki: Claude csak ebből javasol, a mai maradék kereted szerint.": "Fill in at least one: Claude only suggests from this, within what’s left of today’s target.",
- "Írd be, mi van kéznél, vagy hol vagy": "Enter what you have at hand or where you are"
+ "Írd be, mi van kéznél, vagy hol vagy": "Enter what you have at hand or where you are",
+ "A Megnyitás gomb új böngészőlapon nyitja meg a projektet – itt cserélheted az utasítást vagy a receptfájlt.": "The Open button opens the project in a new browser tab – that’s where you can replace the instructions or the recipe file.",
+ "Nyisd meg a Claude-ot a böngészőben, jelentkezz be (vagy regisztrálj), hozz létre egy projektet, és másold be ide a linkjét a címsorból.": "Open Claude in your browser, sign in (or sign up), create a project and paste its link from the address bar here.",
+ "Claude megnyitása (claude.ai)": "Open Claude (claude.ai)",
+ "Claude-projekt megnyitása": "Open Claude project"
 }

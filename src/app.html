@@ -1166,7 +1166,7 @@ function syncWake(){if(S.active&&S.settings.wakeLock!==false)wakeOn();else if(WL
 function updWakeUI(){const el=$('#wakeInd');if(el)el.hidden=!WL}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncWake()});
 document.addEventListener('pointerdown',()=>{if(S.active&&!WL)syncWake()},{passive:true});
-function setClaudeUrl(v){v=String(v||'').trim();if(v&&!/^https:\/\/claude\.ai\/[\w\-./?=&#%~]*$/.test(v)){toast('Csak https://claude.ai/ kezdetű link adható meg');render();return}S.settings.claudeUrl=v||null;save();toast(v?'Link mentve':'Link törölve')}
+function setClaudeUrl(v){v=String(v||'').trim();if(v&&!/^https:\/\/claude\.ai\/[\w\-./?=&#%~]*$/.test(v)){toast('Csak https://claude.ai/ kezdetű link adható meg');render();return}S.settings.claudeUrl=v||null;save();{const y=scrollY;render();scrollTo(0,y)}toast(v?'Link mentve':'Link törölve')}
 function setStepGoal(v){S.settings.stepGoal=Math.max(0,Math.min(100000,parseInt(v)||0));save();toast('Mentve')}
 function setWake(v){S.settings.wakeLock=v;save();render()}
 function setSound(v){S.settings.sound=v;save();render();if(v)chime(v)}
@@ -2234,8 +2234,9 @@ function vMore(){
 `}
   if(setSub==='food')return vFoodPrefs()+`<div class="card">
   <label for="claudeurl">Claude-projekt linkje (étkezésnapló)</label>
-  <input id="claudeurl" type="url" inputmode="url" autocomplete="off" value="${esc(S.settings.claudeUrl||'')}" placeholder="https://claude.ai/project/…" data-change="setClaudeUrl(this.value)">
-  <div class="hint">A claude.ai-on nyisd meg a projektet, és másold be a címsorból. Az Étkezés oldalon a „Claude” gomb ezt nyitja meg új böngészőlapon.${targets().kcal?'':' Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.'}</div>
+  <div class="row" style="flex-wrap:nowrap;gap:8px"><input id="claudeurl" style="flex:1;min-width:0" type="url" inputmode="url" autocomplete="off" value="${esc(S.settings.claudeUrl||'')}" placeholder="https://claude.ai/project/…" data-change="setClaudeUrl(this.value)">${S.settings.claudeUrl?`<a class="btn" href="${esc(S.settings.claudeUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Claude-projekt megnyitása">${I('external-link','sm')} Megnyitás</a>`:''}</div>
+  <div class="hint">${S.settings.claudeUrl?'A Megnyitás gomb új böngészőlapon nyitja meg a projektet – itt cserélheted az utasítást vagy a receptfájlt.':'Nyisd meg a Claude-ot a böngészőben, jelentkezz be (vagy regisztrálj), hozz létre egy projektet, és másold be ide a linkjét a címsorból.'}${targets().kcal?'':' Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.'}</div>
+  ${S.settings.claudeUrl?'':`<a class="btn block" style="margin-top:10px" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} Claude megnyitása (claude.ai)</a>`}
   <div class="row" style="margin-top:12px"><button class="btn" data-click="foodHelp()" ${targets().kcal?'':'disabled'}>${I('external-link','sm')} Claude-projekt útmutató</button><button class="btn" data-click="downloadRecipes()">${I('download','sm')} Receptfájl letöltése</button></div></div>`;
   if(setSub==='data')return storeCard()+`
   <div class="card"><h2>Mentés</h2><div class="hint" style="margin:0 0 12px">Minden adat csak ezen az eszközön, a böngésző helyi tárhelyén van – semmi nem kerül szerverre. A <b>Mentés / megosztás</b> a telefon megosztás menüjét nyitja meg: innen menthetsz Google Drive-ra, a Fájlok appba vagy iCloud Drive-ra. Visszatöltés: <b>Import</b>, majd a fájl kiválasztása (a Drive is megjelenik a fájlválasztóban, ha telepítve van).</div>

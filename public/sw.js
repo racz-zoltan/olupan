@@ -1,5 +1,5 @@
 /* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
-const CACHE='olupan-e52ee7d9d892';
+const CACHE='olupan-672bdd26a234';
 const CORE=["/", "/index.html", "/manifest.webmanifest", "/utmutato.html", "/guide.html", "/adatvedelem.html", "/privacy.html", "/jogi-nyilatkozat.html", "/disclaimer.html", "/assets/app.css", "/assets/app.js", "/assets/apple-touch-icon.png", "/assets/favicon.svg", "/assets/fonts/bricolage-grotesque-600-hu.woff2", "/assets/fonts/bricolage-grotesque-600.woff2", "/assets/fonts/instrument-sans-400-hu.woff2", "/assets/fonts/instrument-sans-400.woff2", "/assets/fonts/instrument-sans-500-hu.woff2", "/assets/fonts/instrument-sans-500.woff2", "/assets/fonts/instrument-sans-600-hu.woff2", "/assets/fonts/instrument-sans-600.woff2", "/assets/fonts/jetbrains-mono-400-hu.woff2", "/assets/fonts/jetbrains-mono-400.woff2", "/assets/fonts/jetbrains-mono-500-hu.woff2", "/assets/fonts/jetbrains-mono-500.woff2", "/assets/fonts/jetbrains-mono-600-hu.woff2", "/assets/fonts/jetbrains-mono-600.woff2", "/assets/icon-192.png", "/assets/icon-32.png", "/assets/icon-512.png", "/assets/icon-maskable-512.png", "/assets/legal.css", "/assets/legal.js"];
 self.addEventListener('install',e=>e.waitUntil((async()=>{
   const c=await caches.open(CACHE);
