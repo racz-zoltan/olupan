@@ -1044,7 +1044,6 @@
  "Legalább az egyiket töltsd ki: Claude csak ebből javasol, a mai maradék kereted szerint.": "Fill in at least one: Claude only suggests from this, within what’s left of today’s target.",
  "Írd be, mi van kéznél, vagy hol vagy": "Enter what you have at hand or where you are",
  "A Megnyitás gomb új böngészőlapon nyitja meg a projektet – itt cserélheted az utasítást vagy a receptfájlt.": "The Open button opens the project in a new browser tab – that’s where you can replace the instructions or the recipe file.",
- "Nyisd meg a Claude-ot a böngészőben, jelentkezz be (vagy regisztrálj), hozz létre egy projektet, és másold be ide a linkjét a címsorból.": "Open Claude in your browser, sign in (or sign up), create a project and paste its link from the address bar here.",
  "Claude megnyitása (claude.ai)": "Open Claude (claude.ai)",
  "Claude-projekt megnyitása": "Open Claude project",
  "Elsődleges izomcsoport": "Primary muscle group",
@@ -1053,5 +1052,12 @@
  "Bemelegítés": "Warm-up",
  "Pluszsúly": "Added weight",
  "Idő (mp)": "Time (s)",
- "Mp": "Sec"
+ "Mp": "Sec",
+ "Nyisd meg a Claude-ot ugyanabban a böngészőben, amelyben az Olupant használod (ne a Claude appot – ott nincs kimásolható webcím), jelentkezz be vagy regisztrálj, hozz létre egy projektet, és másold be ide a linkjét a címsorból.": "Open Claude in the same browser you use Olupan in (not the Claude app – it has no web address to copy), sign in or sign up, create a project and paste its link from the address bar here.",
+ "Testsúly (kg)": "Body weight (kg)",
+ "Testzsír % (nem kötelező)": "Body fat % (optional)",
+ "Napi lépéscél (nem kötelező)": "Daily step goal (optional)",
+ "Saját napi kalóriakeret (kcal)": "Own daily calorie target (kcal)",
+ "Ha kitöltöd, a javasolt keret helyett ezzel számol az app; törölve visszaáll a javasoltra. Legalább 1200 kcal; a javasoltnál jóval alacsonyabb értéket csak orvossal vagy dietetikussal egyeztetve állíts be.": "If you fill it in, the app uses it instead of the suggested target; clear it to go back to the suggestion. At least 1200 kcal; only set a value well below the suggestion after consulting a doctor or dietitian.",
+ "Tájékoztató becslés, nem orvosi tanács – egészségügyi állapot esetén egyeztesd szakemberrel.": "An indicative estimate, not medical advice – if you have a health condition, check with a professional."
 }
