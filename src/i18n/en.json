@@ -1035,5 +1035,12 @@
  "Bemelegítő": "Warm-up",
  "Egyéb receptötletek": "Other recipe ideas",
  "Konyha": "Cuisine",
- "Napi és heti menünél az app 1–2 konyhát választ ki véletlenszerűen a bejelöltek közül, hogy az alapanyagok átfedjenek. A receptötleteknél mindet használja.": "For daily and weekly menus the app randomly picks 1–2 of the selected cuisines so the ingredients overlap. Recipe ideas use all of them."
+ "Napi és heti menünél az app 1–2 konyhát választ ki véletlenszerűen a bejelöltek közül, hogy az alapanyagok átfedjenek. A receptötleteknél mindet használja.": "For daily and weekly menus the app randomly picks 1–2 of the selected cuisines so the ingredients overlap. Recipe ideas use all of them.",
+ "Receptötletek": "Recipe ideas",
+ "Főzés hetente (heti menü)": "Cooking per week (weekly menu)",
+ "A heti menü ennyi főzésből ad főtt ételt minden napra – ugyanaz az étel több napon is előjöhet.": "The weekly menu gives a cooked meal for every day from this many cooking sessions – the same dish may come up on several days.",
+ "Mi van kéznél?": "What do you have at hand?",
+ "Hol vagy, mit tudsz venni? (nem kötelező)": "Where are you, what can you buy? (optional)",
+ "Legalább az egyiket töltsd ki: Claude csak ebből javasol, a mai maradék kereted szerint.": "Fill in at least one: Claude only suggests from this, within what’s left of today’s target.",
+ "Írd be, mi van kéznél, vagy hol vagy": "Enter what you have at hand or where you are"
 }
