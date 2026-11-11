@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="referrer" content="no-referrer">
 <title>Olupan</title>
+<meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgdmlld0JveD0iMCAwIDY0IDY0Ij48ZGVmcy8+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMxYzIxMjgiLz48ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2LjY4IDQuNDgpIHNjYWxlKDAuODYwMCkiPjxtYXNrIGlkPSJtIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSItOCIgeT0iLTgiIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCI+PHJlY3QgeD0iLTgiIHk9Ii04IiB3aWR0aD0iODAiIGhlaWdodD0iODAiIGZpbGw9IiNmZmYiLz48cmVjdCB4PSI1LjUiIHk9IjQiIHdpZHRoPSIyMSIgaGVpZ2h0PSIxMiIgcng9IjQiIGZpbGw9IiMwMDAiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIzIi8+PHJlY3QgeD0iNS41IiB5PSI0OCIgd2lkdGg9IjIxIiBoZWlnaHQ9IjEyIiByeD0iNCIgZmlsbD0iIzAwMCIgc3Ryb2tlPSIjMDAwIiBzdHJva2Utd2lkdGg9IjMiLz48L21hc2s+PGcgbWFzaz0idXJsKCNtKSI+PHBhdGggZD0iTTE2IDEwSDQ3YTUgNSAwIDAgMSA1IDV2MzRhNSA1IDAgMCAxLTUgNUgxNiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZTJlOGYwIiBzdHJva2Utd2lkdGg9IjUuMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBhdGggZD0iTTI1IDI0aDE3TTI1IDMyaDExIiBzdHJva2U9IiNlMmU4ZjAiIHN0cm9rZS13aWR0aD0iNS4yIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PHJlY3QgeD0iNS41IiB5PSI0IiB3aWR0aD0iMjEiIGhlaWdodD0iMTIiIHJ4PSI0IiBmaWxsPSIjMjJkM2VlIiAvPjxyZWN0IHg9IjUuNSIgeT0iNDgiIHdpZHRoPSIyMSIgaGVpZ2h0PSIxMiIgcng9IjQiIGZpbGw9IiMyMmQzZWUiIC8+PHBhdGggZD0iTTE2IDEydjQwIiBzdHJva2U9IiMyMmQzZWUiIHN0cm9rZS13aWR0aD0iNS43IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L2c+PC9zdmc+">
 <!-- Ikonok: Lucide (ISC licenc) · Betűtípusok: Instrument Sans, Bricolage Grotesque, JetBrains Mono (SIL OFL 1.1) -->
 <style>
@@ -333,7 +334,7 @@ let trObs=null;
 function trWatch(){if(trObs||!window.MutationObserver)return;trObs=new MutationObserver(ms=>{if(LANG!=='en')return;for(const m of ms){
   if(m.type==='childList')m.addedNodes.forEach(trNode);else if(m.type==='characterData'){if(!trSkip(m.target.parentElement))trTxt(m.target)}else if(m.target.nodeType===1&&!trSkip(m.target))trEl(m.target)}});
   trObs.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:TRA})}
-function applyLang(){LANG=S.settings.lang||detectLang();document.documentElement.lang=LANG;const nm='Olupan';document.title=nm;
+function applyLang(){LANG=S.settings.lang||detectLang();document.documentElement.lang=LANG;const nm='Olupan';document.title=nm+(LANG==='en'?' – offline workout and food log':' – offline edzésnapló és étkezésnapló');
   const am=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(am)am.content=nm;trWatch();trNode(document.body)}
 function setLang(v){if(!['hu','en'].includes(v))return;S.settings.lang=v;save();location.reload()}
 const fmtF=(n,d=1)=>n==null||isNaN(n)?'–':(+n).toLocaleString(LOC(),{minimumFractionDigits:d,maximumFractionDigits:d});

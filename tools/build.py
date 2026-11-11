@@ -69,10 +69,23 @@ for fam, w, pkg in FONTS:
 # ========== 1. offline egyfájlos változat ==========
 single = src.replace("/*@FONTS@*/", "\n".join(ff_inline)).replace("/*@BOOT@*/", "")
 fav = base64.b64encode((ICONDIR / "favicon.svg").read_bytes()).decode()
-single = single.replace("</title>", f'</title>\n<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,{fav}">', 1)
+single = single.replace("</title>", f'</title>\n<meta name="robots" content="noindex">\n<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,{fav}">', 1)
 (PUB / "olupan-offline.html").write_text(single, encoding="utf-8")
 
 # ========== 2. a webes változat ==========
+LDJSON = json.dumps({"@context": "https://schema.org", "@type": "WebApplication", "name": "Olupan", "url": "https://olupan.com/",
+    "applicationCategory": "HealthApplication", "operatingSystem": "iOS, Android, Windows, macOS, Linux (böngésző)",
+    "inLanguage": ["hu", "en"], "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "HUF"},
+    "description": "Offline edzésnapló, étkezés- és testadatnapló regisztráció nélkül; minden adat a készüléken marad. Offline workout, food and body log – no account, data stays on your device.",
+    "featureList": ["Edzéssablonok és szuperszettek", "Bemelegítő sorozatok, tárcsakalkulátor", "Személyes rekordok és erőtrendek", "Kalória- és makrókövetés", "Testsúly, testméretek, lépések", "Offline működés, adatexport"],
+    "author": {"@type": "Person", "name": "Rácz Zoltán"}}, ensure_ascii=False).replace("</", "<\\/")
+NOSCRIPT = """<main></main>
+<noscript><section style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui,sans-serif;line-height:1.5">
+<h2>Olupan – offline edzésnapló</h2>
+<p>Ingyenes edzés-, étkezés- és testadatnapló telefonra és számítógépre: edzéssablonok, sorozatok, személyes rekordok, kalória és makrók, testsúly és lépések. Regisztráció nélkül, internet nélkül is működik, minden adat a készüléken marad.</p>
+<p lang="en">Free offline workout, food and body log – templates, sets, personal records, calories and macros, body weight and steps. No account; your data stays on your device.</p>
+<p>Az app használatához kapcsold be a JavaScriptet. · <a href="/utmutato.html">Felhasználói útmutató</a> · <a href="/guide.html" lang="en">User guide</a> · <a href="/adatvedelem.html">Adatkezelés</a> · <a href="/privacy.html" lang="en">Privacy</a></p>
+</section></noscript>"""
 css_d = css.replace("/*@FONTS@*/", "\n".join(ff_files)).encode()
 boot = """if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
   const had=!!navigator.serviceWorker.controller;
@@ -84,9 +97,16 @@ js_d = js.replace("/*@BOOT@*/", boot).encode()
 for f in ICONDIR.iterdir(): shutil.copy(f, A / f.name)
 
 head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
-<meta name="description" content="Olupan – offline edzésnapló: sablonok, testadatok, étkezés, naptár, erőtrendek és személyes rekordok. Minden adat a készüléken marad.">
+<meta name="google-site-verification" content="Re288jc6stZsam8EJVN-Ufx_lNHClPDe0EuPK0cbYYQ">
+<meta name="description" content="Olupan – ingyenes, offline edzésnapló, étkezés- és testadatnapló telefonra. Edzéssablonok, sorozatok, rekordok, kalória és makrók, testsúly, lépések. Regisztráció nélkül, minden adat a készüléken marad.">
 <link rel="canonical" href="https://olupan.com/">
-<meta property="og:title" content="Olupan">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Olupan">
+<meta property="og:locale" content="hu_HU">
+<meta property="og:locale:alternate" content="en_GB">
+<meta property="og:title" content="Olupan – offline edzésnapló">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{LDJSON}</script>
 <meta property="og:description" content="Offline edzésnapló – minden adat a készüléken marad. Offline workout log – your data stays on your device.">
 <meta property="og:url" content="https://olupan.com/">
 <meta property="og:image" content="https://olupan.com/assets/icon-512.png">
@@ -99,6 +119,8 @@ head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self
 <link rel="preload" href="/assets/fonts/instrument-sans-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 <link rel="stylesheet" href="/assets/app.css" integrity="{sri(css_d)}" crossorigin="anonymous">'''
 html = re.sub(r"<style>.*?</style>", lambda m: head, src, count=1, flags=re.S)
+html = html.replace("<title>Olupan</title>", "<title>Olupan – offline edzésnapló és étkezésnapló</title>", 1)
+html = html.replace("<main></main>", NOSCRIPT, 1)
 html = re.sub(r"<script>.*?</script>", lambda m: f'<script src="/assets/app.js" integrity="{sri(js_d)}" crossorigin="anonymous"></script>', html, count=1, flags=re.S)
 html = html.replace('<meta name="apple-mobile-web-app-capable" content="yes">\n', '')
 (PUB / "index.html").write_text(html, encoding="utf-8")
@@ -143,7 +165,7 @@ for key, langs in DOCS.items():
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 <title>{title} – Olupan</title>
-<meta name="description" content="Olupan – {title}">
+<meta name="description" content="{title} – Olupan, {t("ingyenes offline edzésnapló, étkezés- és testadatnapló. Regisztráció nélkül, minden adat a készüléken marad.", "a free offline workout, food and body log. No account – your data stays on your device.")}">
 <link rel="canonical" href="{cfg["site"]}/{fname}">
 <link rel="alternate" hreflang="{other}" href="{cfg["site"]}/{DOCS[key][other][0]}">
 <link rel="alternate" hreflang="{lang}" href="{cfg["site"]}/{fname}">
@@ -173,6 +195,15 @@ for key, langs in DOCS.items():
 '''
         (PUB / fname).write_text(page, encoding="utf-8"); PAGES.append("/" + fname)
 
+site = cfg["site"].rstrip("/")
+(PUB / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {site}/sitemap.xml\n", encoding="utf-8")
+sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">', f"  <url><loc>{site}/</loc></url>"]
+for key, langs in DOCS.items():
+    for lang, (fname, _) in langs.items():
+        alts = "".join(f'<xhtml:link rel="alternate" hreflang="{l}" href="{site}/{f}"/>' for l, (f, _) in langs.items())
+        sm.append(f"  <url><loc>{site}/{fname}</loc>{alts}</url>")
+sm.append("</urlset>")
+(PUB / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
 core = ["/", "/index.html", "/manifest.webmanifest"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file())
 ver = hashlib.sha256(b"".join((PUB / p.lstrip("/")).read_bytes() for p in core if p != "/")).hexdigest()[:12]
 sw = f"""/* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */

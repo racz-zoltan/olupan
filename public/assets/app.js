@@ -40,7 +40,7 @@ let trObs=null;
 function trWatch(){if(trObs||!window.MutationObserver)return;trObs=new MutationObserver(ms=>{if(LANG!=='en')return;for(const m of ms){
   if(m.type==='childList')m.addedNodes.forEach(trNode);else if(m.type==='characterData'){if(!trSkip(m.target.parentElement))trTxt(m.target)}else if(m.target.nodeType===1&&!trSkip(m.target))trEl(m.target)}});
   trObs.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:TRA})}
-function applyLang(){LANG=S.settings.lang||detectLang();document.documentElement.lang=LANG;const nm='Olupan';document.title=nm;
+function applyLang(){LANG=S.settings.lang||detectLang();document.documentElement.lang=LANG;const nm='Olupan';document.title=nm+(LANG==='en'?' – offline workout and food log':' – offline edzésnapló és étkezésnapló');
   const am=document.querySelector('meta[name="apple-mobile-web-app-title"]');if(am)am.content=nm;trWatch();trNode(document.body)}
 function setLang(v){if(!['hu','en'].includes(v))return;S.settings.lang=v;save();location.reload()}
 const fmtF=(n,d=1)=>n==null||isNaN(n)?'–':(+n).toLocaleString(LOC(),{minimumFractionDigits:d,maximumFractionDigits:d});
