@@ -1033,5 +1033,7 @@
  "Jelöld be, ami van. Ha bármit bejelölsz, Claude csak ezekkel számol, és a többit nem használja.": "Select what you have. If you select anything, Claude only plans with these and leaves out the rest.",
  "Egyéb eszköz (nem kötelező)": "Other equipment (optional)",
  "Bemelegítő": "Warm-up",
- "Egyéb receptötletek": "Other recipe ideas"
+ "Egyéb receptötletek": "Other recipe ideas",
+ "Konyha": "Cuisine",
+ "Napi és heti menünél az app 1–2 konyhát választ ki véletlenszerűen a bejelöltek közül, hogy az alapanyagok átfedjenek. A receptötleteknél mindet használja.": "For daily and weekly menus the app randomly picks 1–2 of the selected cuisines so the ingredients overlap. Recipe ideas use all of them."
 }
