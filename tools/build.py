@@ -188,7 +188,7 @@ for key, langs in DOCS.items():
 <html lang="{lang}">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 <title>{title} – Olupan</title>
 <meta name="description" content="{title} – Olupan, {t("ingyenes offline edzésnapló, étkezés- és testadatnapló. Regisztráció nélkül, minden adat a készüléken marad.", "a free offline workout, food and body log. No account – your data stays on your device.")}">

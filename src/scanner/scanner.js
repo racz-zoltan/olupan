@@ -38,5 +38,5 @@ async function loop(){if(done||!stream)return;
   if(!busy&&v.readyState>=2){busy=true;try{const codes=(await scan()).map(c=>String(c).replace(/\D/g,'')).filter(valid);
       if(codes.length){const c=codes[0];hits=c===last?hits+1:1;last=c;if(hits>=2||det)return finish(c)}}catch(e){}busy=false}
   timer=setTimeout(loop,det?120:180)}
-start();
+post({type:'ready'});start();
 })();

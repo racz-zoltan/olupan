@@ -2,7 +2,7 @@
 <html lang="hu">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="theme-color" content="#1c2128" id="themeColor">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="referrer" content="no-referrer">
@@ -134,6 +134,9 @@ tr.fl .setno{background:color-mix(in srgb,var(--kj-red) 14%,transparent);border-
 .ftile .fti{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--kj-blue) 16%,transparent);color:var(--kj-blue-ink)}
 .ftile:active{transform:scale(.97)}.ftile.dim{opacity:.55}
 .steps{margin:8px 0 6px;padding-left:20px;line-height:1.45}.steps li{margin:4px 0}.stack{display:flex;flex-direction:column;gap:8px}
+.mftabs{display:flex;gap:4px;padding:3px;border-radius:12px;background:var(--kj-surface);border:1px solid var(--kj-border)}.mftabs button{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 4px;border:0;border-radius:9px;background:transparent;color:var(--kj-muted);font:600 14px var(--ui);cursor:pointer;white-space:nowrap}.mftabs button.on{background:var(--kj-sheet);color:var(--kj-text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mfsel{padding:12px;border:1px solid var(--kj-blue-line);border-radius:12px}.mfsel .mftot{margin-top:10px}.mfadded{margin-top:12px;font-size:13.5px;color:var(--kj-green-line,#16a34a)}
+.scanx{position:absolute;top:calc(10px + env(safe-area-inset-top));left:10px;z-index:2;height:44px;padding:0 14px;border-radius:22px;border:0;background:rgba(0,0,0,.6);color:#fff;font:600 15px var(--ui)}.scanfb{position:absolute;inset:auto 0 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:var(--kj-sheet);color:var(--kj-text)}
 .mftot{margin-top:12px;padding:10px 12px;border:1px solid var(--kj-border);border-radius:10px;background:var(--kj-surface)}.mfgrid input{min-width:0}.mfsrc{margin-top:14px;text-align:center;font-size:11px;color:var(--kj-muted);opacity:.7}.tag{font:500 11px var(--ui);color:var(--kj-blue-ink);border:1px solid var(--kj-blue-line);border-radius:6px;padding:0 5px;margin-left:4px}
 .qrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--kj-border)}.qrow>span:first-child{flex:1;min-width:0}
 .sstag{display:inline-flex;align-items:center;gap:4px;margin-bottom:2px;font:600 12px var(--ui);color:var(--kj-blue-line);text-transform:uppercase;letter-spacing:.05em}
@@ -204,7 +207,7 @@ svg .ttx{fill:var(--kj-text);font:500 15px var(--mono)}
 .dlg{z-index:25;align-items:center;padding:16px}
 .modal.on,.dlg.on{display:flex}
 .sheet,.dlgbox{background:var(--kj-sheet);border:1px solid var(--kj-border);box-shadow:0 30px 60px -20px rgba(2,6,23,.6)}
-.sheet{border-radius:16px 16px 0 0;width:100%;max-width:640px;max-height:88vh;overflow:auto;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
+.sheet{border-radius:16px 16px 0 0;width:100%;max-width:640px;max-height:88vh;max-height:88dvh;overflow:auto;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 .dlgbox{border-radius:16px;width:100%;max-width:420px;padding:20px;max-height:86vh;overflow:auto}
 .dlgbox p{margin:4px 0 16px;color:var(--kj-text)}
 .dlgbox .row.end{margin-top:20px}
@@ -361,9 +364,9 @@ const DEF_EX=[
 ['Katonai nyomás (rúd)','Váll'],['Vállból nyomás (kézisúlyzó)','Váll'],['Oldalemelés (kézisúlyzó)','Váll'],['Face pull (kábel)','Váll'],
 ['Bicepsz hajlítás (kézisúlyzó)','Kar'],['Bicepsz hajlítás (rúd)','Kar'],['Kalapács hajlítás','Kar'],['Tricepsz letolás (kábel)','Kar'],['Francia nyomás','Kar'],
 ['Hasprés','Törzs'],['Lábemelés függésben','Törzs'],['Hasgörgő','Törzs'],
-['KB swing (kétkezes)','Kettlebell'],['KB swing (egykezes)','Kettlebell'],['KB goblet guggolás','Kettlebell'],['KB török felállás (get-up)','Kettlebell'],
-['KB clean','Kettlebell'],['KB clean & press','Kettlebell'],['KB snatch','Kettlebell'],['KB nyomás (egykezes)','Kettlebell'],['KB evezés','Kettlebell'],
-['KB felhúzás','Kettlebell'],['KB front rack guggolás','Kettlebell'],['KB halo','Kettlebell'],['KB windmill','Kettlebell'],['KB thruster','Kettlebell'],['KB high pull','Kettlebell'],
+['Kettlebell swing (kétkezes)','Kettlebell'],['Kettlebell swing (egykezes)','Kettlebell'],['Kettlebell goblet guggolás','Kettlebell'],['Kettlebell török felállás (get-up)','Kettlebell'],
+['Kettlebell clean','Kettlebell'],['Kettlebell clean & press','Kettlebell'],['Kettlebell snatch','Kettlebell'],['Kettlebell nyomás (egykezes)','Kettlebell'],['Kettlebell evezés','Kettlebell'],
+['Kettlebell felhúzás','Kettlebell'],['Kettlebell front rack guggolás','Kettlebell'],['Kettlebell halo','Kettlebell'],['Kettlebell windmill','Kettlebell'],['Kettlebell thruster','Kettlebell'],['Kettlebell high pull','Kettlebell'],
 ['Fekvőtámasz','Saját testsúly'],['Pike fekvőtámasz','Saját testsúly'],['Ausztrál húzódzkodás','Saját testsúly'],['Guggolás (saját testsúly)','Saját testsúly'],
 ['Kitörés (saját testsúly)','Saját testsúly'],['Bolgár guggolás (saját testsúly)','Saját testsúly'],['Csípőemelés (saját testsúly)','Saját testsúly'],
 ['Plank (mp)','Saját testsúly'],['Hegymászó','Saját testsúly'],['Burpee','Saját testsúly'],['Superman','Saját testsúly'],
@@ -377,9 +380,9 @@ const DEF_TPL=[
  ['Push – mell, váll, tricepsz',[['Fekvenyomás (rúd)',3],['Ferde fekvenyomás (kézisúlyzó)',3],['Katonai nyomás (rúd)',3],['Oldalemelés (kézisúlyzó)',3],['Tricepsz letolás (kábel)',3]]],
  ['Pull – hát, bicepsz',[['Felhúzás (rúd)',3],['Evezés (rúd)',3],['Húzódzkodás',3],['Mellhez húzás (kábel)',3],['Bicepsz hajlítás (kézisúlyzó)',3]]],
  ['Láb',[['Guggolás (rúd)',3],['Román felhúzás (rúd)',3],['Lábtolás (gép)',3],['Kitörés (kézisúlyzó)',3],['Vádliemelés (gép)',3]]],
- ['Kettlebell – swing & get-up',[['KB swing (egykezes)',10],['KB török felállás (get-up)',5]]],
- ['Kettlebell – teljes test',[['KB goblet guggolás',3],['KB clean & press',3],['KB evezés',3],['KB swing (kétkezes)',3],['KB halo',2]]],
- ['Kettlebell – ballisztikus',[['KB swing (kétkezes)',5],['KB clean',4],['KB snatch',4],['KB front rack guggolás',3],['KB windmill',2]]],
+ ['Kettlebell – swing & get-up',[['Kettlebell swing (egykezes)',10],['Kettlebell török felállás (get-up)',5]]],
+ ['Kettlebell – teljes test',[['Kettlebell goblet guggolás',3],['Kettlebell clean & press',3],['Kettlebell evezés',3],['Kettlebell swing (kétkezes)',3],['Kettlebell halo',2]]],
+ ['Kettlebell – ballisztikus',[['Kettlebell swing (kétkezes)',5],['Kettlebell clean',4],['Kettlebell snatch',4],['Kettlebell front rack guggolás',3],['Kettlebell windmill',2]]],
  ['Saját testsúly – teljes test',[['Fekvőtámasz',3],['Guggolás (saját testsúly)',3],['Ausztrál húzódzkodás',3],['Kitörés (saját testsúly)',3],['Plank (mp)',3]]],
  ['Saját testsúly – felsőtest',[['Húzódzkodás',4],['Fekvőtámasz',4],['Tolódzkodás',3],['Pike fekvőtámasz',3],['Ausztrál húzódzkodás',3]]],
  ['Saját testsúly – láb és törzs',[['Bolgár guggolás (saját testsúly)',3],['Guggolás (saját testsúly)',3],['Csípőemelés (saját testsúly)',3],['Hegymászó',3],['Lábemelés függésben',3]]],
@@ -401,6 +404,8 @@ const exKind=id=>exById(id)?.kind||'strength';
 const exGroup=e=>e.kind==='cardio'?L('Kardió','Cardio'):e.mu?muName(e.mu):L('Besorolatlan','Unassigned');
 const groupSort=(a,b)=>{const o=[...MUSCLES.map(m=>LANG==='en'?m[2]:m[1]),L('Kardió','Cardio'),L('Besorolatlan','Unassigned')];return o.indexOf(a)-o.indexOf(b)};
 /* Beépített gyakorlatok besorolása: [elsődleges, [másodlagos], eszköz, mérés] */
+/* A korábbi „KB …” beépített gyakorlatnevek átnevezése „Kettlebell …”-re (régi mentéseknél is) */
+const KB_RENAME=new Set(['swing (kétkezes)','swing (egykezes)','goblet guggolás','török felállás (get-up)','clean','clean & press','snatch','nyomás (egykezes)','evezés','felhúzás','front rack guggolás','halo','windmill','thruster','high pull']);
 const EX_META={
 'Fekvenyomás (rúd)':['chest',['triceps','shoulders'],'bar'],'Ferde fekvenyomás (kézisúlyzó)':['chest',['shoulders','triceps'],'db'],'Fekvenyomás (kézisúlyzó)':['chest',['triceps','shoulders'],'db'],'Tárogatás (kábel)':['chest',[],'mach'],'Tolódzkodás':['chest',['triceps','shoulders'],'bw','reps'],'Padlón nyomás (kézisúlyzó)':['chest',['triceps'],'db'],'Padlón nyomás (rúd)':['chest',['triceps'],'bar'],
 'Felhúzás (rúd)':['back',['glutes','hams'],'bar'],'Evezés (rúd)':['back',['biceps'],'bar'],'Húzódzkodás':['back',['biceps'],'bw','reps'],'Húzódzkodás (fordított fogás)':['back',['biceps'],'bw','reps'],'Mellhez húzás (kábel)':['back',['biceps'],'mach'],'Evezés ülve (kábel)':['back',['biceps'],'mach'],'Evezés (kézisúlyzó)':['back',['biceps'],'db'],
@@ -409,7 +414,7 @@ const EX_META={
 'Katonai nyomás (rúd)':['shoulders',['triceps'],'bar'],'Vállból nyomás (kézisúlyzó)':['shoulders',['triceps'],'db'],'Oldalemelés (kézisúlyzó)':['shoulders',[],'db'],'Face pull (kábel)':['shoulders',['back'],'mach'],
 'Bicepsz hajlítás (kézisúlyzó)':['biceps',[],'db'],'Bicepsz hajlítás (rúd)':['biceps',[],'bar'],'Kalapács hajlítás':['biceps',[],'db'],'Koncentrált bicepszhajlítás (kézisúlyzó)':['biceps',[],'db'],'Tricepsz letolás (kábel)':['triceps',[],'mach'],'Francia nyomás':['triceps',[],'bar'],
 'Hasprés':['core',[],'bw','reps'],'Lábemelés függésben':['core',[],'bw','reps'],'Hasgörgő':['core',[],'other','reps'],'Lábemelés fekve':['core',[],'bw','reps'],'Dead bug':['core',[],'bw','reps'],
-'KB swing (kétkezes)':['glutes',['hams','back'],'kb'],'KB swing (egykezes)':['glutes',['hams','back'],'kb'],'KB goblet guggolás':['quads',['glutes'],'kb'],'KB török felállás (get-up)':['full',['shoulders','core'],'kb'],'KB clean':['full',['glutes','back'],'kb'],'KB clean & press':['shoulders',['glutes','triceps'],'kb'],'KB snatch':['full',['glutes','shoulders'],'kb'],'KB nyomás (egykezes)':['shoulders',['triceps'],'kb'],'KB evezés':['back',['biceps'],'kb'],'KB felhúzás':['hams',['glutes','back'],'kb'],'KB front rack guggolás':['quads',['glutes','core'],'kb'],'KB halo':['shoulders',['core'],'kb'],'KB windmill':['core',['shoulders','hams'],'kb'],'KB thruster':['quads',['shoulders','glutes'],'kb'],'KB high pull':['back',['shoulders','glutes'],'kb'],
+'Kettlebell swing (kétkezes)':['glutes',['hams','back'],'kb'],'Kettlebell swing (egykezes)':['glutes',['hams','back'],'kb'],'Kettlebell goblet guggolás':['quads',['glutes'],'kb'],'Kettlebell török felállás (get-up)':['full',['shoulders','core'],'kb'],'Kettlebell clean':['full',['glutes','back'],'kb'],'Kettlebell clean & press':['shoulders',['glutes','triceps'],'kb'],'Kettlebell snatch':['full',['glutes','shoulders'],'kb'],'Kettlebell nyomás (egykezes)':['shoulders',['triceps'],'kb'],'Kettlebell evezés':['back',['biceps'],'kb'],'Kettlebell felhúzás':['hams',['glutes','back'],'kb'],'Kettlebell front rack guggolás':['quads',['glutes','core'],'kb'],'Kettlebell halo':['shoulders',['core'],'kb'],'Kettlebell windmill':['core',['shoulders','hams'],'kb'],'Kettlebell thruster':['quads',['shoulders','glutes'],'kb'],'Kettlebell high pull':['back',['shoulders','glutes'],'kb'],
 'Fekvőtámasz':['chest',['triceps','shoulders'],'bw','reps'],'Pike fekvőtámasz':['shoulders',['triceps'],'bw','reps'],'Ausztrál húzódzkodás':['back',['biceps'],'bw','reps'],'Guggolás (saját testsúly)':['quads',['glutes'],'bw','reps'],'Kitörés (saját testsúly)':['quads',['glutes'],'bw','reps'],'Bolgár guggolás (saját testsúly)':['quads',['glutes'],'bw','reps'],'Csípőemelés (saját testsúly)':['glutes',['hams'],'bw','reps'],'Plank (mp)':['core',[],'bw','time'],'Hegymászó':['core',['shoulders'],'bw','reps'],'Burpee':['full',[],'bw','reps'],'Superman':['back',['glutes'],'bw','reps'],
 'Terpeszugrás (jumping jack)':['full',[],'bw','reps'],'Guggolásos felugrás':['quads',['glutes','calves'],'bw','reps'],'Magastérd-emelés helyben':['full',['core'],'bw','reps'],'Kitöréses váltóugrás':['quads',['glutes'],'bw','reps']};
 const CAT2MU={'Mell':'chest','Hát':'back','Váll':'shoulders','Láb':'quads','Törzs':'core','Has':'core','Bicepsz':'biceps','Tricepsz':'triceps','Farizom':'glutes','Vádli':'calves'};
@@ -422,7 +427,7 @@ function fillMeta(e){if(e.m)return e;const m=EX_META[e.name];
   e.m=1;return e}
 /* Eszköz szerinti címke: KB = kettlebell, ST = saját testsúly, ET = edzőterem (rúd, gép, kábel), KS = kézisúlyzó (otthon) */
 const BW_NAMES=['Húzódzkodás (fordított fogás)','Húzódzkodás','Tolódzkodás','Hasprés','Lábemelés függésben','Hasgörgő','Lábemelés fekve','Dead bug'];
-function exEq(e){if(!e)return null;const n=e.name;if(e.kind==='cardio')return'KA';if(e.eq){const t={kb:'KB',bw:'ST',bar:'ET',mach:'ET',db:'KS'}[e.eq];if(t)return t}if(e.cat==='Kettlebell'||/^KB /.test(n))return'KB';if(/\((rúd|gép|kábel)\)/.test(n))return'ET';
+function exEq(e){if(!e)return null;const n=e.name;if(e.kind==='cardio')return'KA';if(e.eq){const t={kb:'KB',bw:'ST',bar:'ET',mach:'ET',db:'KS'}[e.eq];if(t)return t}if(e.cat==='Kettlebell'||/^(KB|Kettlebell) /.test(n))return'KB';if(/\((rúd|gép|kábel)\)/.test(n))return'ET';
   if(e.cat==='Saját testsúly'||BW_NAMES.includes(n))return'ST';if(/kézisúlyzó|Kalapács/i.test(n))return'KS';return null}
 const START_TABS=[['workout','Edzés'],['food','Étkezés'],['body','Test'],['history','Naptár'],['stats','Statisztika']];
 const TAGS={ET:['et','Edzőterem'],KS:['ks','Kézisúlyzó (otthon)'],ST:['st','Saját testsúly'],KB:['kb','Kettlebell'],KA:['ka','Kardió']}; // ez a sorrend a sablonlistában is
@@ -431,7 +436,7 @@ function tplKey(t){let eq=t.items.map(i=>exEq(exById(i.exId))).filter(Boolean);i
   if(eq.every(x=>x==='KA'))return'KA';eq=eq.filter(x=>x!=='KA');
   return eq.includes('ET')?'ET':eq.every(x=>x==='KB'||x==='ST')&&eq.includes('KB')?'KB':eq.every(x=>x==='ST')?'ST':eq.every(x=>x==='KS'||x==='ST')?'KS':'ET'}
 const tplRank=t=>{const k=tplKey(t);return k?TAG_ORDER.indexOf(k):TAG_ORDER.length};
-const DEF_REST={'Terpeszugrás (jumping jack)':10,'Guggolásos felugrás':10,'Magastérd-emelés helyben':10,'Kitöréses váltóugrás':10,'KB swing (egykezes)':45,'KB swing (kétkezes)':60,'KB snatch':60,'KB török felállás (get-up)':60};
+const DEF_REST={'Terpeszugrás (jumping jack)':10,'Guggolásos felugrás':10,'Magastérd-emelés helyben':10,'Kitöréses váltóugrás':10,'Kettlebell swing (egykezes)':45,'Kettlebell swing (kétkezes)':60,'Kettlebell snatch':60,'Kettlebell török felállás (get-up)':60};
 function addDefaults(st){
   for(const[name,cat,kind]of DEF_EX){let e=st.exercises.find(x=>x.name===name);if(!e){e={id:uid(),name,cat};if(DEF_REST[name])e.rest=DEF_REST[name];st.exercises.push(e)}if(kind&&!e.kind)e.kind=kind}
   st.exercises.forEach(fillMeta);
@@ -628,58 +633,78 @@ function foodSearch(q,n=12){const toks=deacc(q).split(/[\s,]+/).filter(Boolean);
     const sc=(x.own?0:10)+(nm.startsWith(toks[0])?0:words.some(w=>w.startsWith(toks[0]))?2:5)+toks.filter(t=>!nm.includes(t)).length*3+nm.length/100;res.push([sc,x])}
   return res.sort((a,b)=>a[0]-b[0]).slice(0,n).map(r=>r[1])}
 
-/* ===== Kézi felvétel: keresés az adattárban, mennyiség grammban/ml-ben vagy adagban ===== */
-let mf=null;
-function mfNew(m){const x={id:m?.id||null,meal:m?.meal||(foodDate===today()?guessMeal():'ebed'),food:null,name:m?.name||'',qty:'',u:'g',per:null,base:null,tot:{kcal:m?.kcal??'',p:m?.p??'',c:m?.c??'',f:m?.f??'',fib:m?.fib??'',alc:m?.alc??0},date:m?.date||foodDate};
-  const fd=m&&foodById(m.fid);if(fd&&m.qty){mfPick(x,fd);x.u=m.u||x.u;x.qty=m.qty;x.name=m.fname||x.name}return x}
-function mfPick(x,fd){x.food=fd;x.name=foodName(fd);x.u=fd.unit;x.qty=x.qty||(fd.portions?.length?'':'100');if(fd.portions?.length&&!x.qty){x.u='p0';x.qty='1'}
+/* ===== Kézi felvétel: két fül – Keresés (adattár, saját tételek, vonalkód) és Új tétel (szabad kitöltés) =====
+   Új tételnél a modal mentés után nyitva marad a következő tételhez; szerkesztésnél bezárul. */
+let mf=null,mfRes=[];
+const dv=v=>v===''||v==null?'':typeof v==='number'?hu(v,1):String(v); // iPhone: a begépelt szöveg (pl. „7,5”) változatlanul marad
+function mfNew(m){const x={id:m?.id||null,meal:m?.meal||(foodDate===today()?guessMeal():'ebed'),tab:'search',q:'',food:null,name:m?.name||'',qty:'',u:'g',per:null,base:null,msg:'',added:[],
+    tot:{kcal:m?.kcal??'',p:m?.p??'',c:m?.c??'',f:m?.f??'',fib:m?.fib??'',alc:m?.alc??0},date:m?.date||foodDate};
+  const fd=m&&foodById(m.fid);if(fd&&m.qty){mfPick(x,fd);x.u=m.u||x.u;x.qty=String(m.qty);x.name=m.fname||x.name}else if(m)x.tab='new';return x}
+function mfPick(x,fd){x.tab='search';x.food=fd;x.name=foodName(fd);x.u=fd.unit;x.qty=x.qty||(fd.portions?.length?'':'100');if(fd.portions?.length&&!x.qty){x.u='p0';x.qty='1'}
   x.per={};for(const k of NUT)x.per[k]=fd[k]??0;x.base=Object.assign({},x.per)}
-function openFoodEntry(m){closeScanner();mf=mfNew(m);renderMF();setTimeout(()=>{const q=$('#mfq');q&&!mf.food&&!mf.id&&q.focus()},60)}
+function openFoodEntry(m){closeScanner();mf=mfNew(m);renderMF();mfFocus()}
+function mfFocus(){setTimeout(()=>{const i=mf.tab==='new'?(mf.id?null:$('#mfname')):(!mf.food?$('#mfq'):null);i&&i.focus()},60)}
 function mfGrams(){const x=mf;if(!x.food)return null;const q=parseMacro(x.qty);if(q==null)return null;
   if(x.u==='g'||x.u==='ml')return q;const p=x.food.portions?.[+x.u.slice(1)];return p?q*p[2]:null}
-function mfTotals(){if(!mf.food){const t={};for(const k of NUT){const v=parseMacro(mf.tot[k]);t[k]=v==null?0:v}return t}
+function mfTotals(){if(!mf.food||mf.tab==='new'){const t={};for(const k of NUT){const v=parseMacro(mf.tot[k]);t[k]=v==null?0:v}return t}
   const g=mfGrams(),t={};for(const k of NUT){const v=parseMacro(mf.per[k]);t[k]=g==null||v==null?0:v*g/100}t.kcal=Math.round(t.kcal);for(const k of['p','c','f','fib','alc'])t[k]=Math.round(t[k]*10)/10;return t}
 const mfEdited=()=>!!mf.food&&NUT.some(k=>{const a=parseMacro(mf.per[k]),b=mf.base[k]??0;return(a??0)!==b});
 function mfUnitOpts(){const fd=mf.food,u=fd.unit;if(fd.blank)return[['g','g'],['ml','ml']];return[[u,u],...(fd.portions||[]).map((p,i)=>['p'+i,LANG==='en'?p[1]:p[0]])]}
 function mfQtyLbl(){const x=mf,q=parseMacro(x.qty);if(q==null)return'';if(x.u==='g'||x.u==='ml')return`${hu(q,1)} ${x.u}`;const p=x.food.portions[+x.u.slice(1)],pl=LANG==='en'?p[1]:p[0];return q===1?pl:`${hu(q,2)} × ${pl}`}
-function renderMF(){const x=mf,fd=x.food,u=fd?.unit,t=mfTotals();
-  const nf=(k,l,val,act)=>`<div><label for="mf_${k}">${l}</label><input id="mf_${k}" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(val??'')}" ${act==='mfPer'?`data-input="mfPer('${k}',this.value)"`:`data-input="mfTot('${k}',this.value)"`}></div>`;
-  const L5=[['kcal',L('Energia (kcal)','Energy (kcal)')],['p',L('Fehérje (g)','Protein (g)')],['c',L('Szénhidrát (g)','Carbs (g)')],['f',L('Zsír (g)','Fat (g)')],['fib',L('Rost (g)','Fibre (g)')]];
-  const showAlc=fd?(x.base.alc>0||(parseMacro(x.per.alc)||0)>0):false;
-  openModal(`<h2>${x.id?L('Tétel szerkesztése','Edit item'):L('Új tétel','New item')}</h2><div class="hint" style="margin-top:-4px">${esc(fmtDate(x.date))}</div>
-  <label for="mfmeal">${L('Étkezés','Meal')}</label><select id="mfmeal" data-change="mfMeal(this.value)">${MEALS.map(([k,l])=>`<option value="${k}" ${k===x.meal?'selected':''}>${l}</option>`).join('')}</select>
-  <label for="mfq">${fd?L('Másik élelmiszer keresése','Search another food'):L('Keresés az élelmiszerek között','Search foods')}</label><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfq" type="search" style="flex:1;min-width:0" autocomplete="off" placeholder="${L('pl. túró, csirkemell, passata','e.g. quark, chicken breast, passata')}" data-input="mfSearch(this.value)">${canScan()?`<button class="btn ico" data-click="openScanner()" aria-label="${L('Vonalkód beolvasása','Scan barcode')}" title="${L('Vonalkód','Barcode')}">${I('scan-barcode','sm')}</button>`:''}</div><div id="mfres"></div>${x.msg?`<div class="hint" style="margin-top:8px">${esc(x.msg)}</div>`:''}
-  <label for="mfname">${L('Megnevezés','Name')}</label><input id="mfname" autocomplete="off" value="${esc(x.name)}" placeholder="${L('pl. Zabkása 60 g banánnal','e.g. Porridge 60 g with banana')}" data-input="mfName(this.value)">
-  ${fd?`<div class="grid2"><div><label for="mfqty">${L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
-  <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
-  <div id="mftot" class="mftot">${mfTotHtml(t)}</div>
-  <div class="grp" style="margin-top:14px">${L(`Tápérték 100 ${u}-ben`,`Nutrition per 100 ${u}`)}</div>
-  <div class="grid3 mfgrid">${L5.map(([k,l])=>nf(k,l,x.per[k]==null?'':hu(x.per[k],1),'mfPer')).join('')}${showAlc?nf('alc',L('Alkohol (g)','Alcohol (g)'),hu(x.per.alc,1),'mfPer'):''}</div>`
-  :`<div class="grid3 mfgrid">${L5.map(([k,l])=>nf(k,l,x.tot[k]===''||x.tot[k]==null?'':hu(+x.tot[k],1),'mfTot')).join('')}</div>
-  <div class="hint">${L('Keress fent: a kiválasztott élelmiszer tápértékei a mennyiség alapján kitöltődnek.','Search above: the selected food’s nutrition is filled in from the amount.')}</div>`}
-  <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button><span class="sp"></span></div>
-  <div id="mfnote" class="hint">${mfNote()}</div>
-  <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">${L('Mégse','Cancel')}</button><span class="sp"></span><button class="btn p" data-click="mfSave()">${L('Mentés','Save')}</button></div>
-  ${fd?`<div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`:''}`)}
+const MF_L5=()=>[['kcal',L('Energia (kcal)','Energy (kcal)')],['p',L('Fehérje (g)','Protein (g)')],['c',L('Szénhidrát (g)','Carbs (g)')],['f',L('Zsír (g)','Fat (g)')],['fib',L('Rost (g)','Fibre (g)')]];
+function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
+  const nf=(k,l,val,per)=>`<div><label for="mf_${k}">${l}</label><input id="mf_${k}" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(dv(val))}" ${per?`data-input="mfPer('${k}',this.value)"`:`data-input="mfTot('${k}',this.value)"`}></div>`;
+  const tabs=`<div class="seg mftabs" role="tablist"><button role="tab" aria-selected="${isS}" class="${isS?'on':''}" data-click="mfTab('search')">${I('search','sm')} ${L('Keresés','Search')}</button><button role="tab" aria-selected="${!isS}" class="${!isS?'on':''}" data-click="mfTab('new')">${I('plus','sm')} ${L('Új tétel','New item')}</button></div>`;
+  let body='';
+  if(isS&&!fd){body=`<div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfq" type="search" style="flex:1;min-width:0" autocomplete="off" enterkeyhint="search" aria-label="${L('Keresés','Search')}" placeholder="${L('pl. túró, csirkemell, passata','e.g. quark, chicken breast, passata')}" value="${esc(x.q)}" data-input="mfSearch(this.value)">${canScan()?`<button class="btn ico" data-click="openScanner()" aria-label="${L('Vonalkód beolvasása','Scan barcode')}" title="${L('Vonalkód','Barcode')}">${I('scan-barcode','sm')}</button>`:''}</div>
+    <div id="mfres"></div>${x.q?'':`<div class="hint">${L('Keress az élelmiszerek és a saját tételeid között, vagy olvasd be a csomagolás vonalkódját. Ha nincs a listában, válts az <b>Új tétel</b> fülre.','Search the food list and your own items, or scan a package’s barcode. If it’s not listed, switch to the <b>New item</b> tab.')}</div>`}`}
+  else if(isS){const u=fd.unit,showAlc=x.base.alc>0||(parseMacro(x.per.alc)||0)>0;
+    body=`${x.msg?`<div class="hint" style="margin:0 0 8px">${esc(x.msg)}</div>`:''}<div class="mfsel"><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfname" style="flex:1;min-width:0;font-weight:600" autocomplete="off" aria-label="${L('Megnevezés','Name')}" value="${esc(x.name)}" placeholder="${L('Termék neve','Product name')}" data-input="mfName(this.value)"><button class="btn sm" data-click="mfClear()">${I('search','sm')} ${L('Másik','Other')}</button></div>
+    <div class="grid2"><div><label for="mfqty">${L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
+    <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
+    <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
+    <div class="grp" style="margin-top:14px">${L(`Tápérték 100 ${u}-ben`,`Nutrition per 100 ${u}`)}</div>
+    <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.per[k],1)).join('')}${showAlc?nf('alc',L('Alkohol (g)','Alcohol (g)'),x.per.alc,1):''}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>
+    <div id="mfnote" class="hint">${mfNote()}</div><div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`}
+  else{body=`<label for="mfname">${L('Megnevezés','Name')}</label><input id="mfname" autocomplete="off" value="${esc(x.name)}" placeholder="${L('pl. Zabkása 60 g banánnal','e.g. Porridge 60 g with banana')}" data-input="mfName(this.value)">
+    <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.tot[k],0)).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>
+    <div class="hint">${L('A teljes elfogyasztott mennyiség értékei. A kalória a makrókból is kiszámolható (EU-s módszer).','Values for the whole amount eaten. Calories can be calculated from the macros (EU method).')}</div>`}
+  const done=x.added.length?`<div class="mfadded">${I('check','sm')} ${L(`Hozzáadva: ${x.added.length} tétel`,`Added: ${x.added.length} item${x.added.length>1?'s':''}`)} <span class="mut">· ${esc(x.added.slice(-2).join(', '))}</span></div>`:'';
+  openModal(`<h2>${x.id?L('Tétel szerkesztése','Edit item'):L('Étkezés rögzítése','Log food')}</h2><div class="hint" style="margin-top:-4px">${esc(fmtDate(x.date))}</div>
+  <div class="grid2" style="align-items:end"><div><label for="mfmeal">${L('Étkezés','Meal')}</label><select id="mfmeal" data-change="mfMeal(this.value)">${MEALS.map(([k,l])=>`<option value="${k}" ${k===x.meal?'selected':''}>${l}</option>`).join('')}</select></div><div>${x.id?'':tabs}</div></div>
+  <div style="margin-top:12px">${body}</div>${done}
+  <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">${x.id?L('Mégse','Cancel'):x.added.length?L('Kész','Done'):L('Bezárás','Close')}</button><span class="sp"></span>${isS&&!fd?'':`<button class="btn p" data-click="mfSave()">${x.id?L('Mentés','Save'):`${I('plus','sm')} ${L('Hozzáadás','Add')}`}</button>`}</div>`);
+  if(isS&&!fd&&x.q)mfSearch(x.q)}
 function mfTotHtml(t){const q=mfQtyLbl();return`<b class="mono">${fmt(t.kcal,0)} kcal</b>${q?` <span class="mut small">· ${esc(q)}</span>`:''}<br><span class="small mut mono">${L(`F ${hu(t.p,1)} · Sz ${hu(t.c,1)} · Zs ${hu(t.f,1)} · R ${hu(t.fib,1)} g`,`P ${hu(t.p,1)} · C ${hu(t.c,1)} · F ${hu(t.f,1)} · Fib ${hu(t.fib,1)} g`)}</span>`}
 function mfNote(){if(mf.food&&(mf.food.off||mf.food.blank))return L('Mentéskor saját élelmiszerként, a vonalkóddal együtt elmentődik – legközelebb a beolvasás internet nélkül is megtalálja.','On save it’s stored as your own food with its barcode – next time a scan finds it even offline.');if(!mf.food||!mfEdited())return'';const own=mf.food.own;
   return own?L('Módosított értékek: mentéskor a saját tételed is frissül.','Changed values: your own item is updated on save.')
     :L(`Módosított értékek: mentéskor saját tételként is elmentődik${mf.name===foodName(mf.food)?` „${esc(mf.name)} (saját rögzítés)” néven – fent átnevezheted`:` „${esc(mf.name)}” néven`}.`,`Changed values: saved as your own item too${mf.name===foodName(mf.food)?`, as “${esc(mf.name)} (own entry)” – you can rename it above`:`, as “${esc(mf.name)}”`}.`)}
 function mfLive(){const t=$('#mftot');if(t)t.innerHTML=mfTotHtml(mfTotals());const n=$('#mfnote');if(n)n.innerHTML=mfNote()}
+function mfTab(t){if(mf.tab===t)return;mf.tab=t;mf.msg='';if(t==='new'&&mf.food){mf.name='';mf.food=null}renderMF();mfFocus()}
+function mfClear(){mf.food=null;mf.msg='';mf.qty='';mf.name='';renderMF();mfFocus()}
 function mfMeal(v){mf.meal=v}
 function mfName(v){mf.name=String(v).slice(0,100);mfLive()}
 function mfQty(v){mf.qty=v;mfLive()}
 function mfUnit(v){if(mf.food.blank){mf.food.unit=v;mf.u=v;renderMF();return}const old=mfGrams();mf.u=v;mf.qty=v===mf.food.unit?(old!=null?String(Math.round(old)):'100'):'1';renderMF()}
 function mfPer(k,v){mf.per[k]=v;mfLive()}
 function mfTot(k,v){mf.tot[k]=v}
-function mfRecalc(){const src=mf.food?mf.per:mf.tot,v={};for(const k of NUT)v[k]=parseMacro(src[k])||0;if(!mf.food)v.alc=+mf.tot.alc||0;src.kcal=String(euKcal(v));renderMF();toast(L('Kalória újraszámolva: ','Calories recalculated: ')+src.kcal+' kcal')}
-function mfSearch(q){const r=foodSearch(q),box=$('#mfres');if(!box)return;mfRes=r;
-  box.innerHTML=q.trim()?(r.length?`<div class="exlist" style="max-height:40vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${fmt(x.kcal,0)} kcal/100 ${x.unit}</span></button>`).join('')}</div>`:`<div class="mut small" style="padding:8px 0">${L('Nincs találat – add meg kézzel az értékeket.','No match – enter the values manually.')}</div>`):''}
-let mfRes=[];
-function mfChoose(i){const fd=mfRes[i];if(!fd)return;mf.qty='';mf.msg='';mfPick(mf,fd);renderMF();setTimeout(()=>{const q=$('#mfqty');q&&q.focus()},60)}
-function mfSave(){const x=mf,t=mfTotals();if(!x.name.trim()){toast(L('Adj meg megnevezést','Enter a name'));return}
-  if(x.food&&mfGrams()==null){toast(L('Adj meg mennyiséget','Enter an amount'));return}
-  let fd=x.food,fname=x.name.trim();
+function mfRecalc(){const isF=mf.food&&mf.tab==='search',src=isF?mf.per:mf.tot,v={};for(const k of NUT)v[k]=parseMacro(src[k])||0;if(!isF)v.alc=+mf.tot.alc||0;
+  src.kcal=euKcal(v);const i=$('#mf_kcal');if(i)i.value=dv(src.kcal);mfLive();toast(L('Kalória újraszámolva: ','Calories recalculated: ')+src.kcal+' kcal')}
+/* Keresés: elgépelésnél vagy túlgépelésnél a közeli találatok, végső esetben az előző találatok maradnak */
+function mfSearch(q){mf.q=q;const box=$('#mfres');if(!box)return;const t=q.trim();if(!t){mfRes=[];box.innerHTML='';return}
+  let r=foodSearch(t),note='';
+  if(!r.length){let s=t;while(s.length>2&&!r.length){s=s.slice(0,-1).trim();r=foodSearch(s)}
+    if(r.length)note=L(`Nincs pontos találat – közeli találatok erre: „${esc(s)}”`,`No exact match – close matches for “${esc(s)}”`);
+    else if(mfRes.length){r=mfRes;note=L('Nincs találat – az előző találatok:','No match – previous results:')}}
+  mfRes=r;
+  box.innerHTML=r.length?`${note?`<div class="mut small" style="margin:8px 0 2px">${note}</div>`:''}<div class="exlist" style="max-height:46vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${fmt(x.kcal,0)} kcal/100 ${x.unit}</span></button>`).join('')}</div>`
+    :`<div class="mut small" style="padding:10px 0">${L('Nincs találat.','No match.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="mfTab('new')">${L('Felvétel új tételként','Add as a new item')}</button></div>`}
+function mfChoose(i){const fd=mfRes[i];if(!fd)return;mf.qty='';mf.msg='';mfPick(mf,fd);renderMF();setTimeout(()=>{const q=$('#mfqty');if(q){q.focus();q.select&&q.select()}},60)}
+function mfSave(){const x=mf,isF=x.food&&x.tab==='search',t=mfTotals();if(!x.name.trim()){toast(L('Adj meg megnevezést','Enter a name'));return}
+  if(isF&&mfGrams()==null){toast(L('Adj meg mennyiséget','Enter an amount'));return}
+  let fd=isF?x.food:null,fname=x.name.trim();
   if(fd&&(fd.off||fd.blank)){const per={};for(const k of NUT)per[k]=Math.max(0,Math.min(k==='kcal'?1000:100,parseMacro(x.per[k])||0));
     if(fd.blank&&!per.kcal&&!per.p&&!per.c&&!per.f){toast(L('Add meg a címke tápértékeit','Enter the nutrition values from the label'));return}
     if(!per.kcal)per.kcal=euKcal(per);
@@ -694,20 +719,29 @@ function mfSave(){const x=mf,t=mfTotals();if(!x.name.trim()){toast(L('Adj meg me
     fib:fd?t.fib:(String(x.tot.fib??'').trim()===''?null:Math.min(500,t.fib))};
   if(t.alc>0)rec.alc=Math.min(500,t.alc);
   if(fd){rec.fid=fd.id;rec.qty=Math.round((parseMacro(x.qty)||0)*100)/100;rec.u=x.u;rec.fname=fname.slice(0,80)}
-  if(x.id){const m=S.meals.find(y=>y.id===x.id);if(m){for(const k of['alc','fid','qty','u','fname'])delete m[k];Object.assign(m,rec)}}
-  else S.meals.push(Object.assign({id:uid(),date:x.date},rec));
-  closeModal();save();render()}
-
+  if(x.id){const m=S.meals.find(y=>y.id===x.id);if(m){for(const k of['alc','fid','qty','u','fname'])delete m[k];Object.assign(m,rec)}closeModal();save();render();return}
+  S.meals.push(Object.assign({id:uid(),date:x.date},rec));save();render();
+  /* a modal nyitva marad a következő tételhez */
+  const keep={meal:x.meal,tab:x.tab,q:x.tab==='search'?x.q:'',added:[...x.added,rec.name]};mf=mfNew();Object.assign(mf,keep);renderMF();mfFocus()}
 
 /* ===== Vonalkód: beolvasás külön oldalon (scanner.html, saját CSP), lekérés az Open Food Facts adatbázisából =====
    Csak a vonalkód száma kerül ki (az OFF szerverére), a lekérés csak gombnyomásra és csak internettel indul. */
 const canScan=()=>location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1';
+let scanReady=false,scanWD=0;
 function openScanner(){if(!canScan()){toast(L('A vonalkód-olvasó csak az olupan.com-on érhető el','The barcode reader is only available on olupan.com'));return}
-  closeScanner();const ov=document.createElement('div');ov.id='scanov';ov.className='scanov';
+  closeScanner();scanReady=false;const ov=document.createElement('div');ov.id='scanov';ov.className='scanov';
   const f=document.createElement('iframe');f.src='/scanner.html'+(LANG==='en'?'?lang=en':'');f.setAttribute('allow','camera');f.title=L('Vonalkód-olvasó','Barcode reader');
-  ov.appendChild(f);document.body.appendChild(ov)}
-function closeScanner(){const o=$('#scanov');if(o)o.remove()}
-addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.src!=='olupan-scan')return;closeScanner();if(e.data.type==='code'&&/^\d{8,14}$/.test(e.data.code))barcodeFound(e.data.code)});
+  const x=document.createElement('button');x.className='scanx';x.type='button';x.textContent='✕ '+L('Bezárás','Close');x.addEventListener('click',closeScanner);
+  ov.append(f,x);document.body.appendChild(ov);
+  /* ha a beolvasó oldal 6 mp alatt nem jelentkezik (blokkolt keret, hálózati hiba), kézi beírás a főappban */
+  scanWD=setTimeout(()=>{if(!scanReady&&$('#scanov'))scanFallback()},6000)}
+function scanFallback(){const ov=$('#scanov');if(!ov)return;const fr=ov.querySelector('iframe');if(fr)fr.remove();
+  const d=document.createElement('div');d.className='scanfb';
+  d.innerHTML=`<b>${L('A kamerás beolvasó nem indult el.','The camera reader didn’t start.')}</b><div class="hint">${L('Írd be a vonalkód alatti számot:','Type the number under the barcode:')}</div><div class="row" style="flex-wrap:nowrap;gap:8px;margin-top:8px"><input id="scanman" inputmode="numeric" maxlength="14" class="mono" style="flex:1;min-width:0" autocomplete="off"><button class="btn p" id="scanmanok" type="button">${L('Keresés','Search')}</button></div>`;
+  ov.appendChild(d);const go=()=>{const c=$('#scanman').value.replace(/\D/g,'');if(!/^(\d{8}|\d{12,14})$/.test(c)){toast(L('Ez nem érvényes vonalkód','That isn’t a valid barcode'));return}closeScanner();barcodeFound(c)};
+  $('#scanmanok').addEventListener('click',go);$('#scanman').addEventListener('keydown',e=>{if(e.key==='Enter')go()});setTimeout(()=>$('#scanman')?.focus(),50)}
+function closeScanner(){clearTimeout(scanWD);const o=$('#scanov');if(o)o.remove()}
+addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.src!=='olupan-scan')return;if(e.data.type==='ready'){scanReady=true;return}closeScanner();if(e.data.type==='code'&&/^\d{8,14}$/.test(e.data.code))barcodeFound(e.data.code)});
 const offN=v=>{v=+v;return isFinite(v)&&v>=0?Math.round(v*10)/10:null};
 async function barcodeFound(code){if(!mf)openFoodEntry();
   const alt=code.length===12?'0'+code:code.length===13&&code[0]==='0'?code.slice(1):null;
@@ -867,7 +901,7 @@ function sanitizeState(d){
   const o={v:num(d.v,1,99)||2,settings:{rest:num(d.settings?.rest,0,1800)??90,sound:num(d.settings?.sound,0,3)??3,claudeUrl:typeof d.settings?.claudeUrl==='string'&&/^https:\/\/claude\.ai\/[\w\-./?=&#%~]*$/.test(d.settings.claudeUrl)?d.settings.claudeUrl.slice(0,300):null,stepGoal:num(d.settings?.stepGoal,0,100000)??0,wakeLock:d.settings?.wakeLock!==false,uiSound:d.settings?.uiSound!==false,typeSound:d.settings?.typeSound!==false,doneSound:d.settings?.doneSound!==false,haptic:d.settings?.haptic!==false,restNotify:d.settings?.restNotify===true,accent:['orange','pink'].includes(d.settings?.accent)?d.settings.accent:'cyan',lang:['hu','en'].includes(d.settings?.lang)?d.settings.lang:null,startTab:START_TABS.some(x=>x[0]===d.settings?.startTab)?d.settings.startTab:'workout',theme:['light','dark'].includes(d.settings?.theme)?d.settings.theme:null,lastBackup:num(d.settings?.lastBackup,0,9e15)||undefined,installHide:num(d.settings?.installHide,0,9e15)||undefined,adaptSeen:typeof d.settings?.adaptSeen==='string'&&DATE_RE.test(d.settings.adaptSeen)?d.settings.adaptSeen:undefined,bar:[20,15,10,7].includes(+d.settings?.bar)?+d.settings.bar:undefined,plates:Array.isArray(d.settings?.plates)?d.settings.plates.map(Number).filter(v=>[25,20,15,10,5,2.5,1.25,0.5].includes(v)):undefined,foodPrefs:(()=>{const f=d.settings?.foodPrefs;if(!f||typeof f!=='object')return undefined;const keys=(a,list)=>(Array.isArray(a)?a:[]).filter(x=>list.some(y=>y[0]===x));
   return{diet:keys(f.diet,PREF_DIET),cuisine:(()=>{const c=keys(f.cuisine,PREF_CUISINE);if(Array.isArray(f.style)&&f.style.includes('hu')&&!c.includes('hu'))c.unshift('hu');return c})(),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),wish:str(f.wish||'',300),eq:keys(f.eq,PREF_EQUIP),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,cook:num(f.cook,1,4)||2,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(['cardio','reps','time'].includes(e.kind))x.kind=e.kind;if(MUSCLES.some(m=>m[0]===e.mu))x.mu=e.mu;if(Array.isArray(e.mu2)){const a=[...new Set(e.mu2.filter(k=>k!==x.mu&&MUSCLES.some(m=>m[0]===k)))];if(a.length)x.mu2=a}if(EQUIP.some(q=>q[0]===e.eq))x.eq=e.eq;if(e.m===1)x.m=1;const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
-  o.exercises.forEach(fillMeta);
+  o.exercises.forEach(e=>{if(/^KB /.test(e.name)&&KB_RENAME.has(e.name.slice(3)))e.name='Kettlebell '+e.name.slice(3)});o.exercises.forEach(fillMeta);
   o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk'])if(d.settings?.[k]===true)o.settings[k]=true;
   const sets=a=>(Array.isArray(a)?a:[]).map(s=>{const x={w:num(s?.w,0,2000)??0,r:num(s?.r,0,10000)??0};if(s?.wu===true)x.wu=true;else if(s?.st==='d'||s?.st==='f')x.st=s.st;return x});
   const notes=(a,withW)=>(Array.isArray(a)?a:[]).filter(n=>n&&n.text).map(n=>{const x={id:fix(n.id||uid()),ts:num(n.ts,0,9e15)||Date.now(),text:str(n.text,2000)};if(withW)x.wid=n.wid?fix(n.wid):null;return x});
@@ -915,6 +949,7 @@ function render(){
   attachCharts();tick();updAvol();syncWake();updWakeUI();
 }
 function goBack(){if(back){const b=back;back=null;tab=b.tab;setSub=b.sub;render();scrollTo(0,b.y||0);return}if(tab==='more'&&setSub){setSub=null;render();scrollTo(0,0)}else go('home')}
+document.addEventListener('focusin',e=>{const t=e.target;if(t&&t.closest&&t.closest('#sheet')&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))setTimeout(()=>{try{t.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}},350)});
 function openModal(h){$('#sheet').innerHTML=h;$('#modal').classList.add('on')}
 function closeModal(){$('#modal').classList.remove('on')}
 function modalBg(){if(pickCb){const c=pickCancel;pickCb=pickCancel=null;closeModal();c&&c()}else closeModal()}
@@ -1021,13 +1056,14 @@ function renderPlan(){const {lastOf}=lastUse(),isT=homeDay===today();
   openModal(`<h2>${isT?'Mai edzés':esc(pYmd(homeDay).toLocaleDateString(LOC(),{month:'long',day:'numeric',weekday:'long'}))}</h2><div class="hint" style="margin:-4px 0 12px">Válaszd ki, mit edzel – a főképernyőn csak ez látszik.</div>
   ${used.length?`<div class="grp">Edzéseim</div>${used.map(row).join('')}`:''}
   ${fresh.length?`<div class="grp">Sablonok</div>${fresh.map(row).join('')}`:''}
-  <div class="row" style="margin:12px 0 4px;gap:14px"><button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planEmpty()">Üres edzés</button><button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planManage()">Edzések és sablonok</button></div>
+  <div class="row" style="margin:12px 0 4px;gap:14px"><button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planEmpty()">${I('plus','sm')} ${L('Új edzés összeállítása','Build a new workout')}</button>${isT?`<button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planEmptyNow()">${L('Üres edzés indítása','Start an empty workout')}</button>`:''}<button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planManage()">Edzések és sablonok</button></div>
   <div class="row" style="position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));margin:14px -16px calc(-20px - env(safe-area-inset-bottom));padding:12px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--kj-border);background:var(--kj-sheet)">${plans()[homeDay]?`<button class="btn d" data-click="clearPlan()">Terv törlése</button>`:''}<span class="sp"></span><button class="btn" data-click="savePlan()" ${planPick?'':'disabled'}>${isT?'Mai tervnek':'Tervbe'}</button>${isT?`<button class="btn p" data-click="startPick()" ${planPick?'':'disabled'}>Indítás most</button>`:''}</div>`)}
 function savePlan(){if(!planPick)return;plans()[homeDay]=planPick;prunePlans();save();closeModal();render()}
 function clearPlan(){delete plans()[homeDay];save();closeModal();render()}
 function startPick(){if(!planPick)return;plans()[homeDay]=planPick;prunePlans();save();closeModal();startWorkout(planPick)}
 function startPlanned(){const id=plans()[homeDay];if(id)startWorkout(id)}
-function planEmpty(){closeModal();startWorkout()}
+function planEmpty(){editTemplate();tplDraft.name=L('Edzés','Workout')+' – '+fmtDate(homeDay);tplDraft.planDay=homeDay;renderTpl()}
+function planEmptyNow(){closeModal();startWorkout()}
 function planManage(){closeModal();go('workout')}
 function prunePlans(){const lim=ymd(new Date(Date.now()-7*DAY));for(const k in plans())if(k<lim)delete S.plans[k]}
 /* Naptár modalban: napra koppintva a főképernyő arra a napra vált */
@@ -1452,7 +1488,7 @@ function renderPick(){
 }
 function chooseEx(id){const cb=pickCb;pickCb=pickCancel=null;closeModal();cb&&cb(id)}
 function exFields(e={}){const ml=a=>a.map(m=>[m[0],LANG==='en'?m[2]:m[1]]);
-  return[{id:'name',label:'Név',value:e.name||'',placeholder:'pl. KB egykezes evezés'},
+  return[{id:'name',label:'Név',value:e.name||'',placeholder:'pl. Kettlebell egykezes evezés'},
     {id:'kind',label:'Mérés',type:'pills',value:[e.kind||'strength'],options:ml(KINDS)},
     {id:'mu',label:'Elsődleges izomcsoport',type:'pills',value:e.mu?[e.mu]:[],options:ml(MUSCLES),exmu:true},
     {id:'mu2',label:'Másodlagos izmok (nem kötelező)',type:'pills',multi:true,value:e.mu2||[],options:ml(MUSCLES),exmu:true},
@@ -1472,7 +1508,7 @@ async function newExercise(){const e=await createExercise($('#exq')?.value||'');
 function editTemplate(id){const t=id&&S.templates.find(x=>x.id===id);tplDraft=t?JSON.parse(JSON.stringify(t)):{id:null,name:'',items:[]};renderTpl()}
 function renderTpl(){
   const t=tplDraft;
-  openModal(`<h2>${t.id?'Sablon szerkesztése':'Új sablon'}</h2><label>Név</label><input value="${esc(T(t.name))}" data-input="setTplName(this.value)" placeholder="pl. Push nap">
+  openModal(`<h2>${t.id?'Sablon szerkesztése':t.planDay?L('Új edzés tervezése','Plan a new workout'):'Új sablon'}</h2>${t.planDay?`<div class="hint" style="margin-top:-4px">${t.planDay===today()?L('Mentés után sablonként elmentődik, és a mai napra kerül.','On save it’s stored as a template and set for today.'):L(`Mentés után sablonként elmentődik, és erre a napra kerül: ${esc(fmtDate(t.planDay))}.`,`On save it’s stored as a template and set for ${esc(fmtDate(t.planDay))}.`)}</div>`:''}<label>Név</label><input value="${esc(T(t.name))}" data-input="setTplName(this.value)" placeholder="pl. Push nap">
   <label>Gyakorlatok · sorozatszám</label>
   ${t.items.map((it,i)=>`<div class="row li"><span style="flex:1;min-width:0">${esc(exName(it.exId))}<br><span class="mut small mono">${I('timer','sm')} ${fmtSec(exRest(it.exId))}</span></span><input type="number" min="1" max="30" value="${it.sets}" style="width:56px;text-align:center" data-input="setTplSets(${i},this.value)" aria-label="Sorozatok"><button class="btn sm ico" data-click="tplMove(${i},-1)" aria-label="Fel">${I('arrow-up','sm')}</button><button class="btn sm ico d" data-click="tplRemove(${i})" aria-label="Törlés">${I('x','sm')}</button></div>`).join('')||'<div class="mut small">Még nincs gyakorlat.</div>'}
   <button class="btn block gold" style="margin-top:12px" data-click="pickForTpl()">${I('plus','sm')} Gyakorlat hozzáadása</button>
@@ -1481,7 +1517,9 @@ function renderTpl(){
 function tplAddEx(id){tplDraft.items.push({exId:id,sets:3});renderTpl()}
 function tplMove(i,d){const a=tplDraft.items,j=i+d;if(j<0)return;[a[i],a[j]]=[a[j],a[i]];renderTpl()}
 function saveTpl(){const t=tplDraft;t.name=(t.name||'').trim();if(!t.name){toast('Adj nevet a sablonnak');return}
-  if(t.id){const i=S.templates.findIndex(x=>x.id===t.id);S.templates[i]=t}else{t.id=uid();S.templates.push(t)}save();closeModal();render()}
+  const pd=t.planDay;delete t.planDay;
+  if(t.id){const i=S.templates.findIndex(x=>x.id===t.id);S.templates[i]=t}else{t.id=uid();S.templates.push(t)}
+  if(pd){plans()[pd]=t.id;prunePlans();toast(pd===today()?L('Sablon mentve, a mai napra tervezve','Template saved and planned for today'):L('Sablon mentve és betervezve','Template saved and planned'))}save();closeModal();render()}
 async function delTemplate(id){if(!await ask('Törlöd a sablont? A korábbi edzések megmaradnak.',{title:'Sablon törlése',ok:'Törlés',danger:true}))return;S.templates=S.templates.filter(t=>t.id!==id);save();closeModal();render()}
 
 /* ===== Naptár ===== */
@@ -2471,7 +2509,7 @@ const STRONG_MAP={
 'Lateral Raise (Dumbbell)':'Oldalemelés (kézisúlyzó)','Hammer Curl (Dumbbell)':'Kalapács hajlítás','Bent Over Row (Dumbbell)':'Evezés (kézisúlyzó)',
 'Bent Over Row (Barbell)':'Evezés (rúd)','Floor Press (Barbell)':['Padlón nyomás (rúd)','Mell'],'Floor Press (Dumbbell)':'Padlón nyomás (kézisúlyzó)',
 'Concentration Curl (Dumbbell)':'Koncentrált bicepszhajlítás (kézisúlyzó)','Squat (Dumbbell)':['Guggolás (kézisúlyzó)','Láb'],'Squat (Barbell)':'Guggolás (rúd)',
-'Squat (Bodyweight)':'Guggolás (saját testsúly)','Bulgarian Split Squat':'Bolgár guggolás (kézisúlyzó)','Goblet Squat (Kettlebell)':'KB goblet guggolás',
+'Squat (Bodyweight)':'Guggolás (saját testsúly)','Bulgarian Split Squat':'Bolgár guggolás (kézisúlyzó)','Goblet Squat (Kettlebell)':'Kettlebell goblet guggolás',
 'Goblet Squat (Dumbbell)':'Goblet guggolás (kézisúlyzó)','Romanian Deadlift (Dumbbell)':'Román felhúzás (kézisúlyzó)','Romanian Deadlift (Barbell)':'Román felhúzás (rúd)',
 'Deadlift (Barbell)':'Felhúzás (rúd)','Lunge (Dumbbell)':'Kitörés (kézisúlyzó)','Lunge (Bodyweight)':'Kitörés (saját testsúly)',
 'Upright Row (Barbell)':['Állig húzás (rúd)','Váll'],'Upright Row (Dumbbell)':['Állig húzás (kézisúlyzó)','Váll'],
@@ -2484,7 +2522,7 @@ const STRONG_MAP={
 'Lat Pulldown (Cable)':'Mellhez húzás (kábel)','Seated Row (Cable)':'Evezés ülve (kábel)','Face Pull (Cable)':'Face pull (kábel)','Chest Fly (Cable)':'Tárogatás (kábel)',
 'Hip Thrust (Barbell)':'Csípőemelés (rúd)','Glute Bridge':'Csípőemelés (saját testsúly)','Leg Extension (Machine)':'Lábnyújtás (gép)','Lying Leg Curl (Machine)':'Lábhajlítás (gép)',
 'Plank':'Plank (mp)','Crunch':'Hasprés','Hanging Leg Raise':'Lábemelés függésben','Ab Wheel':'Hasgörgő','Burpee':'Burpee','Mountain Climber':'Hegymászó',
-'Kettlebell Swing':'KB swing (kétkezes)','Kettlebell Turkish Get Up':'KB török felállás (get-up)','Dips':'Tolódzkodás','Inverted Row':'Ausztrál húzódzkodás',
+'Kettlebell Swing':'Kettlebell swing (kétkezes)','Kettlebell Turkish Get Up':'Kettlebell török felállás (get-up)','Dips':'Tolódzkodás','Inverted Row':'Ausztrál húzódzkodás',
 'Running':'Futás (aszfalt)','Running (Outdoor)':'Futás (aszfalt)','Trail Running':'Futás (terep)','Running (Treadmill)':'Futópad','Treadmill':'Futópad',
 'Cycling':'Kerékpár (kültéri)','Cycling (Outdoor)':'Kerékpár (kültéri)','Cycling (Indoor)':'Terembicikli','Stationary Bike':'Terembicikli','Rowing (Machine)':'Evezőgép',
 'Elliptical Trainer':'Elliptikus tréner','Stair Stepper':'Lépcsőzőgép','Walking':'Gyaloglás','Hiking':'Túrázás','Swimming':'Úszás','Jump Rope':'Ugrókötél'};
@@ -2718,8 +2756,8 @@ async function demoData(){
   if(S.workouts.length||S.meals.length){toast('Mintaadat csak üres naplóba tölthető be');return}
   if(!await ask(L('Kb. 4 hónapnyi mintaadatot (edzéseket, méréseket és étkezéseket) töltök be, hogy lásd, hogyan működik az app. Mielőtt valódi használatba veszed, töröld őket: a figyelmeztető kártyán vagy a Beállítások → Adatok alatt.','I’ll load about 4 months of sample data (workouts, measurements and meals) so you can see how the app works. Delete it before you start using the app for real: on the notice card or under Settings → Data.'),{title:'Mintaadatok',ok:'Betöltés'}))return;
   const base={'Fekvenyomás (rúd)':70,'Ferde fekvenyomás (kézisúlyzó)':24,'Katonai nyomás (rúd)':42,'Oldalemelés (kézisúlyzó)':9,'Tricepsz letolás (kábel)':30,'Felhúzás (rúd)':110,'Evezés (rúd)':60,'Húzódzkodás':0,'Mellhez húzás (kábel)':55,'Bicepsz hajlítás (kézisúlyzó)':12,'Guggolás (rúd)':90,'Román felhúzás (rúd)':80,'Lábtolás (gép)':160,'Kitörés (kézisúlyzó)':18,'Vádliemelés (gép)':70,
-    'KB swing (egykezes)':20,'KB swing (kétkezes)':24,'KB török felállás (get-up)':16,'KB goblet guggolás':24,'KB clean & press':16,'KB evezés':24,'KB halo':12,'KB clean':20,'KB snatch':16,'KB front rack guggolás':20,'KB windmill':12};
-  const kb=n=>n.startsWith('KB ');
+    'Kettlebell swing (egykezes)':20,'Kettlebell swing (kétkezes)':24,'Kettlebell török felállás (get-up)':16,'Kettlebell goblet guggolás':24,'Kettlebell clean & press':16,'Kettlebell evezés':24,'Kettlebell halo':12,'Kettlebell clean':20,'Kettlebell snatch':16,'Kettlebell front rack guggolás':20,'Kettlebell windmill':12};
+  const kb=n=>n.startsWith('Kettlebell ');
   const t0=new Date();t0.setHours(0,0,0,0);let wt=88,fat=23.5,waist=94,k=0;const tpls=S.templates.filter(t=>t.items.length);
   for(let i=120;i>=1;i--){const d=new Date(t0);d.setDate(d.getDate()-i);const key=ymd(d);
     wt+=-0.03+(Math.random()-.5)*.55;fat-=.018;waist-=.03;
