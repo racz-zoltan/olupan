@@ -1,6 +1,6 @@
 /* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
-const CACHE='olupan-d4aad46e0551';
-const CORE=["/", "/index.html", "/manifest.webmanifest", "/utmutato.html", "/guide.html", "/adatvedelem.html", "/privacy.html", "/jogi-nyilatkozat.html", "/disclaimer.html", "/assets/app.css", "/assets/app.js", "/assets/apple-touch-icon.png", "/assets/favicon.svg", "/assets/fonts/bricolage-grotesque-600-hu.woff2", "/assets/fonts/bricolage-grotesque-600.woff2", "/assets/fonts/instrument-sans-400-hu.woff2", "/assets/fonts/instrument-sans-400.woff2", "/assets/fonts/instrument-sans-500-hu.woff2", "/assets/fonts/instrument-sans-500.woff2", "/assets/fonts/instrument-sans-600-hu.woff2", "/assets/fonts/instrument-sans-600.woff2", "/assets/fonts/jetbrains-mono-400-hu.woff2", "/assets/fonts/jetbrains-mono-400.woff2", "/assets/fonts/jetbrains-mono-500-hu.woff2", "/assets/fonts/jetbrains-mono-500.woff2", "/assets/fonts/jetbrains-mono-600-hu.woff2", "/assets/fonts/jetbrains-mono-600.woff2", "/assets/icon-192.png", "/assets/icon-32.png", "/assets/icon-512.png", "/assets/icon-maskable-512.png", "/assets/legal.css", "/assets/legal.js"];
+const CACHE='olupan-512bd4f37377';
+const CORE=["/", "/index.html", "/manifest.webmanifest", "/scanner.html", "/utmutato.html", "/guide.html", "/adatvedelem.html", "/privacy.html", "/jogi-nyilatkozat.html", "/disclaimer.html", "/assets/app.css", "/assets/app.js", "/assets/apple-touch-icon.png", "/assets/favicon.svg", "/assets/fonts/bricolage-grotesque-600-hu.woff2", "/assets/fonts/bricolage-grotesque-600.woff2", "/assets/fonts/instrument-sans-400-hu.woff2", "/assets/fonts/instrument-sans-400.woff2", "/assets/fonts/instrument-sans-500-hu.woff2", "/assets/fonts/instrument-sans-500.woff2", "/assets/fonts/instrument-sans-600-hu.woff2", "/assets/fonts/instrument-sans-600.woff2", "/assets/fonts/jetbrains-mono-400-hu.woff2", "/assets/fonts/jetbrains-mono-400.woff2", "/assets/fonts/jetbrains-mono-500-hu.woff2", "/assets/fonts/jetbrains-mono-500.woff2", "/assets/fonts/jetbrains-mono-600-hu.woff2", "/assets/fonts/jetbrains-mono-600.woff2", "/assets/icon-192.png", "/assets/icon-32.png", "/assets/icon-512.png", "/assets/icon-maskable-512.png", "/assets/legal.css", "/assets/legal.js", "/assets/scanner.css", "/assets/scanner.js", "/assets/zxing-reader.js"];
 self.addEventListener('install',e=>e.waitUntil((async()=>{
   const c=await caches.open(CACHE);
   await c.addAll(CORE.map(u=>new Request(u,{cache:'reload'})));
@@ -15,7 +15,10 @@ self.addEventListener('fetch',e=>{
   e.respondWith((async()=>{
     const c=await caches.open(CACHE);
     const hit=await c.match(r,{ignoreSearch:true})||(r.mode==='navigate'?await c.match('/index.html'):null);
-    return hit||fetch(r);
+    if(hit)return hit;
+    const res=await fetch(r);
+    if(res.ok&&new URL(r.url).pathname.endsWith('.wasm'))c.put(r,res.clone()); // a vonalkód-olvasó első használat után offline is elérhető
+    return res;
   })());
 });
 self.addEventListener('notificationclick',e=>{

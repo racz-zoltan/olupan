@@ -21,7 +21,7 @@ ICONDIR = SRC / "icons"
 ICONS = ["dumbbell","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
-         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down"]
+         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat"]
 LATIN = "U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2019,U+201C-201E,U+2026,U+2212,U+2022,U+2192,U+2191,U+2193,U+00D7,U+0394,U+2248,U+2264,U+2265"
 HU = "U+0150,U+0151,U+0170,U+0171"
 FONTS = [("Instrument Sans", w, "instrument-sans") for w in (400, 500, 600)] + \
@@ -49,6 +49,11 @@ acts = sorted(set(re.findall(r'data-(?:click|input|change|submit|backdrop)="([A-
 src = src.replace("/*@ACTIONS@*/", json.dumps(acts))
 src = src.replace("/*@I18N@*/", "const EN=" + json.dumps(json.loads((SRC / "i18n" / "en.json").read_text(encoding="utf-8")),
                                                         ensure_ascii=False, separators=(",", ":")) + ";")
+# --- élelmiszer-adattár (src/data/foods.json) tömör tömbként a JS-be: [id,kat,hu,en,kcal,F,Sz,Zs,rost,alk,ml?,usda,adagok]
+_fd = json.loads((SRC / "data" / "foods.json").read_text(encoding="utf-8"))
+_rows = [[x["id"], x["cat"], x["hu"], x["en"], x["kcal"], x["p"], x["c"], x["f"], x["fib"], x.get("alc", 0), 1 if x["unit"] == "ml" else 0,
+          int(x["src"][5:]) if x["src"].startswith("usda:") else 0, x.get("portions", [])] for x in _fd["foods"]]
+src = src.replace("/*@FOODS@*/", "const FOODDB=" + json.dumps(_rows, ensure_ascii=False, separators=(",", ":")) + ";")
 css = re.search(r"<style>\n?(.*?)</style>", src, re.S).group(1)
 js = re.search(r"<script>\n?(.*?)</script>", src, re.S).group(1)
 
@@ -74,16 +79,22 @@ single = single.replace("</title>", f'</title>\n<meta name="robots" content="noi
 
 # ========== 2. a webes változat ==========
 LDJSON = json.dumps({"@context": "https://schema.org", "@type": "WebApplication", "name": "Olupan", "url": "https://olupan.com/",
-    "applicationCategory": "HealthApplication", "operatingSystem": "iOS, Android, Windows, macOS, Linux (böngésző)",
+    "applicationCategory": "HealthApplication", "applicationSubCategory": "Fitness", "operatingSystem": "iOS, Android, Windows, macOS, Linux (böngésző)",
+    "browserRequirements": "Requires JavaScript; works offline after the first visit", "image": "https://olupan.com/assets/og-image.png",
     "inLanguage": ["hu", "en"], "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "HUF"},
-    "description": "Offline edzésnapló, étkezés- és testadatnapló regisztráció nélkül; minden adat a készüléken marad. Offline workout, food and body log – no account, data stays on your device.",
-    "featureList": ["Edzéssablonok és szuperszettek", "Bemelegítő sorozatok, tárcsakalkulátor", "Személyes rekordok és erőtrendek", "Kalória- és makrókövetés", "Testsúly, testméretek, lépések", "Offline működés, adatexport"],
+    "description": "Ingyenes, offline edzés-, étkezés- és testadatnapló: kalória és makrók fotóból vagy leírásból AI-jal (Claude), edzésterv-import, rekordok, statisztikák. Regisztráció nélkül, minden adat a készüléken marad. Free offline workout, food and body log with AI-assisted meal logging – no account, data stays on your device.",
+    "featureList": ["Edzéssablonok, szuperszettek, bemelegítő-kalkulátor, tárcsakalkulátor", "Személyes rekordok, becsült 1RM és erőtrendek", "Izomcsoportonkénti heti sorozatszám és relatív erő",
+        "Kalória- és makrókövetés AI-jal (Claude) fotóból vagy leírásból", "Kb. 650 élelmiszeres kereshető adattár (USDA, EU-s számítás)", "Adaptív napi kalóriakeret (TDEE) a súlytrend alapján",
+        "Heti menü- és receptjavaslat", "Testsúly, testzsír, testméretek, lépések", "Offline működés, regisztráció nélkül, adatexport"],
     "author": {"@type": "Person", "name": "Rácz Zoltán"}}, ensure_ascii=False).replace("</", "<\\/")
 NOSCRIPT = """<main></main>
-<noscript><section style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui,sans-serif;line-height:1.5">
-<h2>Olupan – offline edzésnapló</h2>
-<p>Ingyenes edzés-, étkezés- és testadatnapló telefonra és számítógépre: edzéssablonok, sorozatok, személyes rekordok, kalória és makrók, testsúly és lépések. Regisztráció nélkül, internet nélkül is működik, minden adat a készüléken marad.</p>
-<p lang="en">Free offline workout, food and body log – templates, sets, personal records, calories and macros, body weight and steps. No account; your data stays on your device.</p>
+<noscript><section style="max-width:680px;margin:24px auto;padding:0 16px;font-family:system-ui,sans-serif;line-height:1.5">
+<h1>Olupan – offline edzés-, étkezés- és testadatnapló</h1>
+<p>Ingyenes napló telefonra és számítógépre. Regisztráció nélkül, internet nélkül is működik, minden adat a készüléken marad.</p>
+<h2>Edzés</h2><ul><li>Edzéssablonok, szuperszettek, pihenőidő-időzítő</li><li>Bemelegítő sorozatok kalkulátora, tárcsakalkulátor</li><li>Személyes rekordok, becsült 1RM, erőtrendek, relatív erő</li><li>Heti sorozatszám izomcsoportonként, gyakoriság, edzésnaptár</li><li>Edzésterv importálása Claude-ból</li></ul>
+<h2>Étkezés</h2><ul><li>Kalória, makrók és rost: rögzítés fotóból vagy leírásból AI-jal (Claude), kézzel vagy gyors rögzítéssel</li><li>Kereshető élelmiszer-adattár (USDA, európai kalóriaszámítással), saját tételek</li><li>Adaptív napi kalóriakeret (TDEE) a súlytrend és az étkezések alapján</li><li>Heti menü- és receptjavaslat az étkezési preferenciáid szerint</li></ul>
+<h2>Testadatok</h2><ul><li>Testsúly, testzsír, derék- és testméretek, lépések, trendek</li></ul>
+<div lang="en"><h2>Olupan – offline workout, food and body log</h2><p>Free, no account, works offline; your data stays on your device. Workout templates, warm-up and plate calculators, personal records and estimated 1RM, weekly sets per muscle group; calories, macros and fibre with AI-assisted meal logging (Claude) from a photo or description, a searchable food database, adaptive calorie target (TDEE); body weight, measurements and steps.</p></div>
 <p>Az app használatához kapcsold be a JavaScriptet. · <a href="/utmutato.html">Felhasználói útmutató</a> · <a href="/guide.html" lang="en">User guide</a> · <a href="/adatvedelem.html">Adatkezelés</a> · <a href="/privacy.html" lang="en">Privacy</a></p>
 </section></noscript>"""
 css_d = css.replace("/*@FONTS@*/", "\n".join(ff_files)).encode()
@@ -96,20 +107,35 @@ js_d = js.replace("/*@BOOT@*/", boot).encode()
 (A / "app.css").write_bytes(css_d); (A / "app.js").write_bytes(js_d)
 for f in ICONDIR.iterdir(): shutil.copy(f, A / f.name)
 
-head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
+# ========== vonalkód-olvasó: külön oldal, saját CSP-vel (csak itt van 'wasm-unsafe-eval') ==========
+SC = SRC / "scanner"; ZX = NM / "zxing-wasm/dist"
+zx_js = (ZX / "iife/reader/index.js").read_bytes(); (A / "zxing-reader.js").write_bytes(zx_js)
+shutil.copy(ZX / "reader/zxing_reader.wasm", A / "zxing_reader.wasm")
+sc_js = (SC / "scanner.js").read_bytes(); sc_css = (SC / "scanner.css").read_bytes()
+(A / "scanner.js").write_bytes(sc_js); (A / "scanner.css").write_bytes(sc_css)
+(PUB / "scanner.html").write_text((SC / "scanner.html").read_text(encoding="utf-8").replace("@@SRI_CSS@@", sri(sc_css))
+    .replace("@@SRI_ZX@@", sri(zx_js)).replace("@@SRI_JS@@", sri(sc_js)), encoding="utf-8")
+
+head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://world.openfoodfacts.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self';">
 <meta name="google-site-verification" content="Re288jc6stZsam8EJVN-Ufx_lNHClPDe0EuPK0cbYYQ">
-<meta name="description" content="Olupan – ingyenes, offline edzésnapló, étkezés- és testadatnapló telefonra. Edzéssablonok, sorozatok, rekordok, kalória és makrók, testsúly, lépések. Regisztráció nélkül, minden adat a készüléken marad.">
+<meta name="description" content="Ingyenes, offline edzés- és étkezésnapló: kalória és makrók fotóból vagy leírásból AI-jal (Claude), rekordok, statisztikák. Regisztráció nélkül, adataid a készüléken maradnak.">
 <link rel="canonical" href="https://olupan.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Olupan">
 <meta property="og:locale" content="hu_HU">
 <meta property="og:locale:alternate" content="en_GB">
-<meta property="og:title" content="Olupan – offline edzésnapló">
-<meta name="twitter:card" content="summary">
+<meta property="og:title" content="Olupan – offline edzés- és étkezésnapló">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Olupan – offline edzés- és étkezésnapló">
+<meta name="twitter:description" content="Edzés, kalória és makrók (AI-jal fotóból vagy leírásból), testadatok – regisztráció nélkül, minden adat a készüléken marad.">
+<meta name="twitter:image" content="https://olupan.com/assets/og-image.png">
 <script type="application/ld+json">{LDJSON}</script>
-<meta property="og:description" content="Offline edzésnapló – minden adat a készüléken marad. Offline workout log – your data stays on your device.">
+<meta property="og:description" content="Edzés, kalória és makrók (AI-jal fotóból vagy leírásból), testadatok – regisztráció nélkül, minden adat a készüléken marad. · Offline workout, food and body log – no account, your data stays on your device.">
 <meta property="og:url" content="https://olupan.com/">
-<meta property="og:image" content="https://olupan.com/assets/icon-512.png">
+<meta property="og:image" content="https://olupan.com/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Olupan – offline edzés-, étkezés- és testadatnapló">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
@@ -204,7 +230,7 @@ for key, langs in DOCS.items():
         sm.append(f"  <url><loc>{site}/{fname}</loc>{alts}</url>")
 sm.append("</urlset>")
 (PUB / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-core = ["/", "/index.html", "/manifest.webmanifest"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file())
+core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm"))
 ver = hashlib.sha256(b"".join((PUB / p.lstrip("/")).read_bytes() for p in core if p != "/")).hexdigest()[:12]
 sw = f"""/* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
 const CACHE='olupan-{ver}';
@@ -223,7 +249,10 @@ self.addEventListener('fetch',e=>{{
   e.respondWith((async()=>{{
     const c=await caches.open(CACHE);
     const hit=await c.match(r,{{ignoreSearch:true}})||(r.mode==='navigate'?await c.match('/index.html'):null);
-    return hit||fetch(r);
+    if(hit)return hit;
+    const res=await fetch(r);
+    if(res.ok&&new URL(r.url).pathname.endsWith('.wasm'))c.put(r,res.clone()); // a vonalkód-olvasó első használat után offline is elérhető
+    return res;
   }})());
 }});
 self.addEventListener('notificationclick',e=>{{

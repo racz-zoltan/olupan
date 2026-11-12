@@ -127,6 +127,14 @@ tr.fl .setno{background:color-mix(in srgb,var(--kj-red) 14%,transparent);border-
 .wutag{display:inline-block;margin-right:3px;padding:0 4px;border-radius:4px;background:color-mix(in srgb,var(--kj-gold) 16%,transparent);color:var(--kj-gold);font:600 11px var(--mono)}
 .sugg{display:flex;align-items:center;gap:8px;margin:10px 0 2px;padding:8px 10px;border-radius:12px;background:var(--kj-surface);font-size:14px;line-height:1.35}.sugg>.ic{color:var(--kj-green)}.sugg>span{flex:1;min-width:0}
 .plviz{display:flex;align-items:center;justify-content:center;gap:3px;height:90px;margin-bottom:8px}.plviz i{display:grid;place-items:center;width:22px;border-radius:4px;background:var(--kj-blue-soft);border:1px solid var(--kj-blue-line);font:600 10px var(--mono);font-style:normal;writing-mode:vertical-rl}.plbar{width:80px;height:10px;border-radius:3px;background:var(--kj-border-strong)}
+.scanov{position:fixed;inset:0;z-index:100;background:#000}.scanov iframe{width:100%;height:100%;border:0;display:block}
+.ftiles{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 0 14px;padding:2px 0 6px;scroll-padding:0;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ftiles::-webkit-scrollbar{display:none}
+.ftile{flex:0 0 132px;scroll-snap-align:start;display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px 12px 12px;border-radius:16px;border:1px solid var(--kj-border);background:var(--kj-surface);color:var(--kj-text);font:inherit;cursor:pointer;min-height:122px}
+.ftile b{font-size:15px;line-height:1.2;margin-top:6px}.ftile>span:last-child{font-size:12.5px;line-height:1.3;color:var(--kj-muted)}
+.ftile .fti{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--kj-blue) 16%,transparent);color:var(--kj-blue-ink)}
+.ftile:active{transform:scale(.97)}.ftile.dim{opacity:.55}
+.steps{margin:8px 0 6px;padding-left:20px;line-height:1.45}.steps li{margin:4px 0}.stack{display:flex;flex-direction:column;gap:8px}
+.mftot{margin-top:12px;padding:10px 12px;border:1px solid var(--kj-border);border-radius:10px;background:var(--kj-surface)}.mfgrid input{min-width:0}.mfsrc{margin-top:14px;text-align:center;font-size:11px;color:var(--kj-muted);opacity:.7}.tag{font:500 11px var(--ui);color:var(--kj-blue-ink);border:1px solid var(--kj-blue-line);border-radius:6px;padding:0 5px;margin-left:4px}
 .qrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--kj-border)}.qrow>span:first-child{flex:1;min-width:0}
 .sstag{display:inline-flex;align-items:center;gap:4px;margin-bottom:2px;font:600 12px var(--ui);color:var(--kj-blue-line);text-transform:uppercase;letter-spacing:.05em}
 .card.ssc{border-color:var(--kj-blue-line)}.card.sslink{margin-bottom:4px}
@@ -431,7 +439,7 @@ function addDefaults(st){
   for(const[name,items]of DEF_TPL)if(!st.templates.some(t=>t.name===name)&&(st.v===0||TPL_VER(name)>st.v))
     st.templates.push({id:uid(),name,items:items.filter(([n])=>f(n)).map(([n,s])=>({exId:f(n),sets:s})),...(TPL_NOTE[name]?{notes:[{id:uid(),ts:Date.now(),text:TPL_NOTE[name],wid:null}]}:{})});
 }
-function defaults(){const st={v:0,exercises:[],templates:[],workouts:[],body:[],meals:[],profile:{pace:1},active:null,settings:{rest:90,backupEvery:7,theme:null,sound:3,wakeLock:true,stepGoal:0,uiSound:true,typeSound:true,doneSound:true,haptic:true,restNotify:false,startTab:'workout',accent:'cyan',lang:null}};addDefaults(st);st.v=DATA_V;return st}
+function defaults(){const st={v:0,exercises:[],templates:[],workouts:[],body:[],meals:[],foods:[],profile:{pace:1},active:null,settings:{rest:90,backupEvery:7,theme:null,sound:3,wakeLock:true,stepGoal:0,uiSound:true,typeSound:true,doneSound:true,haptic:true,restNotify:false,startTab:'workout',accent:'cyan',lang:null}};addDefaults(st);st.v=DATA_V;return st}
 const KEY='olupan.v1',KEY_OLD='edzesnaplo.v1';
 let S; // a betöltés a fájl végén történik (a validáló függvények után)
 function load(){try{const raw=localStorage.getItem(KEY)||localStorage.getItem(KEY_OLD);if(raw){const s=sanitizeState(JSON.parse(raw));if(s.v<DATA_V){addDefaults(s);s.v=DATA_V}return s}}catch(e){console.warn('Betöltési hiba',e)}return defaults()}
@@ -603,6 +611,143 @@ function renderPlates(full=true){const m=plateMath(),pl=S.settings.plates||[25,2
   <label>Elérhető tárcsák</label><div class="chips" style="margin:0">${[25,20,15,10,5,2.5,1.25,0.5].map(p=>`<button class="chip${pl.includes(p)?' on':''}" data-click="plateToggle(${p})" aria-pressed="${pl.includes(p)}">${hu(p,2)}</button>`).join('')}</div>
   <div id="plres" style="margin-top:14px">${res}</div><div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn p" data-click="closeModal()">Bezárás</button></div>`)}
 
+/* ===== Élelmiszer-adattár: alapkészlet (USDA + magyar becslés, EU-s számítás) és saját tételek =====
+   Értékek 100 g-ra vagy 100 ml-re. kcal = 4·F + 4·Sz + 9·Zs + 2·rost + 7·alkohol (EU 1169/2011). */
+/*@FOODS@*/
+const DBF=FOODDB.map(r=>({id:'d'+r[0],hu:r[2],en:r[3],kcal:r[4],p:r[5],c:r[6],f:r[7],fib:r[8],alc:r[9]||0,unit:r[10]?'ml':'g',usda:r[11]||0,portions:r[12]||[]}));
+const DB_BY=new Map(DBF.map(x=>[x.id,x]));
+const NUT=['kcal','p','c','f','fib','alc'];
+const foodName=x=>x.own||x.off||x.blank?x.name:(LANG==='en'?x.en:x.hu);
+const foodById=id=>id?(DB_BY.get(id)||(S.foods||[]).find(x=>x.id===id)||null):null;
+const ownFoods=()=>(S.foods||[]).map(x=>Object.assign({own:true},x));
+const euKcal=v=>Math.round(4*(v.p||0)+4*(v.c||0)+9*(v.f||0)+2*(v.fib||0)+7*(v.alc||0));
+function foodSrc(x){if(!x)return'';if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
+function foodSearch(q,n=12){const toks=deacc(q).split(/[\s,]+/).filter(Boolean);if(!toks.length)return[];
+  const res=[];for(const x of[...ownFoods(),...DBF]){const nm=deacc(foodName(x)),hay=x.own?nm:deacc(x.hu+' '+x.en);
+    if(!toks.every(t=>hay.includes(t)))continue;const words=nm.split(/[\s,()/]+/);
+    const sc=(x.own?0:10)+(nm.startsWith(toks[0])?0:words.some(w=>w.startsWith(toks[0]))?2:5)+toks.filter(t=>!nm.includes(t)).length*3+nm.length/100;res.push([sc,x])}
+  return res.sort((a,b)=>a[0]-b[0]).slice(0,n).map(r=>r[1])}
+
+/* ===== Kézi felvétel: keresés az adattárban, mennyiség grammban/ml-ben vagy adagban ===== */
+let mf=null;
+function mfNew(m){const x={id:m?.id||null,meal:m?.meal||(foodDate===today()?guessMeal():'ebed'),food:null,name:m?.name||'',qty:'',u:'g',per:null,base:null,tot:{kcal:m?.kcal??'',p:m?.p??'',c:m?.c??'',f:m?.f??'',fib:m?.fib??'',alc:m?.alc??0},date:m?.date||foodDate};
+  const fd=m&&foodById(m.fid);if(fd&&m.qty){mfPick(x,fd);x.u=m.u||x.u;x.qty=m.qty;x.name=m.fname||x.name}return x}
+function mfPick(x,fd){x.food=fd;x.name=foodName(fd);x.u=fd.unit;x.qty=x.qty||(fd.portions?.length?'':'100');if(fd.portions?.length&&!x.qty){x.u='p0';x.qty='1'}
+  x.per={};for(const k of NUT)x.per[k]=fd[k]??0;x.base=Object.assign({},x.per)}
+function openFoodEntry(m){closeScanner();mf=mfNew(m);renderMF();setTimeout(()=>{const q=$('#mfq');q&&!mf.food&&!mf.id&&q.focus()},60)}
+function mfGrams(){const x=mf;if(!x.food)return null;const q=parseMacro(x.qty);if(q==null)return null;
+  if(x.u==='g'||x.u==='ml')return q;const p=x.food.portions?.[+x.u.slice(1)];return p?q*p[2]:null}
+function mfTotals(){if(!mf.food){const t={};for(const k of NUT){const v=parseMacro(mf.tot[k]);t[k]=v==null?0:v}return t}
+  const g=mfGrams(),t={};for(const k of NUT){const v=parseMacro(mf.per[k]);t[k]=g==null||v==null?0:v*g/100}t.kcal=Math.round(t.kcal);for(const k of['p','c','f','fib','alc'])t[k]=Math.round(t[k]*10)/10;return t}
+const mfEdited=()=>!!mf.food&&NUT.some(k=>{const a=parseMacro(mf.per[k]),b=mf.base[k]??0;return(a??0)!==b});
+function mfUnitOpts(){const fd=mf.food,u=fd.unit;if(fd.blank)return[['g','g'],['ml','ml']];return[[u,u],...(fd.portions||[]).map((p,i)=>['p'+i,LANG==='en'?p[1]:p[0]])]}
+function mfQtyLbl(){const x=mf,q=parseMacro(x.qty);if(q==null)return'';if(x.u==='g'||x.u==='ml')return`${hu(q,1)} ${x.u}`;const p=x.food.portions[+x.u.slice(1)],pl=LANG==='en'?p[1]:p[0];return q===1?pl:`${hu(q,2)} × ${pl}`}
+function renderMF(){const x=mf,fd=x.food,u=fd?.unit,t=mfTotals();
+  const nf=(k,l,val,act)=>`<div><label for="mf_${k}">${l}</label><input id="mf_${k}" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(val??'')}" ${act==='mfPer'?`data-input="mfPer('${k}',this.value)"`:`data-input="mfTot('${k}',this.value)"`}></div>`;
+  const L5=[['kcal',L('Energia (kcal)','Energy (kcal)')],['p',L('Fehérje (g)','Protein (g)')],['c',L('Szénhidrát (g)','Carbs (g)')],['f',L('Zsír (g)','Fat (g)')],['fib',L('Rost (g)','Fibre (g)')]];
+  const showAlc=fd?(x.base.alc>0||(parseMacro(x.per.alc)||0)>0):false;
+  openModal(`<h2>${x.id?L('Tétel szerkesztése','Edit item'):L('Új tétel','New item')}</h2><div class="hint" style="margin-top:-4px">${esc(fmtDate(x.date))}</div>
+  <label for="mfmeal">${L('Étkezés','Meal')}</label><select id="mfmeal" data-change="mfMeal(this.value)">${MEALS.map(([k,l])=>`<option value="${k}" ${k===x.meal?'selected':''}>${l}</option>`).join('')}</select>
+  <label for="mfq">${fd?L('Másik élelmiszer keresése','Search another food'):L('Keresés az élelmiszerek között','Search foods')}</label><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfq" type="search" style="flex:1;min-width:0" autocomplete="off" placeholder="${L('pl. túró, csirkemell, passata','e.g. quark, chicken breast, passata')}" data-input="mfSearch(this.value)">${canScan()?`<button class="btn ico" data-click="openScanner()" aria-label="${L('Vonalkód beolvasása','Scan barcode')}" title="${L('Vonalkód','Barcode')}">${I('scan-barcode','sm')}</button>`:''}</div><div id="mfres"></div>${x.msg?`<div class="hint" style="margin-top:8px">${esc(x.msg)}</div>`:''}
+  <label for="mfname">${L('Megnevezés','Name')}</label><input id="mfname" autocomplete="off" value="${esc(x.name)}" placeholder="${L('pl. Zabkása 60 g banánnal','e.g. Porridge 60 g with banana')}" data-input="mfName(this.value)">
+  ${fd?`<div class="grid2"><div><label for="mfqty">${L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
+  <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
+  <div id="mftot" class="mftot">${mfTotHtml(t)}</div>
+  <div class="grp" style="margin-top:14px">${L(`Tápérték 100 ${u}-ben`,`Nutrition per 100 ${u}`)}</div>
+  <div class="grid3 mfgrid">${L5.map(([k,l])=>nf(k,l,x.per[k]==null?'':hu(x.per[k],1),'mfPer')).join('')}${showAlc?nf('alc',L('Alkohol (g)','Alcohol (g)'),hu(x.per.alc,1),'mfPer'):''}</div>`
+  :`<div class="grid3 mfgrid">${L5.map(([k,l])=>nf(k,l,x.tot[k]===''||x.tot[k]==null?'':hu(+x.tot[k],1),'mfTot')).join('')}</div>
+  <div class="hint">${L('Keress fent: a kiválasztott élelmiszer tápértékei a mennyiség alapján kitöltődnek.','Search above: the selected food’s nutrition is filled in from the amount.')}</div>`}
+  <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button><span class="sp"></span></div>
+  <div id="mfnote" class="hint">${mfNote()}</div>
+  <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">${L('Mégse','Cancel')}</button><span class="sp"></span><button class="btn p" data-click="mfSave()">${L('Mentés','Save')}</button></div>
+  ${fd?`<div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`:''}`)}
+function mfTotHtml(t){const q=mfQtyLbl();return`<b class="mono">${fmt(t.kcal,0)} kcal</b>${q?` <span class="mut small">· ${esc(q)}</span>`:''}<br><span class="small mut mono">${L(`F ${hu(t.p,1)} · Sz ${hu(t.c,1)} · Zs ${hu(t.f,1)} · R ${hu(t.fib,1)} g`,`P ${hu(t.p,1)} · C ${hu(t.c,1)} · F ${hu(t.f,1)} · Fib ${hu(t.fib,1)} g`)}</span>`}
+function mfNote(){if(mf.food&&(mf.food.off||mf.food.blank))return L('Mentéskor saját élelmiszerként, a vonalkóddal együtt elmentődik – legközelebb a beolvasás internet nélkül is megtalálja.','On save it’s stored as your own food with its barcode – next time a scan finds it even offline.');if(!mf.food||!mfEdited())return'';const own=mf.food.own;
+  return own?L('Módosított értékek: mentéskor a saját tételed is frissül.','Changed values: your own item is updated on save.')
+    :L(`Módosított értékek: mentéskor saját tételként is elmentődik${mf.name===foodName(mf.food)?` „${esc(mf.name)} (saját rögzítés)” néven – fent átnevezheted`:` „${esc(mf.name)}” néven`}.`,`Changed values: saved as your own item too${mf.name===foodName(mf.food)?`, as “${esc(mf.name)} (own entry)” – you can rename it above`:`, as “${esc(mf.name)}”`}.`)}
+function mfLive(){const t=$('#mftot');if(t)t.innerHTML=mfTotHtml(mfTotals());const n=$('#mfnote');if(n)n.innerHTML=mfNote()}
+function mfMeal(v){mf.meal=v}
+function mfName(v){mf.name=String(v).slice(0,100);mfLive()}
+function mfQty(v){mf.qty=v;mfLive()}
+function mfUnit(v){if(mf.food.blank){mf.food.unit=v;mf.u=v;renderMF();return}const old=mfGrams();mf.u=v;mf.qty=v===mf.food.unit?(old!=null?String(Math.round(old)):'100'):'1';renderMF()}
+function mfPer(k,v){mf.per[k]=v;mfLive()}
+function mfTot(k,v){mf.tot[k]=v}
+function mfRecalc(){const src=mf.food?mf.per:mf.tot,v={};for(const k of NUT)v[k]=parseMacro(src[k])||0;if(!mf.food)v.alc=+mf.tot.alc||0;src.kcal=String(euKcal(v));renderMF();toast(L('Kalória újraszámolva: ','Calories recalculated: ')+src.kcal+' kcal')}
+function mfSearch(q){const r=foodSearch(q),box=$('#mfres');if(!box)return;mfRes=r;
+  box.innerHTML=q.trim()?(r.length?`<div class="exlist" style="max-height:40vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${fmt(x.kcal,0)} kcal/100 ${x.unit}</span></button>`).join('')}</div>`:`<div class="mut small" style="padding:8px 0">${L('Nincs találat – add meg kézzel az értékeket.','No match – enter the values manually.')}</div>`):''}
+let mfRes=[];
+function mfChoose(i){const fd=mfRes[i];if(!fd)return;mf.qty='';mf.msg='';mfPick(mf,fd);renderMF();setTimeout(()=>{const q=$('#mfqty');q&&q.focus()},60)}
+function mfSave(){const x=mf,t=mfTotals();if(!x.name.trim()){toast(L('Adj meg megnevezést','Enter a name'));return}
+  if(x.food&&mfGrams()==null){toast(L('Adj meg mennyiséget','Enter an amount'));return}
+  let fd=x.food,fname=x.name.trim();
+  if(fd&&(fd.off||fd.blank)){const per={};for(const k of NUT)per[k]=Math.max(0,Math.min(k==='kcal'?1000:100,parseMacro(x.per[k])||0));
+    if(fd.blank&&!per.kcal&&!per.p&&!per.c&&!per.f){toast(L('Add meg a címke tápértékeit','Enter the nutrition values from the label'));return}
+    if(!per.kcal)per.kcal=euKcal(per);
+    const o=Object.assign({id:'f'+uid(),name:fname.slice(0,80),unit:fd.unit,ean:fd.ean},fd.off?{src:'off'}:{},per);if(fd.portions?.length)o.portions=fd.portions.map(p=>[p[0],p[1],p[2]]);
+    S.foods=S.foods||[];S.foods=S.foods.filter(y=>y.ean!==fd.ean);S.foods.push(o);fd=Object.assign({own:true},o)}
+  else if(fd&&mfEdited()){const per={};for(const k of NUT)per[k]=Math.max(0,Math.min(k==='kcal'?1000:100,parseMacro(x.per[k])||0));
+    if(fd.own){const o=S.foods.find(y=>y.id===fd.id);if(o){Object.assign(o,per);if(fname!==foodName(fd))o.name=fname.slice(0,80)}fd=o?Object.assign({own:true},o):fd}
+    else{if(fname===foodName(fd))fname=fname+L(' (saját rögzítés)',' (own entry)');
+      const o=Object.assign({id:'f'+uid(),name:fname.slice(0,80),unit:fd.unit,base:fd.id},per);if(fd.portions?.length)o.portions=fd.portions.map(p=>[p[0],p[1],p[2]]);
+      S.foods=S.foods||[];S.foods.push(o);fd=Object.assign({own:true},o);toast(L('Saját tételként is mentve','Also saved as your own item'))}}
+  const rec={meal:MEALS.some(m=>m[0]===x.meal)?x.meal:'nasi',name:(fd?`${fname} ${mfQtyLbl()}`:fname).slice(0,100),kcal:Math.min(10000,t.kcal),p:Math.min(1000,t.p),c:Math.min(1000,t.c),f:Math.min(1000,t.f),
+    fib:fd?t.fib:(String(x.tot.fib??'').trim()===''?null:Math.min(500,t.fib))};
+  if(t.alc>0)rec.alc=Math.min(500,t.alc);
+  if(fd){rec.fid=fd.id;rec.qty=Math.round((parseMacro(x.qty)||0)*100)/100;rec.u=x.u;rec.fname=fname.slice(0,80)}
+  if(x.id){const m=S.meals.find(y=>y.id===x.id);if(m){for(const k of['alc','fid','qty','u','fname'])delete m[k];Object.assign(m,rec)}}
+  else S.meals.push(Object.assign({id:uid(),date:x.date},rec));
+  closeModal();save();render()}
+
+
+/* ===== Vonalkód: beolvasás külön oldalon (scanner.html, saját CSP), lekérés az Open Food Facts adatbázisából =====
+   Csak a vonalkód száma kerül ki (az OFF szerverére), a lekérés csak gombnyomásra és csak internettel indul. */
+const canScan=()=>location.protocol==='https:'||location.hostname==='localhost'||location.hostname==='127.0.0.1';
+function openScanner(){if(!canScan()){toast(L('A vonalkód-olvasó csak az olupan.com-on érhető el','The barcode reader is only available on olupan.com'));return}
+  closeScanner();const ov=document.createElement('div');ov.id='scanov';ov.className='scanov';
+  const f=document.createElement('iframe');f.src='/scanner.html'+(LANG==='en'?'?lang=en':'');f.setAttribute('allow','camera');f.title=L('Vonalkód-olvasó','Barcode reader');
+  ov.appendChild(f);document.body.appendChild(ov)}
+function closeScanner(){const o=$('#scanov');if(o)o.remove()}
+addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.src!=='olupan-scan')return;closeScanner();if(e.data.type==='code'&&/^\d{8,14}$/.test(e.data.code))barcodeFound(e.data.code)});
+const offN=v=>{v=+v;return isFinite(v)&&v>=0?Math.round(v*10)/10:null};
+async function barcodeFound(code){if(!mf)openFoodEntry();
+  const alt=code.length===12?'0'+code:code.length===13&&code[0]==='0'?code.slice(1):null;
+  const own=ownFoods().find(x=>x.ean===code||(alt&&x.ean===alt));
+  if(own){mf.qty='';mfPick(mf,own);renderMF();toast(L('Megvan a saját tételeid között','Found in your own items'));return}
+  if(!navigator.onLine){mfBlank(code,L('Nincs internetkapcsolat, így nem tudtam lekérdezni. Add meg a címkéről a 100 g-ra vagy 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem.','You’re offline, so I couldn’t look it up. Enter the per-100 g or per-100 ml values from the label: I’ll save the product with its barcode.'));return}
+  if(!S.settings.offOk){if(!await ask(L('A termék adatait az <b>Open Food Facts</b> nyílt, közösségi adatbázisából kérem le. Ehhez csak a vonalkód száma kerül el a szerverükre (az internetes kapcsolat miatt az IP-címed is látszik nekik); a naplódból semmi. Ez csak most, egyszer jelenik meg.','I’ll look the product up in the <b>Open Food Facts</b> open, community database. Only the barcode number is sent to their server (they also see your IP address, as with any connection) – nothing from your log. This message appears only once.'),{title:L('Vonalkód-lekérdezés','Barcode lookup'),ok:L('Rendben','OK')}))return;S.settings.offOk=true;save()}
+  toast(L('Keresés az Open Food Facts adatbázisában…','Searching Open Food Facts…'));
+  let p=null;
+  for(const c of[code,alt].filter(Boolean)){try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
+      const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${c}.json?fields=product_name,product_name_hu,product_name_en,brands,quantity,product_quantity,product_quantity_unit,serving_size,serving_quantity,nutriments&app_name=Olupan`,{signal:ctl.signal,credentials:'omit',referrerPolicy:'no-referrer'});clearTimeout(t);
+      if(r.ok){const j=await r.json();if(j&&j.status===1&&j.product){p=j.product;break}}}catch(e){}}
+  const n=p&&p.nutriments||{};
+  const kcal=offN(n['energy-kcal_100g'])??(offN(n.energy_100g)!=null?Math.round(n.energy_100g/4.184):null);
+  if(!p||(kcal==null&&offN(n.proteins_100g)==null)){mfBlank(code,L('Ez a termék nincs benne az Open Food Facts adatbázisában (vagy nincs megadva a tápértéke). Add meg a címkéről a 100 g-ra vagy 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem, és legközelebb internet nélkül is megtalálom.','This product isn’t in Open Food Facts (or has no nutrition data). Enter the per-100 g or per-100 ml values from the label: I’ll save the product with its barcode and find it next time, even offline.'),p&&(p.product_name_hu||p.product_name||'')||'');return}
+  const nm=String((LANG==='en'?p.product_name_en||p.product_name:p.product_name_hu||p.product_name)||p.product_name_en||p.product_name_hu||'').trim(),br=String(p.brands||'').split(',')[0].trim();
+  const ml=/\b(ml|cl|dl|l)\b/i.test(String(p.product_quantity_unit||p.quantity||''));
+  const fd={off:true,ean:code,unit:ml?'ml':'g',name:((nm||L('Termék','Product'))+(br&&!deacc(nm).includes(deacc(br))?` (${br})`:'')).slice(0,80),
+    p:offN(n.proteins_100g)??0,c:offN(n.carbohydrates_100g)??0,f:offN(n.fat_100g)??0,fib:offN(n.fiber_100g)??0,alc:offN(n.alcohol_100g)!=null?Math.round(n.alcohol_100g*0.789*10)/10:0,portions:[]};
+  fd.kcal=kcal??euKcal(fd);
+  const sq=offN(p.serving_quantity);if(sq&&sq>0&&sq<5000){const ss=String(p.serving_size||'').slice(0,40)||`${sq} ${fd.unit}`;const own=/[a-zá-ű]/i.test(ss.replace(/\b(g|ml|gr|gramm)\b/gi,''));fd.portions.push(own?[ss,ss,sq]:[`1 adag (${ss})`,`1 serving (${ss})`,sq])}
+  const pq=offN(p.product_quantity);if(pq&&pq>0&&pq<5000&&pq!==sq)fd.portions.push([`1 csomag (${pq} ${fd.unit})`,`1 pack (${pq} ${fd.unit})`,pq]);
+  mf.qty='';mfPick(mf,fd);mf.name=fd.name;renderMF()}
+function mfBlank(code,msg,name=''){const fd={blank:true,ean:code,unit:'g',name:String(name).slice(0,80),kcal:null,p:null,c:null,f:null,fib:null,alc:0,portions:[]};
+  mf.qty='100';mfPick(mf,fd);mf.qty='100';mf.u='g';for(const k of NUT)mf.per[k]='';mf.per.alc='';mf.msg=msg;renderMF();setTimeout(()=>{const i=$(name?'#mf_kcal':'#mfname');i&&i.focus()},80)}
+
+/* ===== Saját élelmiszerek kezelése (Beállítások → Étkezés); az alapkészlet nem törölhető ===== */
+function ownFoodsCard(){const l=(S.foods||[]).slice().sort((a,b)=>a.name.localeCompare(b.name,'hu'));
+  return`<div class="card" id="ownfoods"><h2 style="font-size:17px;margin-top:0">${L('Saját élelmiszerek','Own foods')}${l.length?` <span class="mut small">· ${l.length}</span>`:''}</h2>
+  ${l.length?l.map(x=>`<div class="row li" style="flex-wrap:nowrap"><span style="flex:1;min-width:0">${esc(x.name)}<br><span class="mut small mono">${x.ean?`${I('scan-barcode','sm')} `:''}${fmt(x.kcal,0)} kcal · ${L(`F ${hu(x.p,1)} · Sz ${hu(x.c,1)} · Zs ${hu(x.f,1)}`,`P ${hu(x.p,1)} · C ${hu(x.c,1)} · F ${hu(x.f,1)}`)} g / 100 ${x.unit}</span></span><button class="btn sm ico" data-click="editOwnFood('${x.id}')" aria-label="${L('Szerkesztés','Edit')}">${I('pencil','sm')}</button><button class="btn sm ico d" data-click="delOwnFood('${x.id}')" aria-label="${L('Törlés','Delete')}">${I('trash-2','sm')}</button></div>`).join('')
+  :`<div class="hint">${L('Ha kézi felvételkor módosítod egy élelmiszer tápértékét (pl. a te termékedé light változat), az új értékek saját tételként mentődnek, és itt szerkesztheted vagy törölheted őket. Az alapkészlet tételei nem törölhetők.','If you change a food’s nutrition values when adding an item manually (e.g. your product is a light version), the new values are saved as your own item; you can edit or delete them here. Built-in foods can’t be deleted.')}</div>`}
+  <button class="btn sm" style="margin-top:10px" data-click="newOwnFood()">${I('plus','sm')} ${L('Új saját élelmiszer','New own food')}</button></div>`}
+function ownFoodFields(x={}){return[{id:'name',label:L('Megnevezés','Name'),value:x.name||''},{id:'ean',label:L('Vonalkód (nem kötelező)','Barcode (optional)'),type:'number',value:x.ean||''},{id:'unit',label:L('Egység','Unit'),type:'select',value:x.unit||'g',options:[['g',L('100 g-ra','per 100 g')],['ml',L('100 ml-re','per 100 ml')]]},
+  ...[['kcal',L('Energia (kcal)','Energy (kcal)')],['p',L('Fehérje (g)','Protein (g)')],['c',L('Szénhidrát (g)','Carbs (g)')],['f',L('Zsír (g)','Fat (g)')],['fib',L('Rost (g)','Fibre (g)')],['alc',L('Alkohol (g)','Alcohol (g)')]].map(([k,l])=>({id:k,label:l,type:'number',value:x[k]!=null?hu(x[k],1):'',hint:k==='kcal'?L('Üresen hagyva a makrókból számolom (EU-s módszer).','Leave empty to calculate from the macros (EU method).'):''}))]}
+function readOwnFood(r){const o={name:r.name.slice(0,80),unit:r.unit==='ml'?'ml':'g'};const e=String(r.ean||'').replace(/\D/g,'');if(/^\d{8,14}$/.test(e))o.ean=e;for(const k of['p','c','f','fib','alc'])o[k]=Math.max(0,Math.min(100,parseMacro(r[k])||0));const k=parseMacro(r.kcal);o.kcal=k==null?euKcal(o):Math.max(0,Math.min(1000,Math.round(k)));return o}
+async function newOwnFood(){const r=await form(L('Új saját élelmiszer','New own food'),ownFoodFields(),{intro:L('Tápérték 100 g-ra vagy 100 ml-re, a termék címkéje alapján.','Nutrition per 100 g or 100 ml, from the product label.')});if(!r)return;if(!r.name){toast(L('Adj meg megnevezést','Enter a name'));return}
+  S.foods=S.foods||[];S.foods.push(Object.assign({id:'f'+uid()},readOwnFood(r)));save();render()}
+async function editOwnFood(id){const x=(S.foods||[]).find(y=>y.id===id);if(!x)return;const r=await form(L('Saját élelmiszer','Own food'),ownFoodFields(x));if(!r||!r.name)return;const y=readOwnFood(r);if(!y.ean)delete x.ean;Object.assign(x,y);save();render()}
+async function delOwnFood(id){const x=(S.foods||[]).find(y=>y.id===id);if(!x)return;if(!await ask(L(`Törlöd: <b>${esc(x.name)}</b>? A már rögzített étkezéseid nem változnak.`,`Delete <b>${esc(x.name)}</b>? Meals you’ve already logged don’t change.`),{title:L('Saját élelmiszer törlése','Delete own food'),ok:L('Törlés','Delete'),danger:true}))return;S.foods=S.foods.filter(y=>y.id!==id);save();render()}
+
 /* ===== Gyors rögzítés: korábbi étkezések és gyakori tételek Claude nélkül ===== */
 let qMeal=null,qFreq=[],qGroups=[];
 function quickLog(){qMeal=foodDate===today()?guessMeal():'ebed';const lim=ymd(new Date(Date.now()-90*DAY)),cnt=new Map();
@@ -615,12 +760,20 @@ function renderQuick(){
   openModal(`<h2>Gyors rögzítés</h2><div class="hint" style="margin-top:-4px">${esc(fmtDate(foodDate))} · ${L('korábbi étkezések és gyakori tételek, Claude nélkül','earlier meals and frequent items, without Claude')}</div>
   ${qGroups.length?`<div class="grp">Korábbi étkezések</div>${qGroups.map((g,i)=>`<div class="qrow"><span><b>${esc(mealLbl(g.meal))}</b> <span class="mut small">· ${esc(relDay(pYmd(g.date).getTime()))}</span><br><span class="small mut">${esc(g.items.map(m=>m.name).join(' · '))}</span></span><span class="mono small">${fmt(sumMeals(g.items).kcal,0)}</span><button class="btn sm" data-click="copyGroup(${i})">Ismét</button></div>`).join('')}`:''}
   ${qFreq.length?`<div class="grp">Gyakori tételek</div><label for="qmeal" style="margin-top:0">Étkezés</label><select id="qmeal" data-change="qMealSet(this.value)">${MEALS.map(([k,l])=>`<option value="${k}" ${k===qMeal?'selected':''}>${l}</option>`).join('')}</select>
-  ${qFreq.map((m,i)=>`<div class="qrow"><span>${esc(m.name)}<br><span class="small mut mono">F ${fmt(m.p,0)} · Sz ${fmt(m.c,0)} · Zs ${fmt(m.f,0)} g</span></span><span class="mono small">${fmt(m.kcal,0)}</span><button class="btn sm ico" data-click="addFreq(${i})" aria-label="Hozzáadás">${I('plus','sm')}</button></div>`).join('')}`:''}
+  <input id="qq" type="search" autocomplete="off" style="margin-top:10px" placeholder="${L('Keresés a korábbi tételeid között…','Search your earlier items…')}" data-input="qSearch(this.value)"><div id="qlist">${qRows(qFreq)}</div>`:''}
   ${!qGroups.length&&!qFreq.length?'<div class="empty">Még nincs korábbi étkezés.</div>':''}
   <div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn p" data-click="closeModal()">Kész</button></div>`)}
+function qRows(l){qList=l;return l.map((m,i)=>`<div class="qrow"><span>${esc(m.name)}<br><span class="small mut mono">F ${fmt(m.p,0)} · Sz ${fmt(m.c,0)} · Zs ${fmt(m.f,0)} g</span></span><span class="mono small">${fmt(m.kcal,0)}</span><button class="btn sm ico" data-click="addFreq(${i})" aria-label="Hozzáadás">${I('plus','sm')}</button></div>`).join('')}
+let qList=[];
+/* Keresés az összes korábbi (egyedi név+kcal) tétel között, nem csak a 12 leggyakoribb között */
+function qSearch(q){const box=$('#qlist');if(!box)return;const toks=deacc(q).split(/\s+/).filter(Boolean);if(!toks.length){box.innerHTML=qRows(qFreq);return}
+  const seen=new Map();for(const m of S.meals){const n=deacc(m.name);if(!toks.every(t=>n.includes(t)))continue;const k=n+'|'+m.kcal,c=seen.get(k);if(c){c.n++;if(m.date>c.m.date)c.m=m}else seen.set(k,{n:1,m})}
+  const l=[...seen.values()].sort((a,b)=>b.n-a.n||(a.m.date<b.m.date?1:-1)).slice(0,30).map(x=>x.m);
+  box.innerHTML=l.length?qRows(l):`<div class="mut small" style="padding:10px 0">${L('Nincs ilyen korábbi tétel.','No such earlier item.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="qToEntry()">${L('Keresés az élelmiszerek között','Search the food list')}</button></div>`}
+function qToEntry(){const q=($('#qq')||{}).value||'';openFoodEntry();const i=$('#mfq');if(i&&q){i.value=q;mfSearch(q)}}
 function qMealSet(v){qMeal=v}
 function copyGroup(i){const g=qGroups[i];if(!g)return;for(const m of g.items){const x=Object.assign({},m,{id:uid(),date:foodDate});S.meals.push(x)}save();render();toast(L(`${g.items.length} tétel hozzáadva`,`${g.items.length} item(s) added`))}
-function addFreq(i){const m=qFreq[i];if(!m)return;S.meals.push(Object.assign({},m,{id:uid(),date:foodDate,meal:qMeal||m.meal}));save();render();toast(L('Hozzáadva: ','Added: ')+m.name)}
+function addFreq(i){const m=qList[i];if(!m)return;S.meals.push(Object.assign({},m,{id:uid(),date:foodDate,meal:qMeal||m.meal}));save();render();toast(L('Hozzáadva: ','Added: ')+m.name)}
 
 /* ===== Saját párbeszédablakok (alert/confirm/prompt helyett) ===== */
 let dlgResolve=null,dlgDefault=null;
@@ -715,7 +868,7 @@ function sanitizeState(d){
   return{diet:keys(f.diet,PREF_DIET),cuisine:(()=>{const c=keys(f.cuisine,PREF_CUISINE);if(Array.isArray(f.style)&&f.style.includes('hu')&&!c.includes('hu'))c.unshift('hu');return c})(),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),wish:str(f.wish||'',300),eq:keys(f.eq,PREF_EQUIP),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,cook:num(f.cook,1,4)||2,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(['cardio','reps','time'].includes(e.kind))x.kind=e.kind;if(MUSCLES.some(m=>m[0]===e.mu))x.mu=e.mu;if(Array.isArray(e.mu2)){const a=[...new Set(e.mu2.filter(k=>k!==x.mu&&MUSCLES.some(m=>m[0]===k)))];if(a.length)x.mu2=a}if(EQUIP.some(q=>q[0]===e.eq))x.eq=e.eq;if(e.m===1)x.m=1;const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
   o.exercises.forEach(fillMeta);
-  o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude'])if(d.settings?.[k]===true)o.settings[k]=true;
+  o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk'])if(d.settings?.[k]===true)o.settings[k]=true;
   const sets=a=>(Array.isArray(a)?a:[]).map(s=>{const x={w:num(s?.w,0,2000)??0,r:num(s?.r,0,10000)??0};if(s?.wu===true)x.wu=true;else if(s?.st==='d'||s?.st==='f')x.st=s.st;return x});
   const notes=(a,withW)=>(Array.isArray(a)?a:[]).filter(n=>n&&n.text).map(n=>{const x={id:fix(n.id||uid()),ts:num(n.ts,0,9e15)||Date.now(),text:str(n.text,2000)};if(withW)x.wid=n.wid?fix(n.wid):null;return x});
   o.templates=(Array.isArray(d.templates)?d.templates:[]).filter(t=>t&&t.name).map(t=>{const x={id:fix(t.id),name:str(t.name,100),items:(Array.isArray(t.items)?t.items:[]).map(i=>{const x={exId:fix(i?.exId),sets:num(i?.sets,1,30)||3};if(i?.ss===true)x.ss=true;if(typeof i?.reps==='string'&&/^[\d\s–\-]{1,9}$/.test(i.reps))x.reps=i.reps;return x})};const pl=str(t.plan||'',60).trim();if(pl)x.plan=pl;
@@ -726,6 +879,9 @@ function sanitizeState(d){
     prs:(Array.isArray(w.prs)?w.prs:[]).filter(p=>p&&['w','e','r','v'].includes(p.type)).map(p=>({exId:fix(p.exId),type:p.type,val:num(p.val,0,1e7)||0}))}));
   o.body=(Array.isArray(d.body)?d.body:[]).filter(b=>b&&DATE_RE.test(b.date)).map(b=>{const x={date:b.date};const w=num(b.weight,20,400),f=num(b.fat,2,70),wa=num(b.waist,30,250),st=num(b.steps,0,200000);if(w!=null)x.weight=w;if(f!=null)x.fat=f;if(wa!=null)x.waist=wa;for(const[k]of BODY_X){const v=num(b[k],10,250);if(v!=null)x[k]=v}if(st!=null)x.steps=Math.round(st);return x}).filter(b=>Object.keys(b).length>1);
   o.meals=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name).map(m=>({id:fix(m.id),date:m.date,meal:MEALS.some(x=>x[0]===m.meal)?m.meal:'nasi',name:str(m.name,100),kcal:Math.round(num(m.kcal,0,10000)??0),p:num(m.p,0,1000)??0,c:num(m.c,0,1000)??0,f:num(m.f,0,1000)??0,fib:m.fib==null||m.fib===''?null:num(m.fib,0,500)}));
+  {const src=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name);o.meals.forEach((x,i)=>{const m=src[i];const a=num(m.alc,0,500);if(a)x.alc=a;if(typeof m.fid==='string'&&/^(d\d{1,5}|f[A-Za-z0-9_-]{1,40})$/.test(m.fid)){const q=num(m.qty,0,100000);if(q!=null){x.fid=m.fid;x.qty=q;x.u=/^(g|ml|p\d{1,2})$/.test(m.u)?m.u:'g';x.fname=str(m.fname||'',80)}}})}
+  o.foods=(Array.isArray(d.foods)?d.foods:[]).filter(x=>x&&x.name&&typeof x.id==='string'&&/^f[A-Za-z0-9_-]{1,40}$/.test(x.id)).slice(0,2000).map(x=>{const y={id:x.id,name:str(x.name,80),unit:x.unit==='ml'?'ml':'g',kcal:Math.round(num(x.kcal,0,1000)??0)};for(const k of['p','c','f','fib','alc'])y[k]=num(x[k],0,100)??0;if(typeof x.base==='string'&&/^d\d{1,5}$/.test(x.base))y.base=x.base;if(typeof x.ean==='string'&&/^\d{8,14}$/.test(x.ean))y.ean=x.ean;if(x.src==='off')y.src='off';
+    if(Array.isArray(x.portions)){const p=x.portions.filter(q=>Array.isArray(q)&&num(q[2],0.1,5000)).slice(0,6).map(q=>[str(q[0],60),str(q[1],60),+q[2]]);if(p.length)y.portions=p}return y});
   {const pr=d.profile||{};o.profile={sex:['m','f'].includes(pr.sex)?pr.sex:null,birthYear:num(pr.birthYear,1900,new Date().getFullYear())||null,height:num(pr.height,100,250)||null,
     activity:ACT_LV.some(a=>a[0]===+pr.activity)?+pr.activity:null,goal:GOALS.some(g=>g[0]===pr.goal)?pr.goal:null,pace:[0,1,2].includes(+pr.pace)?+pr.pace:1,
     targetWeight:num(pr.targetWeight,30,300)||null,kcalOverride:num(pr.kcalOverride,1200,6000)||null}}
@@ -1500,14 +1656,40 @@ async function pasteMeals(){
 function mealFields(m={}){return[{id:'meal',label:'Étkezés',type:'select',value:m.meal||guessMeal(),options:MEALS},{id:'name',label:'Megnevezés',value:m.name||'',placeholder:'pl. Zabkása 60 g banánnal'},
   {id:'kcal',label:'Energia (kcal)',type:'number',value:m.kcal??''},{id:'p',label:'Fehérje (g)',type:'number',value:m.p??''},{id:'c',label:'Szénhidrát (g)',type:'number',value:m.c??''},{id:'f',label:'Zsír (g)',type:'number',value:m.f??''},{id:'fib',label:'Rost (g)',type:'number',value:m.fib??''}]}
 function readMeal(r){const n=k=>{const v=parseMacro(r[k]);return v==null?0:Math.min(k==='kcal'?10000:1000,v)};return{meal:MEALS.some(x=>x[0]===r.meal)?r.meal:'nasi',name:r.name.slice(0,100),kcal:Math.round(n('kcal')),p:n('p'),c:n('c'),f:n('f'),fib:String(r.fib??'').trim()===''?null:Math.min(500,n('fib'))}}
-async function addMeal(){const r=await form('Új tétel',mealFields(),{intro:fmtDate(foodDate)});if(!r||!r.name){if(r)toast('Adj meg megnevezést');return}
-  S.meals.push(Object.assign({id:uid(),date:foodDate},readMeal(r)));save();render()}
-async function editMeal(id){const m=S.meals.find(x=>x.id===id);if(!m)return;const r=await form('Tétel szerkesztése',mealFields(m),{intro:fmtDate(m.date)});if(!r||!r.name)return;Object.assign(m,readMeal(r));save();render()}
+function addMeal(){openFoodEntry()}
+function editMeal(id){const m=S.meals.find(x=>x.id===id);if(m)openFoodEntry(m)}
 async function delMeal(id){const m=S.meals.find(x=>x.id===id);if(!m)return;if(!await ask(`Törlöd: <b>${esc(m.name)}</b> (${m.kcal} kcal)?`,{title:'Tétel törlése',ok:'Törlés',danger:true}))return;S.meals=S.meals.filter(x=>x.id!==id);save();render()}
 function copyMealToday(id){const m=S.meals.find(x=>x.id===id);if(!m)return;S.meals.push(Object.assign({},m,{id:uid(),date:today()}));save();toast('Hozzáadva a mai naphoz')}
 function foodNav(d){const x=pYmd(foodDate);x.setDate(x.getDate()+d);const k=ymd(x);if(k>today())return;foodDate=k;render()}
 function setFoodDate(v){foodDate=DATE_RE.test(v)&&v<=today()?v:today();render()}
 function foodToday(){foodDate=today();render()}
+
+/* ===== Étkezés oldal: tematikus kártyasáv (vízszintesen görgethető), mindegyik egy modalt vagy funkciót nyit ===== */
+function foodTiles(){const k=!!targets().kcal;
+  const tile=(act,ic,t,sub,dis)=>`<button class="ftile${dis?' dim':''}" ${act}><span class="fti">${I(ic)}</span><b>${t}</b><span>${sub}</span></button>`;
+  return`<div class="ftiles" role="list">${[
+    tile('data-click="addMeal()"','search',L('Keresés','Search'),L('Élelmiszer vagy saját tétel','A food or your own item')),
+    tile('data-click="quickLog()"','history',L('Gyors rögzítés','Quick log'),L('Korábbi és gyakori ételek','Earlier and frequent meals')),
+    tile('data-click="claudeBox()"','sparkles',L('Claude-dal','With Claude'),L('Fotóból vagy leírásból','From a photo or description')),
+    tile('data-click="menuBox()"','chef-hat',L('Menüjavaslat','Meal ideas'),L('Heti menü, receptötletek','Weekly menu, recipes'),!k),
+    canScan()?tile('data-click="scanFood()"','scan-barcode',L('Vonalkód','Barcode'),L('Csomagolt termékhez','For packaged food')):''].join('')}</div>`}
+function fbGo(k){closeModal();({paste:pasteMeals,help:foodHelp,prefs:()=>openSub('food','fprefs'),week:()=>askMenu('week'),rest:askRest,ideas:()=>askMenu('ideas'),profile:()=>openSub('profile')})[k]?.()}
+function scanFood(){openFoodEntry();openScanner()}
+function claudeBox(){const k=!!targets().kcal,url=S.settings.claudeUrl;
+  openModal(`<h2>${L('Rögzítés Claude-dal','Logging with Claude')}</h2>
+  <ol class="steps"><li>${L('Nyisd meg a Claude-projektedet, és fotózd le vagy írd le, mit ettél.','Open your Claude project and photograph or describe what you ate.')}</li><li>${L('Másold ki Claude válaszát (a kódblokk sarkában lévő gombbal).','Copy Claude’s reply (with the button in the corner of the code block).')}</li><li>${L('Itt nyomd meg a <b>Beillesztés</b> gombot: a tételek a kiválasztott napra kerülnek.','Tap <b>Paste</b> here: the items go to the selected day.')}</li></ol>
+  ${url?'':`<div class="hint">${k?L('Még nincs beállítva a Claude-projekted linkje. Az útmutató lépésről lépésre végigvezet a létrehozásán.','Your Claude project link isn’t set yet. The guide walks you through creating it.'):L('A Claude-projekt útmutatója a profil kitöltése után érhető el, mert a napi célok is belekerülnek.','The Claude project guide is available after you fill in your profile, as your daily targets go into it.')}</div>`}
+  <div class="stack" style="margin-top:14px"><a class="btn block" href="${esc(url||'https://claude.ai/')}" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} ${url?L('Claude-projekt megnyitása','Open Claude project'):L('claude.ai megnyitása','Open claude.ai')}</a>
+  <button class="btn p block" data-click="fbGo('paste')">${I('clipboard-paste','sm')} ${L('Beillesztés','Paste')}</button>
+  <button class="btn block" data-click="fbGo('help')" ${k?'':'disabled'}>${I('circle-help','sm')} ${url?L('Útmutató és projekt-utasítás','Guide and project instructions'):L('Claude-projekt beállítása','Set up a Claude project')}</button></div>
+  <div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
+function menuBox(){const k=!!targets().kcal,d=k?'':'disabled';
+  openModal(`<div class="row" style="flex-wrap:nowrap"><h2 style="flex:1;margin:0">${L('Menüjavaslat','Meal ideas')}</h2><button class="btn sm ico" data-click="fbGo('prefs')" aria-label="${L('Étkezési preferenciák','Food preferences')}">${I('settings','sm')}</button></div>
+  <div class="hint">${k?L('Claude a napi kereted, a mai étkezéseid és az étkezési preferenciáid alapján javasol. A kérést a vágólapra másolom, a Claude-ba csak be kell illesztened.','Claude suggests based on your daily target, today’s meals and your food preferences. I copy the request to the clipboard; you just paste it into Claude.'):L('A profil kitöltése után érhető el, mert a napi kereted is belekerül.','Available after you fill in your profile, as your daily target goes into it.')}</div>
+  <div class="stack" style="margin-top:12px"><button class="btn block" data-click="fbGo('week')" ${d}>${I('calendar-days','sm')} ${L('Heti menü','Weekly menu')}</button>
+  <button class="btn block" data-click="fbGo('rest')" ${d}>${I('utensils','sm')} ${L('Mit egyek még ma?','What should I eat for the rest of today?')}</button>
+  <button class="btn block" data-click="fbGo('ideas')" ${d}>${I('lightbulb','sm')} ${L('Receptötletek','Recipe ideas')}</button></div>
+  <div class="row" style="margin-top:14px">${k?'':`<button class="btn" data-click="fbGo('profile')">${L('Profil kitöltése','Fill in profile')}</button>`}<span class="sp"></span><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
 function vFood(){
   const t=targets(),items=dayMeals(foodDate),s=sumMeals(items),isToday=foodDate===today();
   let h=`<div class="card"><div class="row" style="flex-wrap:nowrap"><button class="iconbtn" data-click="foodNav(-1)" aria-label="Előző nap">${I('chevron-left')}</button>
@@ -1515,10 +1697,7 @@ function vFood(){
   <button class="iconbtn" data-click="foodNav(1)" aria-label="Következő nap" ${isToday?'disabled style="opacity:.35"':''}>${I('chevron-right')}</button>${isToday?'':`<button class="btn sm" data-click="foodToday()">Ma</button>`}</div>
   <div style="margin-top:14px">${kcalViz(items,`<span class="hk">${isToday?'Ma':esc(pYmd(foodDate).toLocaleDateString(LOC(),{weekday:'long'}))}</span>`)}</div>
   ${!t.kcal?`<div class="hint" style="margin-top:12px">A javasolt napi bevitelhez töltsd ki a profilodat. A Claude-projekt útmutatója és a menüjavaslat csak utána érhető el, mert a napi célok is belekerülnek.</div><button class="linkbtn" style="padding-bottom:0" data-click="openSub('profile')">Profil kitöltése ${I('chevron-right','sm')}</button>`:''}</div>
-  <div class="row" style="margin-bottom:8px;flex-wrap:nowrap">${S.settings.claudeUrl?`<a class="btn" href="${esc(S.settings.claudeUrl)}" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} Claude</a>`:''}<button class="btn p" style="flex:1;min-width:0" data-click="pasteMeals()">${I('clipboard-paste','sm')} Beillesztés${S.settings.claudeUrl?'':' Claude-ból'}</button><button class="btn ico" data-click="foodHelp()" aria-label="Súgó: Claude-projekt" ${t.kcal?'':'disabled'}>${I('circle-help','sm')}</button></div>
-  <div class="row" style="margin-bottom:12px;flex-wrap:nowrap"><button class="btn" style="flex:1;min-width:0" data-click="quickLog()">${I('history','sm')} Gyors rögzítés</button><button class="btn" data-click="addMeal()">${I('plus','sm')} Kézi</button></div>`;
-  h+=`<div class="card"><div class="row" style="flex-wrap:nowrap;margin-bottom:10px"><h2 style="flex:1;margin:0;font-size:17px">Menüjavaslat</h2><button class="btn sm ico" data-click="openSub('food','fprefs')" aria-label="Étkezési preferenciák">${I('settings','sm')}</button></div>
-  <button class="btn block" data-click="askMenu('week')" ${t.kcal?'':'disabled'}>${I('calendar-days','sm')} Heti menü</button><div class="grid2" style="margin-top:8px"><button class="btn" data-click="askRest()" ${t.kcal?'':'disabled'}>Mit egyek még ma?</button><button class="btn" data-click="askMenu('ideas')" ${t.kcal?'':'disabled'}>${I('lightbulb','sm')} Receptötletek</button></div>${t.kcal?'':`<div class="hint" style="margin-top:8px">A profil kitöltése után érhető el.</div>`}</div>`;
+  <div class="grp" style="margin:4px 2px 8px">${L('Rögzítés','Log food')}</div>${foodTiles()}`;
   const trend=`<div class="card"><h2 style="font-size:17px">Utolsó 7 nap</h2>${foodTrend(7)}</div>`;
   for(const[k,l]of MEALS){const g=items.filter(m=>m.meal===k);if(!g.length)continue;const gs=sumMeals(g);
     h+=`<div class="card"><div class="row"><h2 style="flex:1;margin:0;font-size:17px">${l}</h2><span class="mono small mut">${fmt(gs.kcal,0)} kcal</span></div>
@@ -1562,6 +1741,8 @@ My own recipes: if a food I mention is in the project's recipes.md file (by name
 When I send a photo of food, or describe what I ate:
 1. Identify the foods and estimate the portions. If a portion or the preparation (oil, butter, sauce, sugar) is genuinely uncertain, ask briefly first – at most 2 questions. If I give grams, use them.
 2. For each item, calculate energy (kcal), macros (protein, carbs, fat) and fiber, in grams. Use standard European nutrient values, and take into account whether the weight is raw or cooked. If the product variant matters (e.g. 0% vs full-fat Greek yoghurt, light vs regular sour cream) and I don't say, use the usual variant and state it in the name (e.g. Greek yoghurt 10% 150 g).
+   Give carbohydrates as on EU labels, excluding fibre; calories: 4 × protein + 4 × carbs + 9 × fat + 2 × fibre.
+   Alcohol: for alcoholic drinks, include the energy from alcohol in the calories (7 kcal/g; 1% ABV ≈ 0.79 g alcohol per 100 ml, e.g. 500 ml of 5% beer ≈ 20 g alcohol ≈ 140 kcal). Alcohol is not a macro and needs no column of its own, but it must be in the kcal.
 3. Write a 1–3 sentence summary of what the estimate is based on.
 4. At the END of the reply, give the items in a single code block, one item per line, exactly in this format:
 YYYY-MM-DD;meal;name;kcal;protein;carbs;fat;fiber
@@ -1600,6 +1781,8 @@ Saját receptek: ha egy általam említett étel szerepel a projekt receptek.md 
 Amikor fotót küldök az ételről, vagy leírom/elmondom, mit ettem:
 1. Azonosítsd az ételeket, és becsüld meg az adagokat. Ha egy adag vagy az elkészítés (olaj, vaj, szósz, cukor) érdemben bizonytalan, előbb kérdezz vissza röviden, legfeljebb 2 kérdéssel. Ha grammban megadom, azzal számolj.
 2. Tételenként számold ki az energiát (kcal), a makrókat (fehérje, szénhidrát, zsír) és a rostot, grammban. Magyar/európai tápanyagértékekkel számolj, és vedd figyelembe, hogy nyers vagy főtt tömegről van-e szó. Ha a termék változata érdemben számít (pl. 12% vagy 20% tejföl, 0%-os vagy görög joghurt, sovány vagy zsíros túró) és nem mondom meg, a szokásos változattal számolj, és a megnevezésben jelöld (pl. Tejföl 20% 50 g).
+   A szénhidrátot az EU-s címkék szerint rost nélkül add meg; a kalória: 4 × fehérje + 4 × szénhidrát + 9 × zsír + 2 × rost.
+   Alkohol: alkoholos italnál a kalóriába számold bele az alkohol energiáját is (7 kcal/g; 1 tf% ≈ 0,79 g alkohol 100 ml-ben, pl. 5 dl 5%-os sör ≈ 20 g alkohol ≈ 140 kcal). Az alkohol nem makró, külön oszlopban nem kell megadni, de a kcal-ban benne legyen.
 3. Írj egy 1–3 mondatos összefoglalót arról, mire alapoztad a becslést.
 4. A válasz VÉGÉN egyetlen kódblokkban add meg a tételeket, tételenként egy sorban, pontosan ebben a formátumban:
 ÉÉÉÉ-HH-NN;étkezés;megnevezés;kcal;fehérje;szénhidrát;zsír;rost
@@ -2433,7 +2616,7 @@ function vMore(){
   <div class="card" id="exlist"><div class="row" style="margin-bottom:4px"><h2 style="margin:0;flex:1">Gyakorlatok <span class="mut mono" style="font-size:14px">${S.exercises.length}</span></h2><button class="btn sm gold" data-click="newExFromList()">${I('plus','sm')} Új</button></div>
   ${cats.map(c=>`<h3 style="margin-top:16px">${esc(c)}</h3>`+S.exercises.filter(e=>exGroup(e)===c).sort(byName).map(e=>`<div class="row li"><span style="flex:1;min-width:0">${esc(e.name)}<br><span class="mut small mono">${e.eq?esc(lblOf(EQUIP,e.eq))+' · ':''}${e.rest!=null?`<span style="color:var(--kj-violet)">${I('timer','sm')} ${fmtSec(e.rest)}</span>`:`${I('timer','sm')} alap`}${usage[e.id]?` · ${usage[e.id]} edzés`:''}</span></span><button class="btn sm ico" data-click="editEx('${e.id}')" aria-label="Szerkesztés">${I('pencil','sm')}</button><button class="btn sm ico d" data-click="delEx('${e.id}')" aria-label="Törlés">${I('trash-2','sm')}</button></div>`).join('')).join('')}</div>
 `}
-  if(setSub==='food')return (S.settings.claudeUrl?'':`<div class="card notice"><div class="row li"><span class="nd"></span><span class="small" style="flex:1">${L('Étkezésnapló Claude-dal, két lépésben: <b>1.</b> állítsd be lent az étkezési preferenciáidat (ezekből készül a menü- és receptjavaslat), <b>2.</b> hozd létre a Claude-projektet az útmutató alapján, és másold be a linkjét.','Food log with Claude in two steps: <b>1.</b> set your food preferences below (meal and recipe suggestions are built from them), <b>2.</b> create the Claude project following the guide and paste its link.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="whyClaude()">${L('Mire jó ez?','What is this for?')}</button></span></div></div>`)+vFoodPrefs()+(S.settings.foodPrefs&&!S.settings.claudeUrl&&targets().kcal?`<div class="card" style="border-color:color-mix(in srgb,var(--kj-blue) 50%,transparent)"><div class="small" style="margin-bottom:10px">${L('Ha készen vagy a preferenciákkal, nyisd meg a Claude-projekt létrehozásának útmutatóját.','When you’re done with your preferences, open the guide to creating the Claude project.')}</div><button class="btn p block" data-click="foodHelp()">${I('external-link','sm')} ${L('Claude-projekt útmutató','Claude project guide')}</button></div>`:'')+`<div class="card">
+  if(setSub==='food')return (S.settings.claudeUrl?'':`<div class="card notice"><div class="row li"><span class="nd"></span><span class="small" style="flex:1">${L('Étkezésnapló Claude-dal, két lépésben: <b>1.</b> állítsd be lent az étkezési preferenciáidat (ezekből készül a menü- és receptjavaslat), <b>2.</b> hozd létre a Claude-projektet az útmutató alapján, és másold be a linkjét.','Food log with Claude in two steps: <b>1.</b> set your food preferences below (meal and recipe suggestions are built from them), <b>2.</b> create the Claude project following the guide and paste its link.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="whyClaude()">${L('Mire jó ez?','What is this for?')}</button></span></div></div>`)+vFoodPrefs()+ownFoodsCard()+(S.settings.foodPrefs&&!S.settings.claudeUrl&&targets().kcal?`<div class="card" style="border-color:color-mix(in srgb,var(--kj-blue) 50%,transparent)"><div class="small" style="margin-bottom:10px">${L('Ha készen vagy a preferenciákkal, nyisd meg a Claude-projekt létrehozásának útmutatóját.','When you’re done with your preferences, open the guide to creating the Claude project.')}</div><button class="btn p block" data-click="foodHelp()">${I('external-link','sm')} ${L('Claude-projekt útmutató','Claude project guide')}</button></div>`:'')+`<div class="card">
   <label for="claudeurl">Claude-projekt linkje (étkezésnapló)</label>
   <div class="row" style="flex-wrap:nowrap;gap:8px"><input id="claudeurl" style="flex:1;min-width:0" type="url" inputmode="url" autocomplete="off" value="${esc(S.settings.claudeUrl||'')}" placeholder="https://claude.ai/project/…" data-change="setClaudeUrl(this.value)">${S.settings.claudeUrl?`<a class="btn" href="${esc(S.settings.claudeUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Claude-projekt megnyitása">${I('external-link','sm')} Megnyitás</a>`:''}</div>
   <div class="hint">${S.settings.claudeUrl?'A Megnyitás gomb új böngészőlapon nyitja meg a projektet – itt cserélheted az utasítást vagy a receptfájlt.':'Nyisd meg a Claude-ot ugyanabban a böngészőben, amelyben az Olupant használod (ne a Claude appot – ott nincs kimásolható webcím), jelentkezz be vagy regisztrálj, hozz létre egy projektet, és másold be ide a linkjét a címsorból.'}${targets().kcal?'':' Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.'}</div>
