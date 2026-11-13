@@ -158,7 +158,12 @@ tr.fl .setno{background:color-mix(in srgb,var(--kj-red) 14%,transparent);border-
 .reccnt{font-size:13px;color:var(--kj-muted);margin:14px 2px 0}
 .reclist{padding:0;overflow:hidden}.reclist .recrow{display:flex;gap:12px;align-items:center;width:100%;text-align:left;padding:14px 16px;border:0;border-bottom:1px solid var(--kj-border);background:transparent;color:var(--kj-text);font:inherit;cursor:pointer}.reclist .recrow:last-child{border-bottom:0}.reclist .recrow:active{background:var(--kj-surface)}
 .recrow .rn{font-weight:600;font-size:15px;line-height:1.3}.recrow .rm{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:4px;font-size:12.5px;color:var(--kj-muted)}.recrow .rm span{display:inline-flex;align-items:center;gap:3px}.recrow .rv{color:var(--kj-blue-line)}
-.recnew{margin-top:22px}.fsec{margin:0 0 16px}.fsec h3{font:600 12px var(--ui);text-transform:uppercase;letter-spacing:.06em;color:var(--kj-muted);margin:0 0 8px}.fsec .chips{margin:0}
+.recnew{margin-top:22px}
+.cwbar{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-bottom:16px;border-radius:14px;border:1px solid color-mix(in srgb,var(--kj-blue-line) 55%,transparent);background:var(--kj-blue-soft)}.cwi{color:var(--kj-blue-line);flex:none}
+.mrow{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--kj-border)}.mrow:last-child{border-bottom:0}.mrow .mname{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;color:var(--kj-text);font:inherit;cursor:pointer}.mrow .rn{font-weight:600}.mrow.done .rn{color:var(--kj-muted)}
+.tmenu{margin-top:18px;padding-top:14px;border-top:1px solid var(--kj-border)}.tmenu .mrow,.mcard .mrow,.tmc .mrow{padding:10px 0}
+.cwbar{flex-wrap:wrap}.cwbar>span:nth-child(2){flex:1 1 220px}.cwbar>.btn.p{margin-left:auto}
+.grp.today{color:var(--kj-blue-line)}.fsec{margin:0 0 16px}.fsec h3{font:600 12px var(--ui);text-transform:uppercase;letter-spacing:.06em;color:var(--kj-muted);margin:0 0 8px}.fsec .chips{margin:0}
 .qrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--kj-border)}.qrow>span:first-child{flex:1;min-width:0}
 .sstag{display:inline-flex;align-items:center;gap:4px;margin-bottom:2px;font:600 12px var(--ui);color:var(--kj-blue-line);text-transform:uppercase;letter-spacing:.05em}
 .card.ssc{border-color:var(--kj-blue-line)}.card.sslink{margin-bottom:4px}
@@ -335,6 +340,7 @@ const z2=n=>String(n).padStart(2,'0');
 const ymd=d=>d.getFullYear()+'-'+z2(d.getMonth()+1)+'-'+z2(d.getDate());
 const today=()=>ymd(new Date());
 const pYmd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const addDays=(s,n)=>{const d=pYmd(s);d.setDate(d.getDate()+n);return ymd(d)};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* ===== Nyelv / i18n: magyar a forrásnyelv; angolnál a DOM-ot fordítjuk szótár alapján ===== */
 /*@I18N@*/
@@ -542,14 +548,14 @@ const TP_GOAL=[['strength','Erő','Strength'],['muscle','Izomépítés','Muscle 
 const TP_EQ=[['gym','Edzőterem','Gym'],['db','Kézisúlyzó otthon','Dumbbells at home'],['kb','Kettlebell','Kettlebell'],['bw','Saját testsúly','Bodyweight']];
 function tpPrefs(){return Object.assign({goal:'muscle',days:3,mins:60,eq:['gym'],level:'beginner',avoid:''},S.settings.tp||{})}
 function openPlanReq(){if(!S.settings.claudeUrl){toast('Előbb add meg a Claude-projekt linkjét');return}const p=tpPrefs(),lbl=x=>LANG==='en'?x[2]:x[1];
-  openModal(`<h2>Edzésterv Claude-dal</h2><div class="hint" style="margin-top:-4px">Az app összeállít egy kérést a gyakorlataid listájával; a válasz kódblokkját az <b>Edzésterv beillesztése</b> gombbal sablonokként veheted fel.</div>
+  openModal(`<h2>Edzésterv Claude-dal</h2><div class="hint" style="margin-top:-4px">Az app összeállít egy kérést a gyakorlataid listájával; a gomb kimásolja és megnyitja a Claude-ot. Visszatérve a felső sáv <b>Beillesztés</b> gombjával veheted fel a választ sablonokként.</div>
   <label>Cél</label><div class="chips" style="margin:0">${TP_GOAL.map(x=>`<button class="chip${p.goal===x[0]?' on':''}" data-click="tpSet('goal','${x[0]}')">${esc(lbl(x))}</button>`).join('')}</div>
   <div class="grid2"><div><label for="tpd">Nap hetente</label><select id="tpd" data-change="tpSet('days',this.value)">${[2,3,4,5,6].map(n=>`<option ${p.days===n?'selected':''}>${n}</option>`).join('')}</select></div>
   <div><label for="tpm">Edzés hossza</label><select id="tpm" data-change="tpSet('mins',this.value)">${[30,45,60,75,90].map(n=>`<option value="${n}" ${p.mins===n?'selected':''}>${n} ${L('perc','min')}</option>`).join('')}</select></div></div>
   <label>Eszközök</label><div class="chips" style="margin:0">${TP_EQ.map(x=>`<button class="chip${p.eq.includes(x[0])?' on':''}" data-click="tpSet('eq','${x[0]}')">${esc(lbl(x))}</button>`).join('')}</div>
   <label for="tpl">Gyakorlottság</label><select id="tpl" data-change="tpSet('level',this.value)">${PREF_SKILL.map(x=>`<option value="${x[0]}" ${p.level===x[0]?'selected':''}>${esc(lbl(x))}</option>`).join('')}</select>
   <label for="tpa">Kerülendő gyakorlatok (nem kötelező)</label><input id="tpa" maxlength="200" value="${esc(p.avoid)}" placeholder="${esc(L('pl. guggolás rúddal, fej fölé nyomás','e.g. barbell squat, overhead press'))}" data-change="tpSet('avoid',this.value)">
-  <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">Mégse</button><span class="sp"></span><button class="btn p" data-click="copyPlanReq()">${I(S.settings.claudeUrl?'external-link':'copy','sm')} ${S.settings.claudeUrl?'Másolás és Claude':'Másolás'}</button></div>`)}
+  <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">Mégse</button><span class="sp"></span><button class="btn p" data-click="copyPlanReq()">${I('external-link','sm')} ${L('Megnyitás Claude-ban','Open in Claude')}</button></div>`)}
 function tpSet(k,v){const p=tpPrefs();if(k==='eq'){const a=new Set(p.eq);a.has(v)?a.delete(v):a.add(v);p.eq=[...a]}else if(k==='days'||k==='mins')p[k]=parseInt(v)||p[k];else p[k]=String(v).slice(0,200);S.settings.tp=p;save();if(k==='goal'||k==='eq')openPlanReq()}
 function planPrompt(){const p=tpPrefs(),en=LANG==='en',lbl=x=>en?x[2]:x[1],L2=(h,e)=>en?e:h;
   const names=[...new Set(S.exercises.filter(e=>e.kind!=='cardio').map(e=>T(e.name)))].sort((a,b)=>a.localeCompare(b,LOC()));
@@ -568,9 +574,7 @@ function planPrompt(){const p=tpPrefs(),en=LANG==='en',lbl=x=>en?x[2]:x[1],L2=(h
     L2('TERV;A terv neve','PLAN;Plan name'),L2('SABLON;Az edzésnap neve','TEMPLATE;Training day name'),L2('Gyakorlat neve;sorozatok száma;ismétlés (pl. 8-10)','Exercise name;number of sets;reps (e.g. 8-10)'),
     L2('Szuperszettnél a gyakorlat sora után írd: ;SS (a következő gyakorlattal kötöm össze). A kódblokkban semmi más ne legyen.','For a superset, add ;SS after the exercise line (it is linked with the next one). Nothing else in the code block.'),'',
     L2('Szempontok: a gyakorlottságomhoz illő mennyiség és összetettség, biztonságos technikájú gyakorlatok, egészségügyi vagy rehabilitációs tanács nélkül.','Keep the volume and complexity right for my experience, use exercises with safe technique, and give no medical or rehab advice.')].join('\n')}
-function copyPlanReq(){const txt=planPrompt(),url=S.settings.claudeUrl;
-  try{navigator.clipboard.writeText(txt).then(()=>toast(L('Kérés a vágólapon – illeszd be a Claude-ba','Request copied – paste it into Claude')),()=>toast(L('A másolás nem sikerült','Copy failed')))}catch(e){}
-  if(url){try{window.open(url,'_blank','noopener')}catch(e){}}closeModal()}
+function copyPlanReq(){claudeGo('plan',planPrompt())}
 function parsePlan(text){const m=text.match(/```[a-z]*\n?([\s\S]*?)```/i);if(m)text=m[1];
   let plan='',cur=null;const tpls=[];
   for(let line of text.split(/\r?\n/)){line=line.trim();if(!line)continue;const parts=line.split(/\s*;\s*/),k=parts[0].toUpperCase();
@@ -581,9 +585,8 @@ function parsePlan(text){const m=text.match(/```[a-z]*\n?([\s\S]*?)```/i);if(m)t
     cur.items.push({name:parts[0].slice(0,100),sets,reps,ss})}
   return{plan,tpls:tpls.filter(t=>t.items.length)}}
 function findEx(name){const n=name.toLowerCase(),rev=revEN();const hu=rev[name]||name;return S.exercises.find(e=>e.name.toLowerCase()===n||e.name.toLowerCase()===hu.toLowerCase()||T(e.name).toLowerCase()===n)}
-async function pastePlan(){let text='';try{text=await navigator.clipboard.readText()}catch(e){}
-  if(!/;/.test(text)){const r=await form('Edzésterv beillesztése',[{id:'t',label:L('A Claude válaszának kódblokkja','The code block from Claude’s reply'),type:'textarea',rows:8,placeholder:'SABLON;Push A\nFekvenyomás (rúd);4;6-8'}]);if(!r)return;text=r.t||''}
-  const P=parsePlan(text);if(!P.tpls.length){toast(L('Nem találtam sablont – a kódblokkot másold ki','No templates found – copy the code block'));return}
+function pastePlan(){return claudePaste()}
+async function pastePlanGo(P){
   const newEx=[...new Set(P.tpls.flatMap(t=>t.items.map(i=>i.name)).filter(n=>!findEx(n)))];
   const list=P.tpls.map(t=>`<div class="exl"><span><b>${esc(t.name)}</b><br><span class="mut small">${t.items.map(i=>esc(i.name)+' '+i.sets+'×'+(i.reps||'?')+(i.ss?' (SS)':'')).join(' · ')}</span></span><span class="mono small">${t.items.length}</span></div>`).join('');
   if(!await ask(list+(newEx.length?`<div class="hint">${L('Új gyakorlatként veszem fel: ','Added as new exercises: ')}${newEx.map(esc).join(', ')}</div>`:''),{title:(P.plan?esc(P.plan)+' · ':'')+L(`${P.tpls.length} sablon`,`${P.tpls.length} template(s)`),ok:L('Felvétel a sablonok közé','Add to templates')}))return;
@@ -928,6 +931,8 @@ function sanitizeState(d){
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(['cardio','reps','time'].includes(e.kind))x.kind=e.kind;if(MUSCLES.some(m=>m[0]===e.mu))x.mu=e.mu;if(Array.isArray(e.mu2)){const a=[...new Set(e.mu2.filter(k=>k!==x.mu&&MUSCLES.some(m=>m[0]===k)))];if(a.length)x.mu2=a}if(EQUIP.some(q=>q[0]===e.eq))x.eq=e.eq;if(e.m===1)x.m=1;const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
   o.exercises.forEach(e=>{if(/^KB /.test(e.name)&&KB_RENAME.has(e.name.slice(3)))e.name='Kettlebell '+e.name.slice(3)});o.exercises.forEach(fillMeta);
   o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk'])if(d.settings?.[k]===true)o.settings[k]=true;if(DATE_RE.test(d.settings?.legalOk))o.settings.legalOk=d.settings.legalOk;if(DATE_RE.test(d.settings?.plainOk))o.settings.plainOk=d.settings.plainOk;if(typeof d.settings?.repNote==='string')o.settings.repNote=str(d.settings.repNote,2000);
+  {const w=d.settings?.cWait;if(w&&['meals','ideas','menu','plan'].includes(w.k)&&num(w.at,0,9e15)){o.settings.cWait={k:w.k,at:+w.at};if(DATE_RE.test(w.start))o.settings.cWait.start=w.start}
+   const mo=d.settings?.menuOpt;if(mo&&typeof mo==='object')o.settings.menuOpt={days:[3,5,7].includes(mo.days)?mo.days:7,cook:[1,2,3,7].includes(mo.cook)?mo.cook:2,meals:(Array.isArray(mo.meals)?mo.meals:[]).filter(k=>REC_MEAL.some(x=>x[0]===k)),start:['today','tomorrow','monday'].includes(mo.start)?mo.start:'today'}}
   {const e=d.settings?.enc,b=v=>typeof v==='string'&&/^[A-Za-z0-9+/=]{8,200}$/.test(v),i=(v,a,z)=>Number.isInteger(v)&&v>=a&&v<=z;
    if(e&&e.v===1&&b(e.salt)&&b(e.civ)&&b(e.cct)&&i(e.m,8192,1048576)&&i(e.t,1,20)&&i(e.p,1,8))o.settings.enc={v:1,salt:e.salt,m:e.m,t:e.t,p:e.p,civ:e.civ,cct:e.cct,since:DATE_RE.test(e.since)?e.since:today(),n:i(e.n,0,10000)?e.n:0}}
   const sets=a=>(Array.isArray(a)?a:[]).map(s=>{const x={w:num(s?.w,0,2000)??0,r:num(s?.r,0,10000)??0};if(s?.wu===true)x.wu=true;else if(s?.st==='d'||s?.st==='f')x.st=s.st;return x});
@@ -942,6 +947,9 @@ function sanitizeState(d){
   o.meals=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name).map(m=>({id:fix(m.id),date:m.date,meal:MEALS.some(x=>x[0]===m.meal)?m.meal:'nasi',name:str(m.name,100),kcal:Math.round(num(m.kcal,0,10000)??0),p:num(m.p,0,1000)??0,c:num(m.c,0,1000)??0,f:num(m.f,0,1000)??0,fib:m.fib==null||m.fib===''?null:num(m.fib,0,500)}));
   {const src=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name);o.meals.forEach((x,i)=>{const m=src[i];const a=num(m.alc,0,500);if(a)x.alc=a;if(typeof m.fid==='string'&&/^(d\d{1,5}|f[A-Za-z0-9_-]{1,40})$/.test(m.fid)){const q=num(m.qty,0,100000);if(q!=null){x.fid=m.fid;x.qty=q;x.u=/^(g|ml|p\d{1,2})$/.test(m.u)?m.u:'g';x.fname=str(m.fname||'',80)}}})}
   o.recipes=(Array.isArray(d.recipes)?d.recipes:[]).slice(0,2000).map(recSan).filter(Boolean);
+  {const m=d.menu;if(m&&DATE_RE.test(m.start)&&Array.isArray(m.slots)){const ids=new Set(o.recipes.map(r=>r.id)),mids=new Set(o.meals.map(x=>x.id)),days=Math.max(1,Math.min(14,Math.round(num(m.days,1,14)||7)));
+    const sl=m.slots.slice(0,120).filter(x=>x&&REC_MEAL.some(y=>y[0]===x.meal)&&num(x.d,1,days)).map(x=>({d:Math.round(x.d),meal:x.meal,rid:typeof x.rid==='string'&&ids.has(x.rid)?x.rid:null,name:str(x.name||'',100),cook:num(x.cook,0,100)||0,log:typeof x.log==='string'&&mids.has(fix(x.log))?fix(x.log):null}));
+    if(sl.length)o.menu={start:m.start,days,slots:sl,at:num(m.at,0,9e15)||Date.now()}}}
   o.shop=(Array.isArray(d.shop)?d.shop:[]).filter(x=>x&&x.n).slice(0,1000).map(x=>({id:typeof x.id==='string'?str(x.id,40):uid(),n:str(x.n,120),q:num(x.q,0,100000),u:str(x.u||'',20),rid:typeof x.rid==='string'&&/^r[A-Za-z0-9_-]{1,40}$/.test(x.rid)?x.rid:null,rn:str(x.rn||'',140),done:x.done===true}));
   o.foods=(Array.isArray(d.foods)?d.foods:[]).filter(x=>x&&x.name&&typeof x.id==='string'&&/^f[A-Za-z0-9_-]{1,40}$/.test(x.id)).slice(0,2000).map(x=>{const y={id:x.id,name:str(x.name,80),unit:x.unit==='ml'?'ml':'g',kcal:Math.round(num(x.kcal,0,1000)??0)};for(const k of['p','c','f','fib','alc'])y[k]=num(x[k],0,100)??0;if(typeof x.base==='string'&&/^d\d{1,5}$/.test(x.base))y.base=x.base;if(typeof x.ean==='string'&&/^\d{8,14}$/.test(x.ean))y.ean=x.ean;if(x.src==='off')y.src='off';
     if(Array.isArray(x.portions)){const p=x.portions.filter(q=>Array.isArray(q)&&num(q[2],0.1,5000)).slice(0,6).map(q=>[str(q[0],60),str(q[1],60),+q[2]]);if(p.length)y.portions=p}return y});
@@ -959,7 +967,7 @@ function setStartTab(k){if(!START_TABS.some(x=>x[0]===k))return;S.settings.start
 function go(t){document.activeElement&&document.activeElement.blur&&document.activeElement.blur();if(t==='more')setSub=null;if(t==='history')t='home';back=null;tab=t;render();scrollTo(0,0)}
 /* Megnyitás úgy, hogy a Vissza oda vigyen, ahonnan jöttünk */
 function goFrom(t){const b={tab,sub:setSub,y:scrollY};go(t);back=b;render()}
-const BACK_LBL={home:'Ma',food:'Étkezés',workout:'Edzések',body:'Test',stats:'Statisztika',more:'Beállítások',hist:'Edzéstörténet',recipes:'Receptjeim',report:'Összefoglaló'};
+const BACK_LBL={home:'Ma',food:'Étkezés',workout:'Edzések',body:'Test',stats:'Statisztika',more:'Beállítások',hist:'Edzéstörténet',recipes:'Receptjeim',report:'Összefoglaló',menu:'Heti menü'};
 function render(){
   const home=tab==='home';
   if(home){const d=pYmd(homeDay),wd=d.toLocaleDateString(LOC(),{weekday:'long'});
@@ -969,12 +977,12 @@ function render(){
   }else{
     const toSet=tab==='more'&&setSub,bl=back?(back.sub?'Beállítások':BACK_LBL[back.tab]||'Vissza'):toSet?'Beállítások':'Ma';
     $('#hl').innerHTML=`<button class="hbtn" data-click="goBack()" aria-label="Vissza">${I('chevron-left','sm')}<span>${bl}</span></button>`;
-    $('#title').textContent=toSet?SUBS[setSub][0]:tab==='tpls'?(tplCats().find(c=>c.id===tplCat)?.label||'Sablonok'):{workout:S.active?'Edzés folyamatban':'Edzések és sablonok',food:'Étkezés',body:'Testadatok',stats:'Statisztika',more:'Beállítások',hist:'Edzéstörténet',recipes:'Receptjeim',report:'Összefoglaló'}[tab];
+    $('#title').textContent=toSet?SUBS[setSub][0]:tab==='tpls'?(tplCats().find(c=>c.id===tplCat)?.label||'Sablonok'):{workout:S.active?'Edzés folyamatban':'Edzések és sablonok',food:'Étkezés',body:'Testadatok',stats:'Statisztika',more:'Beállítások',hist:'Edzéstörténet',recipes:'Receptjeim',report:'Összefoglaló',menu:'Heti menü'}[tab];
     $('#hdr').innerHTML=S.active&&tab!=='workout'?`<button class="pill" data-click="go('workout')" aria-label="Edzés folytatása">${I('flame','sm')}<span id="elapsed2"></span></button>`:'';
   }
   document.body.classList.toggle('home',home);
   for(const k in CH)delete CH[k];
-  $('main').innerHTML=({report:vReport,recipes:vRecipes,home:vHome,workout:S.active?vActive:vWorkout,food:vFood,body:vBody,stats:vStats,more:vMore,hist:vHist,tpls:vTpls})[tab]();
+  $('main').innerHTML=(['home','food','recipes','menu','workout','tpls'].includes(tab)?claudeBar():'')+({report:vReport,recipes:vRecipes,menu:vMenu,home:vHome,workout:S.active?vActive:vWorkout,food:vFood,body:vBody,stats:vStats,more:vMore,hist:vHist,tpls:vTpls})[tab]();
   attachCharts();tick();updAvol();syncWake();updWakeUI();
 }
 function goBack(){if(back){const b=back;back=null;tab=b.tab;setSub=b.sub;render();scrollTo(0,b.y||0);return}if(tab==='more'&&setSub){setSub=null;render();scrollTo(0,0)}else go('home')}
@@ -1038,7 +1046,7 @@ function kcalCard(M){
   const ms=S.meals.filter(m=>m.date===homeDay),g=targets().kcal;
   return`<div class="card hcard" data-click="openFood()" role="button" tabindex="0" aria-label="Étkezés megnyitása">
   ${kcalViz(ms,`<div class="row" style="flex-wrap:nowrap"><span class="hk" style="flex:1">Étkezés</span>${dayNav(M.mDay)}</div>`)}
-  ${!g?`<div class="hint" style="margin-top:10px">Kalóriakeret: Beállítások → Profil és célok.</div>`:''}</div>`;
+  ${!g?`<div class="hint" style="margin-top:10px">Kalóriakeret: Beállítások → Profil és célok.</div>`:''}${todayMenuCard(homeDay,true)}</div>`;
 }
 function bodyCard(M){const b=M.bMap[homeDay],list=S.body.filter(x=>hasMeas(x)||x.steps!=null).map(x=>x.date);
   const st=b?.steps,goal=S.settings.stepGoal||0;
@@ -1183,7 +1191,7 @@ function vMethods(){const en=LANG==='en',X=(h,e)=>en?e:h,f=v=>String(v).replace(
   <p>${X('A volumen-metaanalízisben a heti 10 vagy több sorozat izomcsoportonként adta a legnagyobb izomnövekedést; a 20-as felső határ gyakorlati irányérték. A gyakoriság-metaanalízis szerint a heti kétszeri terhelés jobb a heti egyszerinél. Egyénenként eltérhet, és a sorozatoknak közel kell lenniük az izomelégtelenséghez, hogy számítsanak.','In the volume meta-analysis, 10 or more weekly sets per muscle group gave the most growth; the upper limit of 20 is a practical guide. The frequency meta-analysis found training a muscle twice a week better than once. Individuals differ, and sets need to be reasonably close to failure to count.')}</p>`)
   +sec(X('Összesítő trend és összefüggések','Combined trend and correlations'),`${fx(X('Simítás: testsúly, étkezés, lépés 7 napos, testzsír 21 napos átlag\nÖsszevetés: z = (érték − átlag) ÷ szórás, ±2,5-re vágva\nÖsszefüggés: Pearson-féle korrelációs együttható (r), legalább 20 közös nap\n  |r| < 0,2 elhanyagolható · < 0,4 gyenge · < 0,6 közepes · ≥ 0,6 erős','Smoothing: weight, food, steps 7-day, body fat 21-day average\nComparison: z = (value − mean) ÷ standard deviation, clipped to ±2.5\nCorrelation: Pearson correlation coefficient (r), at least 20 shared days\n  |r| < 0.2 negligible · < 0.4 weak · < 0.6 moderate · ≥ 0.6 strong'))}
   <p>${X('Az együttmozgás nem bizonyít ok-okozati kapcsolatot.','Moving together doesn’t prove cause and effect.')}</p>`)
-  +sec(X('Étkezés becslése Claude-dal','Food estimates with Claude'),`<p>${X('A fotó vagy leírás alapján becsült tápértékek akár 20–30%-kal is eltérhetnek a valóságtól. A receptfájlból számolt értékek egyenletesebbek, mert ugyanazokból a hozzávalókból, ugyanúgy számolnak; a csomagoláson szereplő tápérték megadásával pontosabbak lesznek.','Nutrition estimated from a photo or description can be 20–30% off. Values calculated from the recipe file are more consistent because they use the same ingredients the same way; giving the nutrition label values makes them more accurate.')}</p>`)
+  +sec(X('Étkezés becslése Claude-dal','Food estimates with Claude'),`<p>${X('A fotó vagy leírás alapján becsült tápértékek akár 20–30%-kal is eltérhetnek a valóságtól. A Receptjeim közül rögzített ételek értékei egyenletesebbek, mert mindig ugyanabból a receptből számolnak; a csomagoláson szereplő tápérték megadásával a becslés is pontosabb lesz.','Nutrition estimated from a photo or description can be 20–30% off. Values logged from My recipes are more consistent because they always come from the same recipe; giving the nutrition label values makes estimates more accurate too.')}</p>`)
   +sec(X('Források','Sources'),`<ul class="refs">
   <li>Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. <i>Am J Clin Nutr</i> 1990;51(2):241–247. <a href="https://doi.org/10.1093/ajcn/51.2.241" target="_blank" rel="noopener">doi:10.1093/ajcn/51.2.241</a></li>
   <li>Jäger R, Kerksick CM, Campbell BI et al. International Society of Sports Nutrition Position Stand: protein and exercise. <i>J Int Soc Sports Nutr</i> 2017;14:20. <a href="https://doi.org/10.1186/s12970-017-0177-8" target="_blank" rel="noopener">doi:10.1186/s12970-017-0177-8</a></li>
@@ -1700,16 +1708,9 @@ function parseMeals(text,defDate){
   }
   return out;
 }
-async function pasteMeals(){
-  let text=null;
-  try{if(navigator.clipboard&&navigator.clipboard.readText)text=await navigator.clipboard.readText()}catch(e){text=null}
-  if(text&&/olupan-recipes/.test(text)){const rl=parseRecipes(text);if(rl&&rl.length){const[ad,up]=importRecipes(rl);toast(L(`Receptek mentve a Receptjeim közé: ${ad} új, ${up} frissített`,`Recipes saved to My recipes: ${ad} new, ${up} updated`));render();return}}
-  let items=parseMeals(text,foodDate);
-  if(!items.length){
-    const r=await form('Étkezés beillesztése',[{id:'t',label:'Claude válaszának kódblokkja',type:'textarea',placeholder:'2026-11-06;ebéd;Csirkemell 150 g;248;46;0;6;0',hint:'Nyomd hosszan a mezőt, majd Beillesztés. Soronként egy tétel: dátum;étkezés;megnevezés;kcal;fehérje;szénhidrát;zsír;rost'}],{ok:'Feldolgozás',intro:text?'A vágólap tartalmában nem találtam étkezés-sort.':''});
-    if(!r)return;items=parseMeals(r.t,foodDate);
-    if(!items.length){toast('Nem találtam felismerhető sort');return}
-  }
+function pasteMeals(){return claudePaste()}
+async function pasteMealsGo(text){
+  let items=parseMeals(text,foodDate);if(!items.length)return;
   /* Korábbi napra szóló (dátummal kimásolt) tételek: rákérdezünk, mára vegyük-e fel a mostani napszak szerinti étkezésként. */
   const td=today(),old=items.filter(m=>m.ex&&m.date<td);
   if(old.length){const nm=guessMeal(),ds=[...new Set(old.map(m=>fmtDate(m.date)))].join(', ');
@@ -1765,8 +1766,6 @@ A nevek, hozzávalók és lépések magyarul legyenek; a mennyiségek számok (g
  "ingredients": [{"name": "rolled oats", "qty": 50, "unit": "g"}], "steps": ["Step 1 text", "Step 2 text"],
  "per_serving": {"kcal": 420, "protein": 30, "carbs": 45, "fat": 12, "fiber": 6}}
 Write names, ingredients and steps in English; quantities as numbers (g, ml, pcs, tbsp, tsp, pinch). "time" is in minutes. For seasonal recipes "season" lists the season(s); leave it empty for all-year recipes. The "protein" tag needs over 25 g, "fiber" over 8 g per serving. Carbohydrates exclude fibre (as on EU labels).`)}
-function recLoadPrompt(){const L2=(h,e)=>LANG==='en'?e:h;return[L2('Olupan – receptjeim betöltése','Olupan – load my recipes'),'',
-  L2('Gyűjtsd össze az összes receptemet ebből a projektből: a receptfájlból, és ha eléred, a projekt korábbi beszélgetéseiből azokat, amelyeket elkészítettem vagy elmentésre jelöltem. Mindegyiknél add meg a hozzávalókat és az elkészítés lépéseit, az adagszámot, és címkézd étkezés, konyha, jelleg, stílus és évszak szerint. Ha valami hiányzik (pl. lépések), egészítsd ki ésszerűen.','Collect all my recipes from this project: from the recipe file and, if you can access them, from earlier conversations in this project the ones I cooked or marked to keep. For each, give the ingredients, the method steps and the number of servings, and tag them by meal, cuisine, type, style and season. If something is missing (e.g. steps), fill it in sensibly.'),'',recipeFormat(L2)].join('\n')}
 function recSan(o){if(!o||typeof o!=='object')return null;const name=str(o.name||'',100).trim();if(!name)return null;
   const arr=(v,ok,n=12)=>(Array.isArray(v)?v:[]).map(x=>String(x).toLowerCase().trim()).filter(x=>!ok||ok.includes(x)).slice(0,n);
   const st0=arr(o.style,null).map(x=>({'few-ingredients':'few','make-ahead':'prep','hands-off':'handsoff'}[x]||x));
@@ -1786,18 +1785,7 @@ function importRecipes(list){S.recipes=S.recipes||[];let add=0,upd=0;
   for(const r of list){const k=deacc(r.name),ex=S.recipes.find(x=>deacc(x.name)===k);
     if(ex){Object.assign(ex,r,{id:ex.id,vote:ex.vote,note:ex.note,added:ex.added});upd++}else{S.recipes.push(r);add++}}
   save();return[add,upd]}
-function recLoadBox(){openModal(`<h2>${L('Receptek betöltése Claude-ból','Load recipes from Claude')}</h2>
-  <ol class="steps"><li>${L('Másold ki a kérést, és illeszd be a Claude-projektedbe.','Copy the request and paste it into your Claude project.')}</li><li>${L('Claude a receptjeidet egy <code>olupan-recipes</code> kódblokkban adja vissza: másold ki a blokk sarkában lévő gombbal.','Claude returns your recipes in an <code>olupan-recipes</code> code block: copy it with the button in the block’s corner.')}</li><li>${L('Itt nyomd meg a <b>Beillesztés</b> gombot. A már meglévő (azonos nevű) recepteket frissíti, a szavazataid és megjegyzéseid megmaradnak.','Tap <b>Paste</b> here. Existing recipes with the same name are updated; your votes and notes are kept.')}</li></ol>
-  <div class="hint">${L('A Receptötletek válaszának kódblokkját is itt mentheted el.','You can also save the code block from a Recipe ideas reply here.')}</div>
-  <div class="stack" style="margin-top:12px"><button class="btn block" data-click="recCopyPrompt()">${I('copy','sm')} ${L('Kérés másolása','Copy request')}</button>
-  ${S.settings.claudeUrl?`<a class="btn block" href="${esc(S.settings.claudeUrl)}" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} ${L('Claude-projekt megnyitása','Open Claude project')}</a>`:''}
-  <button class="btn p block" data-click="recPaste()">${I('clipboard-paste','sm')} ${L('Beillesztés','Paste')}</button></div>
-  <label for="recta">${L('Vagy illeszd be ide kézzel','Or paste it here manually')}</label><textarea id="recta" rows="3" class="mono" style="font-size:12px"></textarea><button class="btn sm" style="margin-top:6px" data-click="recPasteTa()">${L('Feldolgozás','Process')}</button>
-  <div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
-async function recCopyPrompt(){try{await navigator.clipboard.writeText(recLoadPrompt());toast(L('Kérés a vágólapon – illeszd be a Claude-ba','Request copied – paste it into Claude'))}catch(e){toast(L('Nem sikerült másolni','Couldn’t copy'))}}
-function recDone(list){if(!list||!list.length){toast(L('Nem találtam olupan-recipes kódblokkot','No olupan-recipes code block found'));return}const[a,u]=importRecipes(list);closeModal();recTab='all';render();toast(L(`${a} új, ${u} frissített recept`,`${a} new, ${u} updated recipe${a+u>1?'s':''}`))}
-async function recPaste(){let t='';try{t=await navigator.clipboard.readText()}catch(e){toast(L('A vágólap nem olvasható – illeszd be lent kézzel','Clipboard not readable – paste below manually'));$('#recta')?.focus();return}recDone(parseRecipes(t))}
-function recPasteTa(){recDone(parseRecipes(($('#recta')||{}).value))}
+function recDone(list){if(!list||!list.length){toast(L('Nem találtam olupan-recipes kódblokkot','No olupan-recipes code block found'));return}const[a,u]=importRecipes(list);closeModal();recTab='all';recQ='';recF.clear();recMeal='';if(tab!=='recipes')goFrom('recipes');else render();toast(L(`${a} új, ${u} frissített recept`,`${a} new, ${u} updated recipe${a+u>1?'s':''}`))}
 /* Lista nézet */
 let recTab='all',recQ='',recF=new Set(),recMeal='';
 function recMatch(r,toks){if(!toks.length)return true;const hay=deacc([r.name,...r.aliases,...r.ing.map(i=>i.n),...r.cuisine.map(c=>lblL(PREF_CUISINE,c)),...recStyles(r).map(s=>lblL(REC_STYLE,s)),...r.tags.map(t=>lblL(REC_TAG,t)),...r.meal.map(m=>lblL(REC_MEAL,m)),...r.season.map(s=>lblL(REC_SEASON,s))].join(' '));return toks.every(t=>hay.includes(t))}
@@ -1813,15 +1801,19 @@ function recListHtml(){const all=S.recipes||[],l=recShown().sort((a,b)=>(b.vote-
   const grp=[...REC_MEAL.map(a=>a[0]),''].map(m=>[m,l.filter(r=>(r.meal[0]||'')===m)]).filter(([,x])=>x.length);
   return cnt+grp.map(([m,x])=>`<div class="grp">${m?lblL(REC_MEAL,m):L('Egyéb','Other')} <span class="mono small">${x.length}</span></div><div class="card reclist">${x.map(recRow).join('')}</div>`).join('')}
 function vRecipes(){const all=S.recipes||[],open=(S.shop||[]).filter(x=>!x.done).length;
-  const newCard=`<div class="card${all.length?' recnew':''}"><h2 style="margin-top:0">${all.length?L('Új receptek','New recipes'):L('Még nincs mentett recepted','No saved recipes yet')}</h2>${all.length?'':`<div class="small mut" style="margin-bottom:12px">${L('Áthozhatod a Claude-projektedben összegyűlt recepteket, vagy elmentheted a Receptötletek válaszát.','Bring over the recipes collected in your Claude project, or save a Recipe ideas reply.')}</div>`}
-    <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="btn ${all.length?'':'p'}" style="flex:1 1 0;min-width:0" data-click="recLoadBox()">${I('download','sm')} ${all.length?L('Claude-ból','From Claude'):L('Betöltés Claude-ból','Load from Claude')}</button><button class="btn" style="flex:1 1 0;min-width:0" data-click="sharePasteBox()">${I('clipboard-paste','sm')} ${L('Megosztott','Shared')}</button></div></div>`;
+  const m=menuActive(),td=today(),mrows=m?menuDayRows(m,td,true)||menuDayRows(m,addDays(td,1),true):'';
+  const newCard=(m?`<div class="card mcard"><div class="row" style="flex-wrap:nowrap;margin-bottom:${mrows?'6px':'0'}"><span style="flex:1;min-width:0"><span class="hk">${L('Heti menü','Weekly menu')}</span><span class="small mut" style="display:block">${fmtDate(m.start)} – ${fmtDate(addDays(m.start,m.days-1))}</span></span><button class="btn sm" data-click="goFrom('menu')">${L('Megnyitás','Open')} ${I('chevron-right','sm')}</button></div>${mrows}</div>`:'')
+    +`<div class="card"><h2 style="margin-top:0">${all.length?L('Claude-dal','With Claude'):L('Még nincs mentett recepted','No saved recipes yet')}</h2>${all.length?'':`<div class="small mut" style="margin-bottom:12px">${L('Kérj receptötleteket vagy egy heti menüt: a receptek egyből ide kerülnek, itt válogathatsz, szavazhatsz és törölhetsz.','Ask for recipe ideas or a weekly menu: the recipes land here, where you can sort, vote and delete.')}</div>`}
+    <div class="row" style="gap:8px;flex-wrap:nowrap"><button class="btn${m?'':' p'}" style="flex:1 1 0;min-width:0" data-click="menuReqBox()">${I('calendar-days','sm')} ${m?L('Új menü','New menu'):L('Heti menü','Weekly menu')}</button><button class="btn${all.length?'':' p'}" style="flex:1 1 0;min-width:0" data-click="recIdeasGo()">${I('lightbulb','sm')} ${L('Receptötletek','Recipe ideas')}</button></div>
+    <button class="linkbtn" style="margin-top:8px;padding-bottom:0" data-click="claudePaste()">${I('clipboard-paste','sm')} ${L('Válasz vagy link beillesztése','Paste a reply or link')}</button></div>`;
   const shopBtn=`<button class="btn ico ibtn" data-click="openShop()" aria-label="${L('Bevásárlólista','Shopping list')}">${I('shopping-basket','sm')}${open?`<span class="bdg">${open}</span>`:''}</button>`;
   if(!all.length)return`<div class="row" style="justify-content:flex-end;margin-bottom:12px">${shopBtn}</div>`+newCard;
+  const top=newCard;
   const nf=recF.size,chip=(on,act,l)=>`<button class="chip ${on?'on':''}" ${act}>${l}</button>`;
-  return`<div class="rectop"><input id="recq" type="search" autocomplete="off" placeholder="${L('Étel, összetevő, konyha…','Dish, ingredient, cuisine…')}" value="${esc(recQ)}" data-input="recSearch(this.value)"><button class="btn ico ibtn" data-click="recFilterBox()" aria-label="${L('Szűrők','Filters')}">${I('sliders-horizontal','sm')}${nf?`<span class="bdg">${nf}</span>`:''}</button>${shopBtn}</div>
+ return top+`<div class="rectop" style="margin-top:4px"><input id="recq" type="search" autocomplete="off" placeholder="${L('Étel, összetevő, konyha…','Dish, ingredient, cuisine…')}" value="${esc(recQ)}" data-input="recSearch(this.value)"><button class="btn ico ibtn" data-click="recFilterBox()" aria-label="${L('Szűrők','Filters')}">${I('sliders-horizontal','sm')}${nf?`<span class="bdg">${nf}</span>`:''}</button>${shopBtn}</div>
   <div class="chips recchips recmeal">${chip(recTab==='fav','data-click="recFav()"',`${I('thumbs-up','sm')} ${L('Kedvencek','Favourites')}`)}${chip(!recMeal,'data-click="recSetMeal(\'\')"',L('Mind','All'))}${REC_MEAL.filter(([k])=>all.some(r=>r.meal.includes(k))).map(([k,h,e])=>chip(recMeal===k,`data-click="recSetMeal('${k}')"`,LANG==='en'?e:h)).join('')}</div>
   ${nf?`<div class="recact">${[...recF].map(f=>`<button class="chip on" data-click="recFilt('${f}')" aria-label="${L('Szűrő törlése','Remove filter')}">${esc(recFLabel(f))} ${I('x','sm')}</button>`).join('')}<button class="linkbtn" style="width:auto;padding:4px 6px" data-click="recFClear()">${L('Mind törlése','Clear all')}</button></div>`:''}
-  <div id="reclist">${recListHtml()}</div>${newCard}`}
+  <div id="reclist">${recListHtml()}</div>`}
 function recSetTab(t){recTab=t;render()}
 function recFav(){recTab=recTab==='fav'?'all':'fav';render()}
 function recSetMeal(k){recMeal=k;render()}
@@ -1852,11 +1844,13 @@ function renderRecipe(){const r=recCur,k=recServ/r.serv;
   ${r.steps.length?`<b>${L('Elkészítés','Method')}</b><ol class="steps">${r.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}
   <div class="row" style="gap:8px;margin-top:10px;flex-wrap:nowrap"><button class="btn ${r.vote===1?'p':''}" data-click="recVote(1)" aria-pressed="${r.vote===1}" aria-label="${L('Tetszik','Like')}">${I('thumbs-up','sm')}</button><button class="btn ${r.vote===-1?'d':''}" data-click="recVote(-1)" aria-pressed="${r.vote===-1}" aria-label="${L('Nem tetszik','Dislike')}">${I('thumbs-down','sm')}</button><span class="sp"></span><button class="btn" data-click="recToShop()">${I('shopping-basket','sm')} ${L('Bevásárlólistához','To shopping list')}</button></div>
   <label for="recnote">${L('Megjegyzés','Note')}</label><textarea id="recnote" rows="2" placeholder="${L('pl. kevesebb sóval, dupla zöldséggel','e.g. less salt, double veg')}" data-change="recNote(this.value)">${esc(r.note)}</textarea>
-  <div class="row" style="margin-top:14px">${r.kcal!=null?`<button class="btn" data-click="recLog()">${I('plus','sm')} ${L('Rögzítés: 1 adag','Log 1 serving')}</button>`:''}<span class="sp"></span><button class="btn ico" data-click="recShare()" aria-label="${L('Megosztás','Share')}">${I('share','sm')}</button><button class="btn ico d" data-click="recDel()" aria-label="${L('Recept törlése','Delete recipe')}">${I('trash-2','sm')}</button><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
+  <div class="row" style="margin-top:14px">${r.kcal!=null?`<button class="btn" data-click="recLog()">${I('plus','sm')} ${L('Rögzítés','Log')}</button>`:''}<span class="sp"></span><button class="btn ico" data-click="recShare()" aria-label="${L('Megosztás','Share')}">${I('share','sm')}</button><button class="btn ico d" data-click="recDel()" aria-label="${L('Recept törlése','Delete recipe')}">${I('trash-2','sm')}</button><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
 function recServAdd(d){recServ=Math.max(1,Math.min(50,recServ+d));renderRecipe()}
 function recVote(v){recCur.vote=recCur.vote===v?0:v;save();renderRecipe();render()}
 function recNote(v){recCur.note=String(v).slice(0,1000);save()}
-function recLog(){const r=recCur;S.meals.push({id:uid(),date:foodDate,meal:foodDate===today()?guessMeal():'ebed',name:(r.name+' '+L('1 adag','1 serving')).slice(0,100),kcal:Math.round(r.kcal||0),p:r.p||0,c:r.c||0,f:r.f||0,fib:r.fib});save();closeModal();toast(L('Rögzítve az étkezések közé','Added to meals'));render()}
+async function recLog(){const r=recCur;const f=await form(L('Rögzítés','Log'),[{id:'n',label:L('Hány adagot ettél?','How many servings did you eat?'),type:'number',value:'1'},{id:'meal',label:L('Étkezés','Meal'),type:'select',value:foodDate===today()?guessMeal():'ebed',options:MEALS}],{ok:L('Rögzítés','Log'),intro:esc(r.name)+(r.kcal!=null?` · ${fmt(r.kcal,0)} kcal / ${L('adag','serving')}`:'')});if(!f)return;
+  const n=Math.max(.1,Math.min(20,parseMacro(f.n)||1)),q=v=>v==null?null:Math.round(v*n*10)/10;
+  S.meals.push({id:uid(),date:foodDate,meal:MEALS.some(x=>x[0]===f.meal)?f.meal:'ebed',name:(r.name+' '+hu(n,1)+' '+L('adag','serving'+(n===1?'':'s'))).slice(0,100),kcal:Math.round((r.kcal||0)*n),p:q(r.p)||0,c:q(r.c)||0,f:q(r.f)||0,fib:q(r.fib)});save();closeModal();toast(L('Rögzítve az étkezések közé','Added to meals'));render()}
 async function recDel(){const r=recCur;if(!await ask(L(`Törlöd ezt a receptet: <b>${esc(r.name)}</b>?`,`Delete this recipe: <b>${esc(r.name)}</b>?`),{title:L('Recept törlése','Delete recipe'),ok:L('Törlés','Delete'),danger:true}))return;S.recipes=S.recipes.filter(x=>x.id!==r.id);S.shop=(S.shop||[]).filter(x=>x.rid!==r.id);save();closeModal();render()}
 /* ===== Bevásárlólista: egy aktív lista; azonos hozzávalók összevonva, receptenként törölhető ===== */
 function recToShop(){const r=recCur,k=recServ/r.serv;S.shop=(S.shop||[]).filter(x=>x.rid!==r.id);
@@ -1961,27 +1955,120 @@ function foodTiles(){const k=!!targets().kcal;
     tile('data-click="addMeal()"','search',L('Keresés','Search'),L('Élelmiszer vagy saját tétel','A food or your own item')),
     tile('data-click="quickLog()"','history',L('Gyors rögzítés','Quick log'),L('Korábbi és gyakori ételek','Earlier and frequent meals')),
     tile('data-click="claudeBox()"','sparkles',L('Claude-dal','With Claude'),L('Fotóból vagy leírásból','From a photo or description')),
-    tile('data-click="menuBox()"','chef-hat',L('Menüjavaslat','Meal ideas'),L('Heti menü, receptötletek','Weekly menu, recipes'),!k),
-    tile('data-click="goFrom(\'recipes\')"','cooking-pot',L('Receptjeim','My recipes'),(S.recipes||[]).length?L(`${S.recipes.length} recept`,`${S.recipes.length} recipe${S.recipes.length>1?'s':''}`):L('Mentett receptek, bevásárlólista','Saved recipes, shopping list')),
+    tile('data-click="restBox()"','utensils',L('Mit egyek még ma?','What else today?'),L('Abból, ami kéznél van','From what you have'),!k),
+    tile('data-click="goFrom(\'recipes\')"','cooking-pot',L('Receptjeim','My recipes'),menuActive()?L('Heti menü, receptek','Weekly menu, recipes'):(S.recipes||[]).length?L(`${S.recipes.length} recept`,`${S.recipes.length} recipe${S.recipes.length>1?'s':''}`):L('Heti menü, receptötletek','Weekly menu, recipe ideas')),
     canScan()?tile('data-click="scanFood()"','scan-barcode',L('Vonalkód','Barcode'),L('Csomagolt termékhez','For packaged food')):''].join('')}</div><div class="fdots" aria-hidden="true"><i class="on"></i><i></i></div>`}
 document.addEventListener('scroll',e=>{const t=e.target;if(!t.classList||!t.classList.contains('ftiles'))return;const pg=t.scrollLeft>(t.scrollWidth-t.clientWidth)/2?1:0;t.nextElementSibling?.querySelectorAll('i').forEach((x,i)=>x.classList.toggle('on',i===pg))},true);
-function fbGo(k){closeModal();({paste:pasteMeals,help:foodHelp,prefs:()=>openSub('food','fprefs'),week:()=>askMenu('week'),rest:askRest,ideas:()=>askMenu('ideas'),profile:()=>openSub('profile')})[k]?.()}
+function fbGo(k){closeModal();({paste:claudePaste,help:foodHelp,prefs:()=>openSub('food','fprefs'),profile:()=>openSub('profile')})[k]?.()}
 function scanFood(){openFoodEntry();openScanner()}
+/* ===== Heti menü: Claude olupan-menu blokkban adja vissza; egy aktív menü, napokra bontva, rögzíthető, bevásárlólistát ad ===== */
+function menuOpt(){const o=Object.assign({days:7,cook:2,meals:['breakfast','lunch','dinner','snack'],start:'today'},S.settings.menuOpt||{});o.days=[3,5,7].includes(o.days)?o.days:7;o.cook=[1,2,3,7].includes(o.cook)?o.cook:2;o.meals=REC_MEAL.map(x=>x[0]).filter(k=>Array.isArray(o.meals)&&o.meals.includes(k));if(!o.meals.length)o.meals=['lunch'];if(!['today','tomorrow','monday'].includes(o.start))o.start='today';return o}
+function menuStartDate(k){const td=today();if(k==='tomorrow')return addDays(td,1);if(k==='monday'){const d=pYmd(td),off=(8-d.getDay())%7||7;return addDays(td,off)}return td}
+function menuFormat(L2,people,days){const rf=recipeFormat(L2).replace(/^[^\n]*\n/,'');return L2(`A válasz végén egyetlen kódblokk legyen, amelynek első sora \`olupan-menu\`, utána egy JSON-objektum:
+{"days": ${days}, "slots": [{"day": 1, "meal": "lunch", "recipe": "Lencsefőzelék", "cook": 4}, {"day": 2, "meal": "lunch", "recipe": "Lencsefőzelék"}], "recipes": [ ... ]}
+- "day": 1-től számozva (1 = a fenti kezdőnap). "meal": "breakfast"|"lunch"|"dinner"|"snack", csak a kért étkezésekre, minden napra.
+- Minden hely ${people} adag (ennyi főre főzök).
+- "cook": annál a helynél add meg, ahol az étel elkészül: hány adagot készítek el (a maradékokkal együtt). Maradéknál ne legyen "cook". Reggelinél és snacknél is add meg, ha aznap készül.
+- "recipe": a recept pontos neve. Ha a mentett receptjeim közül választasz, pontosan azt a nevet írd; minden más használt recept kerüljön a "recipes" tömbbe, receptenként így:
+${rf}`,`At the end of the reply give a single code block whose first line is \`olupan-menu\`, followed by a JSON object:
+{"days": ${days}, "slots": [{"day": 1, "meal": "lunch", "recipe": "Lentil stew", "cook": 4}, {"day": 2, "meal": "lunch", "recipe": "Lentil stew"}], "recipes": [ ... ]}
+- "day": numbered from 1 (1 = the start day above). "meal": "breakfast"|"lunch"|"dinner"|"snack", only for the requested meals, every day.
+- Each slot is ${people} serving${people>1?'s':''} (the number of people I cook for).
+- "cook": give it on the slot where the dish is prepared: how many servings I make (including leftovers). Leftover slots have no "cook". Give it for breakfasts and snacks too when they are made that day.
+- "recipe": the exact recipe name. If you pick one of my saved recipes, use exactly that name; every other recipe used goes into the "recipes" array, each like this:
+${rf}`)}
+function parseMenu(t){const m=String(t).match(/olupan-menu\s*\n([\s\S]*?)(```|$)/);if(!m)return null;const j=m[1],a=j.indexOf('{'),b=j.lastIndexOf('}');if(a<0||b<a)return null;let o;try{o=JSON.parse(j.slice(a,b+1))}catch(e){return null}
+  const days=Math.max(1,Math.min(14,Math.round(num(o.days,1,14)||7))),mk=REC_MEAL.map(x=>x[0]);
+  const slots=(Array.isArray(o.slots)?o.slots:[]).slice(0,120).map(x=>({d:Math.round(num(x&&x.day,1,14)||0),meal:mk.includes(x&&x.meal)?x.meal:null,name:str(x&&x.recipe||'',100).trim(),cook:num(x&&x.cook,0,100)})).filter(x=>x.d>=1&&x.d<=days&&x.meal&&x.name);
+  if(!slots.length)return null;return{days,slots,recipes:(Array.isArray(o.recipes)?o.recipes:[]).slice(0,60).map(recSan).filter(Boolean)}}
+const recByName=n=>{const k=deacc(n);return(S.recipes||[]).find(r=>deacc(r.name)===k||r.aliases.some(a=>deacc(a)===k))};
+async function menuImport(m){closeModal();const cur=menuActive();
+  if(cur&&cur.slots.some(x=>!x.log&&addDays(cur.start,x.d-1)>=today())&&!await ask(L('Az új menü lecseréli a mostanit. A már rögzített étkezéseid megmaradnak.','The new menu replaces the current one. Meals you already logged stay.'),{title:L('Új heti menü','New weekly menu'),ok:L('Csere','Replace')}))return;
+  if(m.recipes.length)importRecipes(m.recipes);
+  const w=S.settings.cWait,start=w&&DATE_RE.test(w.start)?w.start:(S.settings.menuStartNext||today());
+  S.menu={start,days:m.days,slots:m.slots.map(x=>{const r=recByName(x.name);return{d:x.d,meal:x.meal,rid:r?r.id:null,name:r?r.name:x.name,cook:x.cook&&x.cook>0?Math.round(x.cook*10)/10:0,log:null}}).sort((a,b)=>a.d-b.d||REC_MEAL.findIndex(y=>y[0]===a.meal)-REC_MEAL.findIndex(y=>y[0]===b.meal)),at:Date.now()};
+  delete S.settings.cWait;save();goFrom('menu');toast(L(`Heti menü mentve${m.recipes.length?`, ${m.recipes.length} recept a Receptjeim közé`:''}`,`Weekly menu saved${m.recipes.length?`, ${m.recipes.length} recipe${m.recipes.length>1?'s':''} added to My recipes`:''}`))}
+function menuActive(){const m=S.menu;return m&&m.slots&&m.slots.length&&addDays(m.start,m.days-1)>=today()?m:null}
+const MEAL_OF={breakfast:'reggeli',lunch:'ebed',dinner:'vacsora',snack:'uzsonna'};
+const slotDate=(m,x)=>addDays(m.start,x.d-1);
+function menuDayRows(m,date,compact){const xs=m.slots.map((x,i)=>[x,i]).filter(([x])=>slotDate(m,x)===date);if(!xs.length)return'';const canLog=date<=today();
+  return xs.map(([x,i])=>{const r=x.rid&&(S.recipes||[]).find(y=>y.id===x.rid),logged=x.log&&S.meals.some(y=>y.id===x.log);
+    const meta=[lblL(REC_MEAL,x.meal),x.cook?L(`főzés: ${fmt(x.cook,0)} adag`,`cook ${fmt(x.cook,0)} servings`):L('maradék','leftovers'),r&&r.kcal!=null&&!compact?`${fmt(r.kcal,0)} kcal`:''].filter(Boolean).join(' · ');
+    return`<div class="mrow${logged?' done':''}"><button class="mname" ${r?`data-click="openRecipe('${r.id}')"`:'disabled'}><span class="rn">${esc(x.name)}</span><span class="small mut" style="display:block">${meta}</span></button>${canLog&&r?`<button class="btn sm${logged?' p':''}" data-click="menuLog(${i})" aria-pressed="${!!logged}" aria-label="${logged?L('Rögzítve – visszavonás','Logged – undo'):L('Rögzítés','Log')}">${logged?I('check','sm'):I('plus','sm')+' '+L('Rögzítés','Log')}</button>`:''}</div>`}).join('')}
+function menuLog(i){const m=S.menu,x=m&&m.slots[i];if(!x)return;const r=(S.recipes||[]).find(y=>y.id===x.rid);if(!r)return;
+  if(x.log&&S.meals.some(y=>y.id===x.log)){S.meals=S.meals.filter(y=>y.id!==x.log);x.log=null;save();render();toast(L('Rögzítés visszavonva','Log undone'));return}
+  const id=uid();S.meals.push({id,date:slotDate(m,x),meal:MEAL_OF[x.meal]||'ebed',name:(r.name+' '+L('1 adag','1 serving')).slice(0,100),kcal:Math.round(r.kcal||0),p:r.p||0,c:r.c||0,f:r.f||0,fib:r.fib});x.log=id;save();render();toast(L('Rögzítve','Logged'))}
+function todayMenuCard(date,inCard){const m=menuActive();if(!m)return'';const rows=menuDayRows(m,date,true);if(!rows)return'';
+  return inCard?`<div class="tmenu"><div class="hk" style="margin-bottom:6px">${L('Mai menü','Today’s menu')}</div>${rows}</div>`:`<div class="card tmc"><div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><h2 style="flex:1;margin:0;font-size:17px">${date===today()?L('Mai menü','Today’s menu'):L('Menü erre a napra','Menu for this day')}</h2><button class="linkbtn" style="width:auto;padding:0" data-click="goFrom('menu')">${L('Heti menü','Weekly menu')} ${I('chevron-right','sm')}</button></div>${rows}</div>`}
+function vMenu(){const m=menuActive(),t=targets();
+  if(!m)return`<div class="card"><h2 style="margin-top:0">${L('Nincs aktív heti menü','No active weekly menu')}</h2><div class="small mut" style="margin-bottom:12px">${L('Claude a kereted, a preferenciáid és a kedvenc receptjeid alapján összeállít egy menüt, amelyből az app bevásárlólistát készít.','Claude builds a menu from your target, preferences and favourite recipes, and the app turns it into a shopping list.')}</div><button class="btn p block" data-click="menuReqBox()">${I('calendar-days','sm')} ${L('Heti menü kérése','Request a weekly menu')}</button></div>`;
+  const end=addDays(m.start,m.days-1);let h=`<div class="card"><div class="small mut">${fmtDate(m.start)} – ${fmtDate(end)} · ${L(`${m.days} nap`,`${m.days} days`)}</div>
+  <div class="row" style="gap:8px;margin-top:12px;flex-wrap:nowrap"><button class="btn p" style="flex:1 1 0;min-width:0" data-click="menuToShop()">${I('shopping-basket','sm')} ${L('Bevásárlólista','Shopping list')}</button><button class="btn" style="flex:1 1 0;min-width:0" data-click="menuReqBox()">${I('calendar-days','sm')} ${L('Új menü','New menu')}</button><button class="btn ico d" data-click="menuDel()" aria-label="${L('Menü törlése','Delete menu')}">${I('trash-2','sm')}</button></div></div>`;
+  for(let d=1;d<=m.days;d++){const date=addDays(m.start,d-1),rows=menuDayRows(m,date,false);if(!rows)continue;
+    const kc=m.slots.filter(x=>x.d===d).reduce((a,x)=>{const r=x.rid&&(S.recipes||[]).find(y=>y.id===x.rid);return a+(r&&r.kcal||0)},0),wd=pYmd(date).toLocaleDateString(LOC(),{weekday:'long',month:'short',day:'numeric'});
+    h+=`<div class="grp${date===today()?' today':''}">${date===today()?L('Ma','Today')+' · ':''}${esc(wd)}${kc?` <span class="mono small">${fmt(kc,0)}${t.kcal?' / '+fmt(t.kcal,0):''} kcal</span>`:''}</div><div class="card reclist">${rows}</div>`}
+  return h}
+async function menuDel(){if(!await ask(L('Törlöd a heti menüt? A receptek és a rögzített étkezések megmaradnak.','Delete the weekly menu? Recipes and logged meals stay.'),{title:L('Heti menü törlése','Delete weekly menu'),ok:L('Törlés','Delete'),danger:true}))return;S.menu=null;S.shop=(S.shop||[]).filter(x=>x.rid!=='rmenu');save();render()}
+function menuToShop(){const m=menuActive();if(!m)return;S.shop=(S.shop||[]).filter(x=>x.rid!=='rmenu');let n=0;
+  for(const x of m.slots){if(!x.cook||slotDate(m,x)<today())continue;const r=(S.recipes||[]).find(y=>y.id===x.rid);if(!r)continue;const k=x.cook/r.serv;
+    for(const i of r.ing){S.shop.push({id:uid(),n:i.n,q:i.q!=null?Math.round(i.q*k*100)/100:null,u:i.u||'',rid:'rmenu',rn:L('Heti menü','Weekly menu'),done:false});n++}}
+  save();if(!n){toast(L('A menü receptjeiben nincs hozzávaló','The menu’s recipes have no ingredients'));return}openShop()}
+function menuReqBox(){if(!targets().kcal){toast(L('Előbb töltsd ki a profilodat','Fill in your profile first'));return}const o=menuOpt();
+  const sel=(id,k,opts)=>`<select id="${id}" data-change="menuOptSet('${k}',this.value)">${opts.map(([v,l])=>`<option value="${v}" ${String(o[k])===String(v)?'selected':''}>${l}</option>`).join('')}</select>`;
+  openModal(`<div class="row" style="flex-wrap:nowrap"><h2 style="flex:1;margin:0">${L('Heti menü Claude-dal','Weekly menu with Claude')}</h2><button class="btn sm ico" data-click="fbGo('prefs')" aria-label="${L('Étkezési preferenciák','Food preferences')}">${I('settings','sm')}</button></div>
+  <div class="hint">${L('A kérésbe bekerül a kereted, az étkezési preferenciáid és a kedvenc receptjeid. A válasz kódblokkját a felső sáv Beillesztés gombjával veheted át.','Your target, food preferences and favourite recipes go into the request. Paste the reply’s code block with the Paste button in the top bar.')}</div>
+  <div class="grid2"><div><label for="mos">${L('Kezdőnap','Start')}</label>${sel('mos','start',[['today',L('Ma','Today')],['tomorrow',L('Holnap','Tomorrow')],['monday',L('Jövő hétfő','Next Monday')]])}</div>
+  <div><label for="mod">${L('Hány napra','Days')}</label>${sel('mod','days',[[3,'3'],[5,'5'],[7,'7']])}</div></div>
+  <label for="moc">${L('Hány napon tudsz főzni egy héten?','How many days a week can you cook?')}</label>${sel('moc','cook',[[1,L('1 napon','1 day')],[2,L('2 napon','2 days')],[3,L('3 napon','3 days')],[7,L('Minden nap','Every day')]])}
+  <div class="hint">${L('A többi napon a főzött ételek maradéka kerül a menübe.','On the other days the menu uses leftovers.')}</div>
+  <label>${L('Étkezések','Meals')}</label><div class="chips" style="margin:0">${REC_MEAL.map(([k,h,e])=>`<button class="chip${o.meals.includes(k)?' on':''}" data-click="menuOptMeal('${k}')" aria-pressed="${o.meals.includes(k)}">${LANG==='en'?e:h}</button>`).join('')}</div>
+  <div class="row" style="margin-top:16px"><button class="btn" data-click="closeModal()">${L('Mégse','Cancel')}</button><span class="sp"></span><button class="btn p" data-click="menuGo()">${I('external-link','sm')} ${L('Megnyitás Claude-ban','Open in Claude')}</button></div>`)}
+function menuOptSet(k,v){const o=menuOpt();o[k]=k==='start'?v:parseInt(v)||o[k];S.settings.menuOpt=o;save()}
+function menuOptMeal(k){const o=menuOpt(),a=new Set(o.meals);a.has(k)?a.size>1&&a.delete(k):a.add(k);o.meals=REC_MEAL.map(x=>x[0]).filter(x=>a.has(x));S.settings.menuOpt=o;save();menuReqBox()}
+function menuGo(){const o=menuOpt(),start=menuStartDate(o.start);claudeGo('menu',menuPrompt('week',{start}),{start})}
 function claudeBox(){const k=!!targets().kcal,url=S.settings.claudeUrl;
   openModal(`<h2>${L('Rögzítés Claude-dal','Logging with Claude')}</h2>
-  <ol class="steps"><li>${L('Nyisd meg a Claude-projektedet, és fotózd le vagy írd le, mit ettél.','Open your Claude project and photograph or describe what you ate.')}</li><li>${L('Másold ki Claude válaszát (a kódblokk sarkában lévő gombbal).','Copy Claude’s reply (with the button in the corner of the code block).')}</li><li>${L('Itt nyomd meg a <b>Beillesztés</b> gombot: a tételek a kiválasztott napra kerülnek.','Tap <b>Paste</b> here: the items go to the selected day.')}</li></ol>
-  ${url?'':`<div class="hint">${k?L('Még nincs beállítva a Claude-projekted linkje. Az útmutató lépésről lépésre végigvezet a létrehozásán.','Your Claude project link isn’t set yet. The guide walks you through creating it.'):L('A Claude-projekt útmutatója a profil kitöltése után érhető el, mert a napi célok is belekerülnek.','The Claude project guide is available after you fill in your profile, as your daily targets go into it.')}</div>`}
-  <div class="stack" style="margin-top:14px"><a class="btn block" href="${esc(url||'https://claude.ai/')}" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} ${url?L('Claude-projekt megnyitása','Open Claude project'):L('claude.ai megnyitása','Open claude.ai')}</a>
-  <button class="btn p block" data-click="fbGo('paste')">${I('clipboard-paste','sm')} ${L('Beillesztés','Paste')}</button>
-  <button class="btn block" data-click="fbGo('help')" ${k?'':'disabled'}>${I('circle-help','sm')} ${url?L('Útmutató és projekt-utasítás','Guide and project instructions'):L('Claude-projekt beállítása','Set up a Claude project')}</button></div>
+  <ol class="steps"><li>${L('Nyisd meg a Claude-projektedet, és fotózd le vagy írd le, mit ettél.','Open your Claude project and photograph or describe what you ate.')}</li><li>${L('Másold ki a válasz végén lévő kódblokkot (a sarkában lévő gombbal).','Copy the code block at the end of the reply (with the button in its corner).')}</li><li>${L('Gyere vissza, és nyomd meg a <b>Beillesztés</b> gombot (itt vagy a felső sávban).','Come back and tap <b>Paste</b> (here or in the bar at the top).')}</li></ol>
+  ${url?'':`<div class="hint">${k?L('Még nincs beállítva a Claude-projekted. Az útmutató lépésről lépésre végigvezet a létrehozásán.','Your Claude project isn’t set up yet. The guide walks you through it.'):L('A Claude-projekt útmutatója a profil kitöltése után érhető el, mert a napi célok is belekerülnek.','The Claude project guide is available after you fill in your profile, as your daily targets go into it.')}</div>`}
+  <div class="stack" style="margin-top:14px">${url?`<button class="btn p block" data-click="claudeGo('meals')">${I('external-link','sm')} ${L('Megnyitás Claude-ban','Open in Claude')}</button><button class="btn block" data-click="claudePaste()">${I('clipboard-paste','sm')} ${L('Beillesztés','Paste')}</button>`:''}
+  <button class="btn block${url?'':' p'}" data-click="fbGo('help')" ${k?'':'disabled'}>${I('circle-help','sm')} ${url?L('Útmutató és projekt-utasítás','Guide and project instructions'):L('Claude-projekt beállítása','Set up a Claude project')}</button></div>
   <div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
-function menuBox(){const k=!!targets().kcal,d=k?'':'disabled';
-  openModal(`<div class="row" style="flex-wrap:nowrap"><h2 style="flex:1;margin:0">${L('Menüjavaslat','Meal ideas')}</h2><button class="btn sm ico" data-click="fbGo('prefs')" aria-label="${L('Étkezési preferenciák','Food preferences')}">${I('settings','sm')}</button></div>
-  <div class="hint">${k?L('Claude a napi kereted, a mai étkezéseid és az étkezési preferenciáid alapján javasol. A kérést a vágólapra másolom, a Claude-ba csak be kell illesztened.','Claude suggests based on your daily target, today’s meals and your food preferences. I copy the request to the clipboard; you just paste it into Claude.'):L('A profil kitöltése után érhető el, mert a napi kereted is belekerül.','Available after you fill in your profile, as your daily target goes into it.')}</div>
-  <div class="stack" style="margin-top:12px"><button class="btn block" data-click="fbGo('week')" ${d}>${I('calendar-days','sm')} ${L('Heti menü','Weekly menu')}</button>
-  <button class="btn block" data-click="fbGo('rest')" ${d}>${I('utensils','sm')} ${L('Mit egyek még ma?','What should I eat for the rest of today?')}</button>
-  <button class="btn block" data-click="fbGo('ideas')" ${d}>${I('lightbulb','sm')} ${L('Receptötletek','Recipe ideas')}</button></div>
-  <div class="row" style="margin-top:14px">${k?'':`<button class="btn" data-click="fbGo('profile')">${L('Profil kitöltése','Fill in profile')}</button>`}<span class="sp"></span><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
+/* ===== Egységes Claude-kezelés: egy gomb másol és megnyit; az app megjegyzi, mire vár; egy Beillesztés mindent felismer ===== */
+const CW_KIND={meals:['ételnaplót','a food log'],ideas:['receptötleteket','recipe ideas'],menu:['heti menüt','a weekly menu'],plan:['edzéstervet','a training plan']};
+function claudeReady(){if(S.settings.claudeUrl)return true;closeModal();if(targets().kcal){toast(L('Előbb hozd létre a Claude-projektedet','Set up your Claude project first'));foodHelp()}else{toast(L('Előbb töltsd ki a profilodat','Fill in your profile first'));openSub('profile')}return false}
+function claudeGo(kind,txt,extra){if(!claudeReady())return;
+  // a másolást és a megnyitást ugyanabban a koppintásban indítjuk, különben a böngésző letilthatja
+  if(txt){try{navigator.clipboard.writeText(txt).then(()=>toast(L('Kérés a vágólapon – illeszd be a Claude-ba','Request copied – paste it into Claude')),()=>toast(L('A másolás nem sikerült','Copy failed')))}catch(e){}}
+  try{window.open(S.settings.claudeUrl,'_blank','noopener')}catch(e){}
+  if(CW_KIND[kind]){S.settings.cWait=Object.assign({k:kind,at:Date.now()},extra||{});save()}
+  closeModal();render()}
+function claudeWait(){const w=S.settings.cWait;return w&&CW_KIND[w.k]&&Date.now()-w.at<48*3600e3?w:null}
+function claudeWaitOff(){delete S.settings.cWait;save();render()}
+function claudeBar(){const w=claudeWait();if(!w)return'';const k=CW_KIND[w.k];
+  return`<div class="cwbar"><span class="cwi">${I('sparkles','sm')}</span><span style="min-width:0"><b class="small">${L(`Claude-tól ${k[0]} vársz`,`Waiting for ${k[1]} from Claude`)}</b><span class="small mut" style="display:block">${L('Másold ki a válasz kódblokkját, majd illeszd be.','Copy the reply’s code block, then paste it.')}</span></span><button class="btn sm p" data-click="claudePaste()">${I('clipboard-paste','sm')} ${L('Beillesztés','Paste')}</button><button class="btn sm ico" data-click="claudeWaitOff()" aria-label="${L('Elrejtés','Dismiss')}">${I('x','sm')}</button></div>`}
+async function claudePaste(){let t='';try{if(navigator.clipboard&&navigator.clipboard.readText)t=await navigator.clipboard.readText()}catch(e){t=''}
+  if(!claudeHandle(t))claudePasteBox(t.trim()?L('A vágólapon nem találtam Olupan-tartalmat. Ellenőrizd, hogy a kódblokkot másoltad-e ki.','I found no Olupan content on the clipboard. Check that you copied the code block.'):'')}
+function claudePasteBox(msg){openModal(`<h2>${I('clipboard-paste','sm')} ${L('Beillesztés','Paste')}</h2>${msg?`<div class="hint" style="margin-top:0">${msg}</div>`:''}
+  <label for="cpta">${L('Claude válaszának kódblokkja vagy egy kapott Olupan-link','The code block from Claude’s reply, or an Olupan link you received')}</label><textarea id="cpta" rows="6" class="mono" style="font-size:12px" placeholder="${L('Nyomd hosszan, majd Beillesztés','Long-press, then Paste')}"></textarea>
+  <div class="hint">${L('Felismeri az ételnaplót, a recepteket, a heti menüt, az edzéstervet és a megosztott linket.','It recognises food logs, recipes, weekly menus, training plans and shared links.')}</div>
+  <div class="row" style="margin-top:12px">${canScan()?`<button class="btn" data-click="openScanner()">${I('scan-barcode','sm')} ${L('QR-kód','QR code')}</button>`:''}<span class="sp"></span><button class="btn" data-click="closeModal()">${L('Mégse','Cancel')}</button><button class="btn p" data-click="claudePasteTa()">${L('Feldolgozás','Process')}</button></div>`)}
+function claudePasteTa(){const t=($('#cpta')||{}).value||'';if(!claudeHandle(t))toast(L('Nem ismertem fel a tartalmat','Content not recognised'))}
+function claudeHandle(t){t=String(t||'');if(!t.trim())return false;
+  const done=()=>{delete S.settings.cWait;save()};
+  const hi=t.indexOf('#i=1.');if(hi>=0){done();closeModal();shareImportText(t.slice(hi).trim());return true}
+  if(/olupan-menu/.test(t)){const m=parseMenu(t);if(m){done();menuImport(m);return true}}
+  if(/olupan-recipes/.test(t)){const rl=parseRecipes(t);if(rl&&rl.length){done();recDone(rl);return true}}
+  if(/(^|\n)\s*(SABLON|TEMPLATE)\s*;/i.test(t)){const P=parsePlan(t);if(P.tpls.length){done();closeModal();pastePlanGo(P);return true}}
+  if(parseMeals(t,foodDate).length){done();closeModal();pasteMealsGo(t);return true}
+  return false}
+/* „Mit egyek még ma?”: a válasz csak olvasnivaló, beillesztés nincs */
+function restBox(){if(!targets().kcal){toast(L('Előbb töltsd ki a profilodat','Fill in your profile first'));return}
+  openModal(`<h2>${L('Mit egyek még ma?','What should I eat for the rest of today?')}</h2><div class="hint" style="margin-top:-4px">${L('Claude a mai maradék kereted szerint javasol, csak abból, amit itt megadsz. Legalább az egyiket töltsd ki.','Claude suggests within today’s remaining target, only from what you give here. Fill in at least one.')}</div>
+  <label for="rhave">${L('Mi van kéznél?','What do you have at hand?')}</label><textarea id="rhave" rows="3" placeholder="${L('pl. tojás, túró, fagyasztott brokkoli, rizs, tonhalkonzerv','e.g. eggs, quark, frozen broccoli, rice, tinned tuna')}"></textarea>
+  <label for="rwhere">${L('Hol vagy, mit tudsz venni? (nem kötelező)','Where are you, what can you buy? (optional)')}</label><input id="rwhere" placeholder="${L('pl. munkahely, Lidl a közelben','e.g. at work, Lidl nearby')}">
+  <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">${L('Mégse','Cancel')}</button><span class="sp"></span><button class="btn p" data-click="restGo()">${I('external-link','sm')} ${L('Megnyitás Claude-ban','Open in Claude')}</button></div>`)}
+function restGo(){const have=(($('#rhave')||{}).value||'').trim().slice(0,500),where=(($('#rwhere')||{}).value||'').trim().slice(0,200);if(!have&&!where){toast(L('Írd be, mi van kéznél, vagy hol vagy','Enter what you have or where you are'));return}claudeGo('rest',menuPrompt('rest',{have,where}))}
+function recIdeasGo(){if(!targets().kcal){toast(L('Előbb töltsd ki a profilodat','Fill in your profile first'));return}claudeGo('ideas',menuPrompt('ideas'))}
 function vFood(){
   const t=targets(),items=dayMeals(foodDate),s=sumMeals(items),isToday=foodDate===today();
   let h=`<div class="card"><div class="row" style="flex-wrap:nowrap"><button class="iconbtn" data-click="foodNav(-1)" aria-label="Előző nap">${I('chevron-left')}</button>
@@ -1989,7 +2076,7 @@ function vFood(){
   <button class="iconbtn" data-click="foodNav(1)" aria-label="Következő nap" ${isToday?'disabled style="opacity:.35"':''}>${I('chevron-right')}</button>${isToday?'':`<button class="btn sm" data-click="foodToday()">Ma</button>`}</div>
   <div style="margin-top:14px">${kcalViz(items,`<span class="hk">${isToday?'Ma':esc(pYmd(foodDate).toLocaleDateString(LOC(),{weekday:'long'}))}</span>`)}</div>
   ${!t.kcal?`<div class="hint" style="margin-top:12px">A javasolt napi bevitelhez töltsd ki a profilodat. A Claude-projekt útmutatója és a menüjavaslat csak utána érhető el, mert a napi célok is belekerülnek.</div><button class="linkbtn" style="padding-bottom:0" data-click="openSub('profile')">Profil kitöltése ${I('chevron-right','sm')}</button>`:''}</div>
-  ${foodTiles()}`;
+  ${foodTiles()}${todayMenuCard(foodDate,false)}`;
   const trend=`<div class="card"><h2 style="font-size:17px">Utolsó 7 nap</h2>${foodTrend(7)}</div>`;
   for(const[k,l]of MEALS){const g=items.filter(m=>m.meal===k);if(!g.length)continue;const gs=sumMeals(g);
     h+=`<div class="card"><div class="row"><h2 style="flex:1;margin:0;font-size:17px">${l}</h2><span class="mono small mut">${fmt(gs.kcal,0)} kcal</span></div>
@@ -2028,8 +2115,6 @@ function claudeInstr(){
   const t=targets(),g=EN[GOALS.find(x=>x[0]===t.goal)?.[1]||'Szinten tartás']||'Maintain';
   return `This project is for logging my meals in the Olupan app.
 
-My own recipes: if a food I mention is in the project's recipes.md file (by name or nickname), calculate from that recipe's ingredients instead of a general estimate, and don't ask about the preparation. Calculate each ingredient (raw weights), add them up, divide by the number of servings, then multiply by how much I ate. If I give a new recipe in the chat, use it from then on, and on request give back the full updated recipe file so I can replace the project file.
-
 When I send a photo of food, or describe what I ate:
 1. Identify the foods and estimate the portions. If a portion or the preparation (oil, butter, sauce, sugar) is genuinely uncertain, ask briefly first – at most 2 questions. If I give grams, use them.
 2. For each item, calculate energy (kcal), macros (protein, carbs, fat) and fiber, in grams. Use standard European nutrient values, and take into account whether the weight is raw or cooked. If the product variant matters (e.g. 0% vs full-fat Greek yoghurt, light vs regular sour cream) and I don't say, use the usual variant and state it in the name (e.g. Greek yoghurt 10% 150 g).
@@ -2053,22 +2138,20 @@ Example:
 
 My goal: ${g}.${t.kcal?` ${t.goal==='lose'?'My daily budget':'My suggested daily intake'} (informational): ${t.kcal} kcal, ${t.p} g protein, ${t.c} g carbs, ${t.f} g fat, at least ${t.fib} g fiber.`:''} If I send several meals in the same chat, total the daily intake on request. Be factual and non-judgemental.
 
-Meal suggestions and menus: requests that start with "Meal suggestion" come from the Olupan app and contain my current daily targets, what I've eaten today and my food preferences. If I ask for a menu or meal idea WITHOUT these details, ask for them briefly or remind me to use the app's Meal suggestion buttons – don't work from assumptions.
+Meal suggestions and menus: requests that start with "Meal suggestion" come from the Olupan app and contain my current daily targets, what I've eaten today and my food preferences. If I ask for a menu or meal idea WITHOUT these details, ask for them briefly or remind me to use the app's Weekly menu, Recipe ideas or What should I eat today? buttons – don't work from assumptions.
 - Strictly respect the diet and the foods to avoid. If a preference makes the targets hard to meet, say so.
 - Keep the daily total within ±10% of the energy target, and protein not below the target by more than 10%. Never suggest substantially less than the given target, and give no crash-diet, fasting or "compensation" tips. Be factual and non-judgemental.
 - Always state the exact product variant (fat content, type – e.g. light sour cream, 2% Greek yoghurt, skinless chicken breast), because it matters a lot.
 - ${t.goal==='lose'?'Since my goal is to lose weight, where a lower-energy variant of the same product exists (e.g. light sour cream, low-fat quark, yoghurt instead of cream), use it in the recipe and note the original in brackets. Weigh fats (oil, butter) in grams rather than "a splash". Don’t sacrifice flavour or fullness: save on amounts and variants, not on the food.':'If an ingredient has a lower-energy variant that suits the dish, mention it as an option. Weigh fats (oil, butter) in grams.'}
 - For big-batch recipes (e.g. cooking for the week), say how big one portion is for my target (grams) and how many portions it makes.
 - For each dish give: name, servings, time, difficulty, ingredients in grams (raw), numbered steps matched to my cooking level, and per-serving kcal, protein, carbs, fat and fiber. For make-ahead dishes, say how long they keep and how to store them.
-- Unless the request says otherwise (e.g. recipe ideas only need a short list). Weekly menu: follow the rules in the request (number of cooking sessions, simple breakfasts and snacks, familiar dishes), plan batch cooking and leftovers, reuse ingredients, and finish with a shopping list grouped by category with total quantities. “What should I eat today?”: suggest only from what I have at hand or can buy where I am.
-- Offer to add new recipes to recipes.md in its format, and on request give back the full updated file.
+- Unless the request says otherwise (e.g. recipe ideas only need a short list). Weekly menu: follow the rules in the request (number of cooking days, simple breakfasts and snacks, familiar dishes), plan batch cooking and leftovers, and reuse ingredients. The app builds the shopping list from the code block, so don't write one unless I ask. “What should I eat today?”: suggest only from what I have at hand or can buy where I am.
+- If the request asks for an olupan-recipes or olupan-menu code block, give it exactly in the format described in the request, at the very end of the reply.
 - Do NOT put meal suggestions in the logging code block – that is only for what I actually ate.`;
 }
 function claudeInstrHu(){
   const t=targets(),g=GOALS.find(x=>x[0]===t.goal)?.[1]||'Szinten tartás';
   return `Ez a projekt az étkezéseim naplózására szolgál az Olupan appban.
-
-Saját receptek: ha egy általam említett étel szerepel a projekt receptek.md fájljában (névvel vagy becenévvel), a recept hozzávalóiból számolj, ne általános becsléssel, és ne kérdezz vissza az elkészítésre. Számold ki a hozzávalókat egyenként (nyers tömegek), add össze, oszd el az adagszámmal, majd szorozd azzal, amennyit ettem. Ha a beszélgetésben új receptet adok meg, onnantól azzal is számolj, és kérésre add vissza a teljes, frissített receptfájlt, hogy lecserélhessem a projekt fájlját.
 
 Amikor fotót küldök az ételről, vagy leírom/elmondom, mit ettem:
 1. Azonosítsd az ételeket, és becsüld meg az adagokat. Ha egy adag vagy az elkészítés (olaj, vaj, szósz, cukor) érdemben bizonytalan, előbb kérdezz vissza röviden, legfeljebb 2 kérdéssel. Ha grammban megadom, azzal számolj.
@@ -2093,99 +2176,17 @@ Példa:
 
 A célom: ${g}.${t.kcal?` ${t.goal==='lose'?'Napi keretem':'Javasolt napi bevitelem'} (tájékoztató): ${t.kcal} kcal, ${t.p} g fehérje, ${t.c} g szénhidrát, ${t.f} g zsír, legalább ${t.fib} g rost. Ha ugyanebben a beszélgetésben több étkezést is küldök, kérésre összesítsd a napi bevitelt. Ítélkezés nélkül, tárgyilagosan fogalmazz.`:''}
 
-Menüjavaslat: a „Menüjavaslat” kezdetű kéréseket az Olupan app küldi, és benne van a napi keretem, az aznap már elfogyasztott étel és az étkezési preferenciáim. Ha ezek NÉLKÜL kérek menüt vagy ételötletet, röviden kérdezz rá, vagy emlékeztess, hogy használjam az app Menüjavaslat gombjait – ne feltételezésekből dolgozz.
+Menüjavaslat: a „Menüjavaslat” kezdetű kéréseket az Olupan app küldi, és benne van a napi keretem, az aznap már elfogyasztott étel és az étkezési preferenciáim. Ha ezek NÉLKÜL kérek menüt vagy ételötletet, röviden kérdezz rá, vagy emlékeztess, hogy használjam az app Heti menü, Receptötletek vagy Mit egyek még ma? gombját – ne feltételezésekből dolgozz.
 - Az étrendet és a kerülendő összetevőket szigorúan tartsd be. Ha egy preferencia miatt a keret nehezen tartható, jelezd.
 - A napi összeg az energiakerettől legfeljebb ±10%-kal térjen el, a fehérje legfeljebb 10%-kal maradjon el a céltól. Soha ne javasolj lényegesen kevesebbet a megadott keretnél, és ne adj villámdiétás, böjtölős vagy „kompenzáló” tanácsot. Tárgyilagosan, ítélkezés nélkül fogalmazz.
 - A hozzávalóknál mindig add meg a pontos változatot (zsírtartalom, típus – pl. tejföl 12%, görög joghurt 2%, csirkemell bőr nélkül), mert ez sokat számít.
 - ${t.goal==='lose'?'Mivel a célom a fogyás, ahol van ugyanannak a terméknek alacsonyabb energiatartalmú változata (pl. 12% tejföl 20% helyett, sovány túró, főzőtejszín helyett joghurt), azt írd a receptbe, és zárójelben jelezd az eredetit. A zsiradékot (olaj, vaj) mérd grammra, ne „egy löttyintésnyi” legyen. Az ízvilágot és a jóllakottságot ne áldozd fel: inkább a mennyiségen és a változaton spórolj, ne az ételen.':'Ha egy hozzávalónak van alacsonyabb energiatartalmú változata, és az illik az ételhez, említsd meg lehetőségként. A zsiradékot (olaj, vaj) mérd grammra.'}
 - Nagy adagos (pl. egész hétre főzős) receptnél add meg, hogy az én keretemhez mekkora egy adag (gramm), és hány adag lesz belőle.
 - Minden ételnél add meg: név, adagszám, idő, nehézség, hozzávalók grammban (nyers tömeg), a főzési gyakorlatomhoz illő számozott elkészítési lépések, és adagonként kcal, fehérje, szénhidrát, zsír és rost. Előre elkészíthető ételnél írd meg, meddig és hogyan tárolható.
-- Mindez akkor, ha a kérés mást nem mond (pl. receptötleteknél elég a rövid lista). Heti menü: tartsd be a kérésben lévő szabályokat (főzések száma, egyszerű reggeli és snack, ismert ételek), tervezz előre főzéssel és maradékokkal, használd újra az összetevőket, a végén pedig adj kategóriák szerint csoportosított bevásárlólistát összesített mennyiségekkel. „Mit egyek még ma?”: csak abból javasolj, ami kéznél van, vagy ott megvehető, ahol vagyok.
-- Ajánld fel, hogy az új recepteket a receptek.md formátumában hozzáadod, és kérésre add vissza a teljes, frissített fájlt.
+- Mindez akkor, ha a kérés mást nem mond (pl. receptötleteknél elég a rövid lista). Heti menü: tartsd be a kérésben lévő szabályokat (főzőnapok száma, egyszerű reggeli és snack, ismert ételek), tervezz előre főzéssel és maradékokkal, és használd újra az összetevőket. A bevásárlólistát az app a kódblokkból állítja össze, ezért csak akkor írj, ha kérem. „Mit egyek még ma?”: csak abból javasolj, ami kéznél van, vagy ott megvehető, ahol vagyok.
+- Ha a kérés olupan-recipes vagy olupan-menu kódblokkot kér, pontosan a kérésben leírt formátumban add meg, a válasz legvégén.
 - A menüjavaslatot NE tedd a naplózó kódblokkba – az csak arra való, amit ténylegesen megettem.`;
 }
-function recipesMd(){
-  if(LANG==='en')return`# My recipes
-
-If a food I mention is in this list (by name or nickname), calculate from the recipe's ingredients, not from a general estimate, and don't ask about the preparation.
-- Calculate energy (kcal), protein, carbs, fat and fiber for each ingredient (raw weights, standard European nutrient values), add them up, then divide by the number of servings.
-- If I give servings ("1 serving", "half a serving", "1.5 servings"), multiply the per-serving values.
-- If I give grams, calculate against the finished weight; if the recipe has no finished weight, ask for it.
-- If I give the nutrition values of an ingredient (e.g. from the label), use those.
-- Always use the same ingredient values for the same recipe.
-- In the summary, briefly list the values per ingredient and the per-serving total.
-- In the code block, the name is the recipe name with the portion, e.g. "Breakfast porridge 1 serving", on a single line, not per ingredient.
-- Time, difficulty and method are optional; for meal suggestions use them as given. New recipes you suggest should be written in this same format.
-
----
-
-## Breakfast porridge
-Nicknames: porridge, oats
-Servings: 1
-Time: 10 minutes · Difficulty: easy
-Ingredients:
-- 50 g rolled oats
-- 250 ml water
-- 28 g whey protein powder
-- 60 g frozen blueberries
-Method:
-1. Bring the water to the boil, stir in the oats and simmer for 3–4 minutes.
-2. Take off the heat, let it cool for a minute, then stir in the protein powder.
-3. Top with the blueberries (thawed or straight from the freezer).
-
----
-
-## [Recipe name]
-Nicknames:
-Servings:
-Finished weight (optional, needed for portions given in grams):
-Time: · Difficulty:
-Ingredients:
-- 
-Method:
-1. 
-`;
-  return`# Saját receptjeim
-
-Ha egy általam említett étel szerepel ebben a listában (névvel vagy becenévvel), a recept hozzávalóiból számolj, ne általános becsléssel, és ne kérdezz vissza az elkészítésre.
-- Számold ki hozzávalónként az energiát (kcal), a fehérjét, a szénhidrátot, a zsírt és a rostot (nyers tömegek, magyar/európai tápanyagértékek), add össze, majd oszd el az adagszámmal.
-- Ha adagot mondok („1 adag”, „fél adag”, „1,5 adag”), az egy adagra jutó értéket szorozd fel.
-- Ha grammot mondok, a kész tömegre vetítve számolj; ha a receptnél nincs kész tömeg, kérdezz rá.
-- Ha egy hozzávalónál megadom a tápértéket (pl. a csomagolásról), azzal számolj.
-- Ugyanarra a receptre mindig ugyanazokkal a hozzávaló-értékekkel számolj.
-- Az összefoglalóban röviden írd ki a hozzávalónkénti értékeket és az egy adagra jutó összeget.
-- A kódblokkban a megnevezés a recept neve legyen az adaggal, pl. „Reggeli zabkása 1 adag”, egyetlen sorban, nem hozzávalónként.
-- Az idő, a nehézség és az elkészítés nem kötelező; menüjavaslatnál ezeket használd. Az általad javasolt új recepteket is ebben a formátumban írd meg.
-
----
-
-## Reggeli zabkása
-Becenevek: zabkása, kása, reggeli zab
-Adag: 1
-Idő: 10 perc · Nehézség: könnyű
-Hozzávalók:
-- 50 g zabpehely
-- 250 ml víz
-- 28 g tejsavó fehérjepor
-- 60 g fagyasztott áfonya
-Elkészítés:
-1. A vizet forrald fel, keverd bele a zabpelyhet, és 3–4 percig főzd kis lángon.
-2. Vedd le a tűzről, hagyd egy percig hűlni, majd keverd bele a fehérjeport.
-3. Tedd rá az áfonyát (felengedve vagy fagyasztva).
-
----
-
-## [Recept neve]
-Becenevek:
-Adag:
-Kész tömeg (nem kötelező, a grammban megadott adaghoz kell):
-Idő: · Nehézség:
-Hozzávalók:
-- 
-Elkészítés:
-1. 
-`}
-async function downloadRecipes(){if(await shareOrDownload(LANG==='en'?'recipes.md':'receptek.md',recipesMd(),'text/plain','Olupan – receptek'))toast('Receptfájl elkészült')}
 /* ===== Menüjavaslat: az app állítja össze a kérést (keret, mai étkezés, preferenciák), a szabályok a projekt-utasításban vannak ===== */
 const PREF_DIET=[['dairy','Tejmentes','Dairy-free'],['sugar','Hozzáadott cukor nélkül','No added sugar'],['meat','Húsmentes','Meat-free'],['vegetarian','Vegetáriánus','Vegetarian'],['vegan','Vegán','Vegan'],['pesc','Halat eszik, húst nem','Pescatarian'],['egg','Tojásmentes','Egg-free'],['pork','Sertéshúsmentes','Pork-free'],['gluten','Gluténmentes','Gluten-free']];
 const PREF_EQUIP=[['oven','Sütő','Oven'],['stove','Tűzhely / főzőlap','Hob / stove'],['micro','Mikrohullámú sütő','Microwave'],['airfryer','Air fryer','Air fryer'],['robot','Konyhai robotgép','Food processor / stand mixer'],['blender','Turmix / botmixer','Blender / stick blender'],['pressure','Kukta / multicooker','Pressure cooker / multicooker'],['slow','Lassúfőző','Slow cooker'],['grill','Kontakt grill','Contact grill'],['toaster','Kenyérpirító','Toaster']];
@@ -2212,7 +2213,7 @@ function setFPref(k,v){const p=fprefs();if(k==='cook')v=Math.max(1,Math.min(4,pa
 function toggleFPref(k,v){const p=fprefs(),a=new Set(p[k]);a.has(v)?a.delete(v):a.add(v);p[k]=[...a];S.settings.foodPrefs=p;save();render()}
 function vFoodPrefs(){const p=fprefs(),lbl=x=>LANG==='en'?x[2]:x[1];
   const chips=(k,list)=>`<div class="chips" style="margin:0">${list.map(x=>`<button class="chip${p[k].includes(x[0])?' on':''}" data-click="toggleFPref('${k}','${x[0]}')" aria-pressed="${p[k].includes(x[0])}" translate="no">${esc(lbl(x))}</button>`).join('')}</div>`;
-  return `<div class="card" id="fprefs"><h2>Étkezési preferenciák</h2><div class="hint" style="margin-top:-4px">A Menüjavaslat gombok ezeket küldik el a Claude-projektednek, a kalóriakerettel együtt. Csak ezen a készüléken tárolódnak.</div>
+  return `<div class="card" id="fprefs"><h2>Étkezési preferenciák</h2><div class="hint" style="margin-top:-4px">${L('A Heti menü, a Receptötletek és a Mit egyek még ma? kérés ezeket küldi el a Claude-projektednek, a kalóriakerettel együtt. Csak ezen a készüléken tárolódnak.','The Weekly menu, Recipe ideas and What else today? requests send these to your Claude project, together with your calorie target. They are stored only on this device.')}</div>
   <label>Étrend</label>${chips('diet',PREF_DIET)}
   <label for="favoid">Kerülendő összetevők</label><input id="favoid" maxlength="300" value="${esc(p.avoid)}" placeholder="${esc(L('pl. gomba, koriander, földimogyoró','e.g. mushrooms, coriander, peanuts'))}" data-change="setFPref('avoid',this.value)">
   <label>Konyha</label><div class="hint" style="margin:-2px 0 6px">Napi és heti menünél az app 1–2 konyhát választ ki véletlenszerűen a bejelöltek közül, hogy az alapanyagok átfedjenek. A receptötleteknél mindet használja.</div>${chips('cuisine',PREF_CUISINE)}
@@ -2221,7 +2222,6 @@ function vFoodPrefs(){const p=fprefs(),lbl=x=>LANG==='en'?x[2]:x[1];
   <label for="fskill">Főzési gyakorlat</label><select id="fskill" data-change="setFPref('skill',this.value)">${PREF_SKILL.map(x=>`<option value="${x[0]}" ${p.skill===x[0]?'selected':''}>${esc(lbl(x))}</option>`).join('')}</select>
   <div class="grid2" style="gap:10px"><div><label for="fpeople">Hány főre főzöl</label><input id="fpeople" type="number" inputmode="numeric" min="1" max="8" value="${p.people}" data-change="setFPref('people',this.value)"></div>
   <div><label for="fmeals">Étkezés naponta</label><input id="fmeals" type="number" inputmode="numeric" min="1" max="6" value="${p.meals}" data-change="setFPref('meals',this.value)"></div></div>
-  <label for="fcook">Főzés hetente (heti menü)</label><select id="fcook" data-change="setFPref('cook',this.value)">${[1,2,3,4].map(n=>`<option value="${n}" ${p.cook===n?'selected':''}>${n} ${L('alkalommal','times')}</option>`).join('')}</select><div class="hint">A heti menü ennyi főzésből ad főtt ételt minden napra – ugyanaz az étel több napon is előjöhet.</div>
   <label>Konyhai eszközeim</label><div class="hint" style="margin:-2px 0 6px">Jelöld be, ami van. Ha bármit bejelölsz, Claude csak ezekkel számol, és a többit nem használja.</div>${chips('eq',PREF_EQUIP)}
   <label for="fequip">Egyéb eszköz (nem kötelező)</label><input id="fequip" maxlength="300" value="${esc(p.equipment)}" placeholder="${esc(L('pl. wok, sous-vide, gofrisütő','e.g. wok, sous-vide, waffle maker'))}" data-change="setFPref('equipment',this.value)"></div>`}
 function menuPrompt(kind,ex={}){
@@ -2229,7 +2229,8 @@ function menuPrompt(kind,ex={}){
   const mac=o=>`${fmt(o.kcal,0)} kcal, ${en?'protein':'fehérje'} ${fmt(o.p,0)} g, ${en?'carbs':'szénhidrát'} ${fmt(o.c,0)} g, ${en?'fat':'zsír'} ${fmt(o.f,0)} g, ${en?'fiber':'rost'} ${fmt(o.fib,0)} g`;
   const pick=(k,list)=>list.filter(x=>p[k].includes(x[0])).map(lbl).join(', ');
   const L2=(h,e)=>en?e:h,lines=[];
-  lines.push(kind==='ideas'?L2('Menüjavaslat – receptötletek','Meal suggestion – recipe ideas'):kind==='rest'?L2('Menüjavaslat – mit egyek még ma?','Meal suggestion – what should I eat for the rest of today?'):L2('Menüjavaslat – heti menü (7 nap)','Meal suggestion – weekly menu (7 days)'));
+  const mo=menuOpt(),mStart=ex.start||today(),mDays=mo.days,dlab=d=>{const x=pYmd(d);return en?x.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'}):(x.getMonth()+1)+'.'+x.getDate()+'. '+x.toLocaleDateString('hu-HU',{weekday:'long'})};
+  lines.push(kind==='ideas'?L2('Menüjavaslat – receptötletek','Meal suggestion – recipe ideas'):kind==='rest'?L2('Menüjavaslat – mit egyek még ma?','Meal suggestion – what should I eat for the rest of today?'):L2(`Menüjavaslat – heti menü (${mDays} nap, 1. nap: ${dlab(mStart)})`,`Meal suggestion – weekly menu (${mDays} days, day 1: ${dlab(mStart)})`));
   lines.push('');
   lines.push(t.kcal?L2('Napi keret: ','Daily target: ')+mac(t):L2('Napi keret: nincs megadva – kérdezz rá, mielőtt javasolsz.','Daily target: not set – ask me before suggesting.'));
   if(kind==='rest'){const now=new Date();
@@ -2238,7 +2239,8 @@ function menuPrompt(kind,ex={}){
     if(t.kcal)lines.push(L2('Még hátra: ','Remaining: ')+mac({kcal:Math.max(0,t.kcal-s.kcal),p:Math.max(0,t.p-s.p),c:Math.max(0,t.c-s.c),f:Math.max(0,t.f-s.f),fib:Math.max(0,t.fib-s.fib)}));
     if(ex.have)lines.push(L2('Ami kéznél van: ','What I have at hand: ')+ex.have);
     if(ex.where)lines.push(L2('Hol vagyok, mit tudok venni: ','Where I am / what I can buy: ')+ex.where);}
-  if(kind!=='rest')lines.push(kind==='ideas'?L2('Hány főre: ','Servings for: ')+p.people:L2('Étkezés naponta: ','Meals per day: ')+p.meals+' · '+L2('hány főre: ','servings for: ')+p.people+' · '+L2('főzés hetente: ','cooking sessions per week: ')+p.cook);
+  if(kind==='ideas')lines.push(L2('Hány főre: ','Servings for: ')+p.people);
+  if(kind==='week')lines.push(L2('Étkezések, amelyekre menü kell: ','Meals to plan: ')+REC_MEAL.filter(x=>mo.meals.includes(x[0])).map(x=>en?x[2].toLowerCase():x[1].toLowerCase()).join(', ')+' · '+L2('hány főre: ','servings for: ')+p.people+' · '+(mo.cook>=7?L2('minden nap főzök','I cook every day'):L2(`hetente ${mo.cook} napon főzök`,`I cook on ${mo.cook} day${mo.cook>1?'s':''} a week`)));
   lines.push(L2('Étrend: ','Diet: ')+(pick('diet',PREF_DIET)||L2('nincs megkötés','no restrictions')));
   if(p.avoid)lines.push(L2('Kerülendő: ','Avoid: ')+p.avoid);
   const cuAll=kind==='rest'?[]:p.cuisine,cu=kind==='ideas'?cuAll:[...cuAll].sort(()=>Math.random()-.5).slice(0,2);
@@ -2262,40 +2264,31 @@ function menuPrompt(kind,ex={}){
    if(no.length)lines.push(L2('– Ne használd: ','– Don’t use: ')+no.join(', '));
    if(sub.length)lines.push(L2('– Helyettesítővel (az eredetit is írd oda): ','– With a substitute (name the original too): ')+sub.join('; '));
    if(ok.length)lines.push(L2('– Nyugodtan használható (példák): ','– Fine to use (examples): ')+ok.join(', '));}
-  if(kind==='week'){const pd=[];for(let i=0;i<7;i++){const d=ymd(new Date(Date.now()+i*DAY)),tp=plans()[d]&&S.templates.find(t=>t.id===plans()[d]);if(tp){const x=pYmd(d);pd.push(`${en?x.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}):x.toLocaleDateString('hu-HU',{weekday:'short'})+' '+(x.getMonth()+1)+'.'+x.getDate()+'.'} (${en?T(tp.name):tp.name})`)}}
+  if(kind==='week'){const pd=[];for(let i=0;i<mDays;i++){const d=addDays(mStart,i),tp=plans()[d]&&S.templates.find(t=>t.id===plans()[d]);if(tp){const x=pYmd(d);pd.push(`${en?x.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}):x.toLocaleDateString('hu-HU',{weekday:'short'})+' '+(x.getMonth()+1)+'.'+x.getDate()+'.'} (${en?T(tp.name):tp.name})`)}}
     if(pd.length)lines.push(L2('Tervezett edzésnapok: ','Planned training days: ')+pd.join(', ')+L2(' – ezeken a napokon az edzés utáni étkezés legyen a nap fő szénhidrátforrása.',' – on these days make the post-workout meal the main carb source of the day.'));
     lines.push(L2('Szabályok a heti menühöz:','Rules for the weekly menu:'));
-    lines.push(L2(`– Legfeljebb ${p.cook} főzési alkalom a héten, alkalmanként 1–2 főétel nagyobb adagban. Ezekből minden napra jusson főtt étel; ugyanaz az étel több napon, akár egy nap kétszer is előjöhet – ez szándékos.`,`– At most ${p.cook} cooking session${p.cook>1?'s':''} a week, 1–2 main dishes in bigger batches each time. Every day should get a cooked meal from these; the same dish may repeat on several days, even twice a day – that’s intended.`));
-    lines.push(L2('– Reggeli 2–3 egyszerű, ismert lehetőségből forogjon (pl. zabkása, rántotta, joghurt vagy túró gyümölccsel), legfeljebb 5–10 perc munkával.','– Breakfast rotates between 2–3 simple, familiar options (e.g. porridge, scrambled eggs, yoghurt or quark with fruit), 5–10 minutes of work at most.'));
-    lines.push(L2('– Snack főzés nélkül, ismert dolgokból (pl. alma dióval, túró, skyr, fehérjeturmix, zöldség hummusszal).','– Snacks need no cooking and use familiar foods (e.g. apple with walnuts, quark, skyr, protein shake, vegetables with hummus).'));
+    lines.push(mo.cook>=7?L2('– Minden nap főzök: naponta egy főétel, hétköznap legfeljebb 30–40 perc munkával. Ha egy étel két napra is jó, nyugodtan tervezz maradékot.','– I cook every day: one main dish a day, at most 30–40 minutes of work on weekdays. If a dish works for two days, plan leftovers.')
+      :L2(`– Legfeljebb ${mo.cook} napon főzök a héten, alkalmanként 1–2 főétel nagyobb adagban. A többi napon ezek maradékát eszem; ugyanaz az étel több napon, akár egy nap kétszer is előjöhet – ez szándékos. Figyelj arra, meddig áll el.`,`– I cook on at most ${mo.cook} day${mo.cook>1?'s':''} a week, 1–2 main dishes in bigger batches each time. On the other days I eat the leftovers; the same dish may repeat on several days, even twice a day – that’s intended. Mind how long things keep.`));
+    if(mo.meals.includes('breakfast'))lines.push(L2('– Reggeli 2–3 egyszerű, ismert lehetőségből forogjon (pl. zabkása, rántotta, joghurt vagy túró gyümölccsel), legfeljebb 5–10 perc munkával.','– Breakfast rotates between 2–3 simple, familiar options (e.g. porridge, scrambled eggs, yoghurt or quark with fruit), 5–10 minutes of work at most.'));
+    if(mo.meals.includes('snack'))lines.push(L2('– Snack főzés nélkül, ismert dolgokból (pl. alma dióval, túró, skyr, fehérjeturmix, zöldség hummusszal).','– Snacks need no cooking and use familiar foods (e.g. apple with walnuts, quark, skyr, protein shake, vegetables with hummus).'));
+    {const rs=S.recipes||[],nm=a=>a.slice(0,30).map(r=>r.name).join('; '),fav=rs.filter(r=>r.vote===1),dis=rs.filter(r=>r.vote===-1),oth=rs.filter(r=>!r.vote);
+     if(fav.length)lines.push(L2('– Kedvenc receptjeim, ezekből építs, ahol illenek: ','– My favourite recipes; build on these where they fit: ')+nm(fav));
+     if(oth.length)lines.push(L2('– Egyéb mentett receptjeim (használhatod őket): ','– My other saved recipes (you may use them): ')+nm(oth));
+     if(dis.length)lines.push(L2('– Ezeket ne javasold: ','– Don’t suggest these: ')+nm(dis));}
     lines.push(L2('– Ismert, hétköznapi ételek, kevés hozzávalóval, speciális technika nélkül. Ha valami ismeretlenebb, adj mellé ismerős alternatívát.','– Familiar everyday dishes with few ingredients and no special techniques. If something is less familiar, offer a familiar alternative.'));
-    lines.push(L2('– A válasz: heti áttekintő táblázat (nap × étkezés, kcal és fehérje), főzési terv (melyik nap mit főzök, hány adagot, mi meddig áll el), a főételek receptje, a többi röviden, végül bevásárlólista kategóriák szerint.','– Reply with: a weekly overview table (day × meal, kcal and protein), a cooking plan (which day I cook what, how many portions, how long each keeps), recipes for the main dishes, the rest briefly, and finally a shopping list by category.'));}
+    lines.push(L2('– A válasz: rövid áttekintés és főzési terv (melyik napon mit főzök, hány adagot, mi meddig áll el), a végén a kódblokk. Bevásárlólistát nem kell írnod, az app a kódblokkból állítja össze.','– Reply with: a short overview and cooking plan (which day I cook what, how many portions, how long each keeps), then the code block at the end. No shopping list needed; the app builds it from the code block.'));}
   if(p.style.includes('handsoff'))lines.push(L2('Otthagyhatós: kevés aktív munka (befűszerezem, összekeverem, felteszem vagy beteszem a sütőbe, és magától elkészül) – a teljes idő lehet hosszabb. Mindegyiknél add meg az aktív és a teljes időt.','Hands-off: little active work (season, mix, put on the hob or in the oven and it cooks itself) – total time can be longer. Give active and total time for each.'));
   lines.push(kind==='ideas'?L2(`Adj 15 receptötletet az évszaknak (${lblL(REC_SEASON,curSeason()).toLowerCase()}) megfelelően: 2 reggelit, 3 meleg főételt, 2 könnyű vacsorát, 2 levest, 2 salátát, 1 hidegen fogyasztható, főzés nélkül is elkészíthető ételt, és 3 desszertet (fehérjebarát, ismert alapanyagokból, pl. túró, joghurt, gyümölcs, zab). Legyen köztük gyors is. Mindegyikhez: rövid leírás, aktív és teljes idő, becsült kcal és makrók adagonként.
 A válasz végén add meg mind a 15-öt egy olupan-recipes kódblokkban, hozzávalókkal és rövid elkészítési lépésekkel, címkékkel és évszakkal, hogy elmenthessem őket az Olupan Receptjeim közé.
 `+recipeFormat(L2),`Give me 15 recipe ideas suited to the season (${lblL(REC_SEASON,curSeason()).toLowerCase()}): 2 breakfasts, 3 warm main dishes, 2 light dinners, 2 soups, 2 salads, 1 cold no-cook dish, and 3 desserts (protein-friendly, from familiar ingredients such as quark, yoghurt, fruit, oats). Include some quick ones. For each: a short description, active and total time, estimated kcal and macros per serving.
 At the end of your reply, give all 15 in an olupan-recipes code block with ingredients, short method steps, tags and season, so I can save them to My recipes in Olupan.
-`+recipeFormat(L2)):L2('Állíts össze egy 7 napos menüt a fenti szabályok szerint.','Put together a 7-day menu following the rules above.'));
+`+recipeFormat(L2)):L2(`Állíts össze egy ${mDays} napos menüt a fenti szabályok szerint.`,`Put together a ${mDays}-day menu following the rules above.`)+'\n'+menuFormat(L2,p.people,mDays));
   return lines.join('\n');
 }
-/* „Mit egyek még ma?”: csak abból javasol, ami kéznél van, vagy ott megvehető */
-async function askRest(){if(!targets().kcal){toast('Előbb töltsd ki a profilodat');return}
-  const r=await form('Mit egyek még ma?',[{id:'have',label:'Mi van kéznél?',type:'textarea',rows:3,placeholder:L('pl. tojás, túró, fagyasztott brokkoli, rizs, tonhalkonzerv','e.g. eggs, quark, frozen broccoli, rice, tinned tuna')},{id:'where',label:'Hol vagy, mit tudsz venni? (nem kötelező)',placeholder:L('pl. munkahely, Lidl a közelben','e.g. at work, Lidl nearby')}],{ok:'Tovább',intro:'Legalább az egyiket töltsd ki: Claude csak ebből javasol, a mai maradék kereted szerint.'});
-  if(!r)return;if(!r.have&&!r.where){toast('Írd be, mi van kéznél, vagy hol vagy');return}askMenu('rest',r)}
-function askMenu(kind,ex){if(!targets().kcal){toast('Előbb töltsd ki a profilodat');return}const txt=menuPrompt(kind,ex),url=S.settings.claudeUrl;
-  openModal(`<h2>${kind==='ideas'?'Receptötletek':kind==='rest'?'Mit egyek még ma?':'Heti menü'}</h2>
-  <div class="hint" style="margin-top:-4px">Ezt a kérést másolja ki az app a Claude-projektedbe. Beillesztés előtt átírhatod.</div>
-  <textarea id="menuText" rows="12" style="width:100%;margin-top:8px;font:13px/1.45 var(--mono)">${esc(txt)}</textarea>
-  ${url?'':`<div class="hint">Add meg a Claude-projekt linkjét a Beállítások → Étkezés részben, és a gomb meg is nyitja.</div>`}
-  <div class="row" style="margin-top:12px"><button class="btn" data-click="closeModal()">Mégse</button><span class="sp"></span><button class="btn p" data-click="copyMenu()">${I(url?'external-link':'copy','sm')} ${url?'Másolás és Claude':'Másolás'}</button></div>`)}
-function copyMenu(){const ta=$('#menuText'),url=S.settings.claudeUrl;
-  // a másolást és a megnyitást ugyanabban a koppintásban indítjuk, különben a böngésző letilthatja
-  try{navigator.clipboard.writeText(ta.value).then(()=>toast('Kérés a vágólapon – illeszd be a Claude-ba'),()=>{ta.focus();ta.select();toast('Jelöld ki és másold ki kézzel')})}catch(e){ta.focus();ta.select()}
-  if(url){try{window.open(url,'_blank','noopener')}catch(e){}}}
 async function copyInstr(){const ta=$('#instrText');try{await navigator.clipboard.writeText(ta.value);toast('Utasítás a vágólapon')}catch(e){ta.focus();ta.select();toast('Jelöld ki és másold ki kézzel')}}
 function whyClaude(){openModal(`<h2>${L('Mire jó a Claude-projekt?','What is the Claude project for?')}</h2>
-  <p class="small">${L('A kalóriaszámítás a legtöbb ember számára ott akad el, hogy minden ételt tételesen ki kell keresni egy adatbázisból. Egy mesterséges intelligenciával ez sokkal egyszerűbb: lefényképezed a tányért, elmondod vagy leírod, mit ettél, és Claude kiszámolja a kalóriát, a makrókat és a rostot – a saját receptjeidből is.','For most people, calorie counting stalls because every food has to be looked up in a database. With AI it’s much simpler: photograph your plate, say or type what you ate, and Claude works out the calories, macros and fibre – from your own recipes too.')}</p>
-  <p class="small">${L('Az eredményt egy kódblokkban adja vissza, amit az Olupan Étkezés oldalán egy koppintással beillesztesz. A projekt ismeri a céljaidat és az étkezési preferenciáidat, ezért menü- és receptjavaslatot is tud adni. A saját Claude-fiókodat használod; az Olupanba csak a számok kerülnek.','It returns the result in a code block that you paste on Olupan’s Food page with one tap. The project knows your targets and food preferences, so it can suggest menus and recipes too. You use your own Claude account; only the numbers go into Olupan.')}</p>
+  <p class="small">${L('A kalóriaszámítás a legtöbb ember számára ott akad el, hogy minden ételt tételesen ki kell keresni egy adatbázisból. Egy mesterséges intelligenciával ez sokkal egyszerűbb: lefényképezed a tányért, elmondod vagy leírod, mit ettél, és Claude kiszámolja a kalóriát, a makrókat és a rostot.','For most people, calorie counting stalls because every food has to be looked up in a database. With AI it’s much simpler: photograph your plate, say or type what you ate, and Claude works out the calories, macros and fibre.')}</p>
+  <p class="small">${L('Az eredményt egy kódblokkban adja vissza, amit az Olupan Étkezés oldalán egy koppintással beillesztesz. A projekt ismeri a céljaidat, és az app kéréseivel heti menüt és receptötleteket is ad, amelyek egyből a Receptjeid közé kerülnek. A saját Claude-fiókodat használod; az Olupanba csak a számok kerülnek.','It returns the result in a code block that you paste on Olupan’s Food page with one tap. The project knows your targets, and with the app’s requests it also gives weekly menus and recipe ideas that go straight into My recipes. You use your own Claude account; only the numbers go into Olupan.')}</p>
   <div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn p" data-click="closeModal()">${L('Értem','Got it')}</button></div>`)}
 function foodHelp(){if(!targets().kcal){toast('Előbb töltsd ki a profilodat');return}
   openModal(`<h2>Étkezésnapló Claude-dal</h2>
@@ -2305,19 +2298,18 @@ function foodHelp(){if(!targets().kcal){toast('Előbb töltsd ki a profilodat');
   <li>${L('Nyisd meg a <b>claude.ai</b> oldalt <b>ugyanabban a böngészőben</b>, amelyben az Olupant használod – ne a Claude appot, mert ott nincs kimásolható webcím. Ha a telefon mégis az appot nyitja meg, a linket hosszan nyomva válaszd a megnyitást a böngészőben.','Open <b>claude.ai</b> <b>in the same browser</b> you use Olupan in – not the Claude app, because it has no web address you can copy. If your phone opens the app anyway, long-press the link and choose to open it in the browser.')}</li>
   <li>Bal oldali menü → <b>Projektek</b> → <b>Új projekt</b>. Név: pl. <i>Étkezésnapló</i>.</li>
   <li>A projekt oldalán keresd az <b>Utasítások</b> (Instructions / „Projekt utasításainak beállítása”) részt, és illeszd be a lenti szöveget. A <b>Másolás</b> gomb a vágólapra teszi.</li>
-  <li>A projekt Context (fájlok) részéhez add hozzá a receptfájlt, amelyet a lenti Receptfájl letöltése gombbal kapsz. Ebbe kerülnek a saját receptjeid: elég a hozzávalókat felsorolni, a kalóriát, a makrókat és a rostot Claude számolja ki.</li>
   <li>Mentsd. A projekt ezután a telefonos Claude appban is megjelenik a Projektek között.</li>
   <li>Másold ki a projekt címét a böngésző címsorából (<code class="mono">https://claude.ai/project/…</code>), és illeszd be a Beállítások → Étkezés → <b>Claude-projekt linkje</b> mezőbe. Ekkor az Étkezés fülön megjelenik a <b>Claude</b> gomb.</li></ol>
   <textarea id="instrText" rows="9" readonly style="font-size:13px">${esc(claudeInstr())}</textarea>
-  <div class="row end" style="margin-top:8px;gap:8px"><button class="btn sm" data-click="downloadRecipes()">${I('download','sm')} Receptfájl letöltése</button><button class="btn p sm" data-click="copyInstr()">${I('copy','sm')} Másolás</button></div>
+  <div class="row end" style="margin-top:8px;gap:8px"><button class="btn p sm" data-click="copyInstr()">${I('copy','sm')} Másolás</button></div>
   <div class="hint">Az utasítás tartalmazza a mostani javasolt napi bevitelt is. Ha a Beállításokban módosítod a profilodat, másold ki és illeszd be újra.</div>
   <h3 style="margin-top:14px">2. Használat étkezésenként</h3>
   <ol class="small" style="padding-left:20px;line-height:1.6">
   <li>Claude app → <b>Projektek</b> → <b>Étkezésnapló</b> → új beszélgetés (vagy folytasd a napit).</li>
   <li><b>Fotó:</b> a + vagy kamera ikonnal készíts képet a tányérról. <b>Szöveg vagy hang:</b> írd be vagy diktáld, pl. „reggelire 60 g zabpehely 2 dl tejjel és egy banán”.</li>
   <li>Ha Claude visszakérdez az adagra, válaszolj. A válasz végén lévő kódblokk sarkában lévő <b>másolás</b> ikonnal másold ki.</li>
-  <li>Olupan → <b>Étkezés</b> → <b>Beillesztés Claude-ból</b>. Mentés előtt megmutatja a tételeket; a már rögzítettekre és a korábbi napra szólókra rákérdez.</li></ol>
-  <p class="hint">Saját recept: írd azt, hogy „reggelire 1 adag zabkása”, és Claude a receptfájl hozzávalóiból számol. Új receptet a beszélgetésben is megadhatsz; ha szeretnéd, hogy minden beszélgetésben elérhető legyen, kérd el a frissített receptfájlt, és cseréld le vele a projektben lévőt.</p>
+  <li>${L('Olupan → a felső sávban vagy az Étkezés → <b>Claude-dal</b> ablakban: <b>Beillesztés</b>. Mentés előtt megmutatja a tételeket; a már rögzítettekre és a korábbi napra szólókra rákérdez.','Olupan → in the bar at the top or in Food → <b>With Claude</b>: <b>Paste</b>. Before saving, it shows the items and asks about ones already logged or dated to an earlier day.')}</li></ol>
+  <p class="hint">${L('Saját recept: a Receptjeim között nyisd meg, és a <b>Rögzítés</b> gombbal vedd fel, a megadott adagszámmal. Ez pontosabb, mint a becslés.','Your own recipe: open it in My recipes and log it with <b>Log</b>, with the number of servings. This is more accurate than an estimate.')}</p>
   <p class="hint">Tipp: grammban vagy darabban megadott adaggal sokkal pontosabb a becslés, mint fotóval. A rejtett olaj, a szósz és az adagméret miatt a fotós becslés könnyen 20–30%-ot téved. Ha a vágólapról nem sikerül a beolvasás, a Beillesztés ablakba kézzel is bemásolhatod.</p>
   <div class="row end"><button class="btn p" data-click="closeModal()">Rendben</button></div>`);
 }
@@ -2977,9 +2969,9 @@ function vMore(){
   if(setSub==='food')return (S.settings.claudeUrl?'':`<div class="card notice"><div class="row li"><span class="nd"></span><span class="small" style="flex:1">${L('Étkezésnapló Claude-dal, két lépésben: <b>1.</b> állítsd be lent az étkezési preferenciáidat (ezekből készül a menü- és receptjavaslat), <b>2.</b> hozd létre a Claude-projektet az útmutató alapján, és másold be a linkjét.','Food log with Claude in two steps: <b>1.</b> set your food preferences below (meal and recipe suggestions are built from them), <b>2.</b> create the Claude project following the guide and paste its link.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="whyClaude()">${L('Mire jó ez?','What is this for?')}</button></span></div></div>`)+vFoodPrefs()+ownFoodsCard()+(S.settings.foodPrefs&&!S.settings.claudeUrl&&targets().kcal?`<div class="card" style="border-color:color-mix(in srgb,var(--kj-blue) 50%,transparent)"><div class="small" style="margin-bottom:10px">${L('Ha készen vagy a preferenciákkal, nyisd meg a Claude-projekt létrehozásának útmutatóját.','When you’re done with your preferences, open the guide to creating the Claude project.')}</div><button class="btn p block" data-click="foodHelp()">${I('external-link','sm')} ${L('Claude-projekt útmutató','Claude project guide')}</button></div>`:'')+`<div class="card">
   <label for="claudeurl">Claude-projekt linkje (étkezésnapló)</label>
   <div class="row" style="flex-wrap:nowrap;gap:8px"><input id="claudeurl" style="flex:1;min-width:0" type="url" inputmode="url" autocomplete="off" value="${esc(S.settings.claudeUrl||'')}" placeholder="https://claude.ai/project/…" data-change="setClaudeUrl(this.value)">${S.settings.claudeUrl?`<a class="btn" href="${esc(S.settings.claudeUrl)}" target="_blank" rel="noopener noreferrer" aria-label="Claude-projekt megnyitása">${I('external-link','sm')} Megnyitás</a>`:''}</div>
-  <div class="hint">${S.settings.claudeUrl?'A Megnyitás gomb új böngészőlapon nyitja meg a projektet – itt cserélheted az utasítást vagy a receptfájlt.':'Nyisd meg a Claude-ot ugyanabban a böngészőben, amelyben az Olupant használod (ne a Claude appot – ott nincs kimásolható webcím), jelentkezz be vagy regisztrálj, hozz létre egy projektet, és másold be ide a linkjét a címsorból.'}${targets().kcal?'':' Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.'}</div>
+  <div class="hint">${S.settings.claudeUrl?L('A Megnyitás gomb új böngészőlapon nyitja meg a projektet – itt cserélheted az utasítást.','The Open button opens the project in a new browser tab – you can replace the instructions there.'):'Nyisd meg a Claude-ot ugyanabban a böngészőben, amelyben az Olupant használod (ne a Claude appot – ott nincs kimásolható webcím), jelentkezz be vagy regisztrálj, hozz létre egy projektet, és másold be ide a linkjét a címsorból.'}${targets().kcal?'':' Az útmutató a profil kitöltése után érhető el, mert a projekt utasításába a napi célok is belekerülnek.'}</div>
   ${S.settings.claudeUrl?'':`<a class="btn block" style="margin-top:10px" href="https://claude.ai/" target="_blank" rel="noopener noreferrer">${I('external-link','sm')} Claude megnyitása (claude.ai)</a>`}
-  <div class="row" style="margin-top:12px"><button class="btn" data-click="foodHelp()" ${targets().kcal?'':'disabled'}>${I('external-link','sm')} Claude-projekt útmutató</button><button class="btn" data-click="downloadRecipes()">${I('download','sm')} Receptfájl letöltése</button></div></div>`;
+  <div class="row" style="margin-top:12px"><button class="btn" data-click="foodHelp()" ${targets().kcal?'':'disabled'}>${I('external-link','sm')} Claude-projekt útmutató</button></div></div>`;
   if(setSub==='data')return storeCard()+`
   <div class="card"><h2>Mentés</h2><div class="hint" style="margin:0 0 12px">Minden adat csak ezen az eszközön, a böngésző helyi tárhelyén van – semmi nem kerül szerverre. A <b>Mentés / megosztás</b> a telefon megosztás menüjét nyitja meg: innen menthetsz Google Drive-ra, a Fájlok appba vagy iCloud Drive-ra. Visszatöltés: <b>Import</b>, majd a fájl kiválasztása (a Drive is megjelenik a fájlválasztóban, ha telepítve van).</div>
   <div class="stat" style="margin-bottom:12px"><b style="font-size:16px">${S.settings.lastBackup?fmtDate(S.settings.lastBackup)+' · '+fmtTime(S.settings.lastBackup):'Még nem volt'}</b><span>Utolsó mentés</span></div>
@@ -3012,7 +3004,7 @@ function vSetMenu(){
     +row('Nyelv',LANG==='en'?'English':'Magyar',`data-click="openSub('look')"`))
   +grp('Hangok és kijelző',row('Hangok és rezgés',onoff((st.sound??3)>0||st.uiSound!==false),`data-click="openSub('fx')"`)+row('Értesítés a pihenő végén',onoff(st.restNotify===true&&notifSupported()&&Notification.permission==='granted'),`data-click="openSub('fx')"`)+row('Képernyő ébren tartása',onoff(st.wakeLock!==false),`data-click="openSub('fx')"`))
   +grp('Edzés',row('Alapértelmezett pihenőidő',fmtSec(st.rest??90),`data-click="openSub('train','restset')"`)+row('Gyakorlatok',String(S.exercises.length),`data-click="openSub('train','exlist')"`))
-  +grp('Étkezés',row('Étkezési preferenciák',(()=>{const f=fprefs(),n=f.diet.length+f.style.length+(f.avoid?1:0);return n?String(n):''})(),`data-click="openSub('food','fprefs')"`)+row('Claude-projekt és receptfájl',st.claudeUrl?L('beállítva','set'):'',`data-click="openSub('food')"`))
+  +grp('Étkezés',row('Étkezési preferenciák',(()=>{const f=fprefs(),n=f.diet.length+f.style.length+(f.avoid?1:0);return n?String(n):''})(),`data-click="openSub('food','fprefs')"`)+row('Claude-projekt',st.claudeUrl?L('beállítva','set'):'',`data-click="openSub('food')"`))
   +grp('Egészség',row('Lépés, súly, testzsír az iPhone-ról','',`data-click="stepsHelp()"`))
   +grp('Adatok',row('Mentés',st.lastBackup?fmtDate(st.lastBackup):L('még nem volt','never'),`data-click="openSub('data')"`)+row('Export CSV-be','',`data-click="openSub('data','csv')"`)+row('Importálás','',`data-click="openSub('data','strong')"`)+row('Minden adat törlése','',`data-click="resetAll()"`,' danger'))
   +grp('Tudnivalók',pages.map(([h,l])=>`<a class="setrow" href="${base}${h}"><span>${l}</span>${I('chevron-right','sm')}</a>`).join('')+row('Adatvédelem és offline működés','',`data-click="openSub('info')"`)+row('Számítási módszerek','',`data-click="openSub('methods')"`))
