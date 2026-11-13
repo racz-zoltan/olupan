@@ -1059,5 +1059,8 @@
 "Napi lépéscél (nem kötelező)": "Daily step goal (optional)",
 "Saját napi kalóriakeret (kcal)": "Own daily calorie target (kcal)",
 "Ha kitöltöd, a javasolt keret helyett ezzel számol az app; törölve visszaáll a javasoltra. Legalább 1200 kcal; a javasoltnál jóval alacsonyabb értéket csak orvossal vagy dietetikussal egyeztetve állíts be.": "If you fill it in, the app uses it instead of the suggested target; clear it to go back to the suggestion. At least 1200 kcal; only set a value well below the suggestion after consulting a doctor or dietitian.",
-"Tájékoztató becslés, nem orvosi tanács – egészségügyi állapot esetén egyeztesd szakemberrel.": "An indicative estimate, not medical advice – if you have a health condition, check with a professional."
+"Tájékoztató becslés, nem orvosi tanács – egészségügyi állapot esetén egyeztesd szakemberrel.": "An indicative estimate, not medical advice – if you have a health condition, check with a professional.",
+"Hangok és kijelző": "Sounds and display",
+"Receptjeim": "My recipes",
+"Összefoglaló": "Summary"
 }

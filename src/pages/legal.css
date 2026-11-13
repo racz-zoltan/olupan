@@ -1,11 +1,11 @@
 /* Olupan – tájékoztató oldalak (útmutató, adatkezelés, jogi nyilatkozat). Az app színeivel és betűivel. */
 /*@FONTS@*/
-:root{--bg:#eef2f8;--card:#fff;--text:#0f172a;--muted:#52607a;--border:rgba(15,23,42,.12);--surface:rgba(15,23,42,.035);
+:root{--bg:#dfe5ee;--card:#fff;--text:#0f172a;--muted:#52607a;--border:rgba(15,23,42,.12);--surface:rgba(15,23,42,.035);
   --acc:#0891b2;--logo:#0891b2;--warn:#f59e0b;--warn-soft:rgba(251,191,36,.14);color-scheme:light;
   --ui:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;--display:'Bricolage Grotesque','Instrument Sans',system-ui,sans-serif}
-[data-theme="dark"]{--bg:#1c2128;--card:#262c35;--text:#e6eaf0;--muted:#9ba6b5;--border:rgba(203,213,225,.12);--surface:rgba(255,255,255,.04);
+[data-theme="dark"]{--bg:#06080b;--card:#1b2029;--text:#e6eaf0;--muted:#9ba6b5;--border:rgba(203,213,225,.12);--surface:rgba(255,255,255,.04);
   --acc:#22d3ee;--logo:#22d3ee;--warn-soft:rgba(251,191,36,.10);color-scheme:dark}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1c2128;--card:#262c35;--text:#e6eaf0;--muted:#9ba6b5;--border:rgba(203,213,225,.12);
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06080b;--card:#1b2029;--text:#e6eaf0;--muted:#9ba6b5;--border:rgba(203,213,225,.12);
   --surface:rgba(255,255,255,.04);--acc:#22d3ee;--logo:#22d3ee;--warn-soft:rgba(251,191,36,.10);color-scheme:dark}}
 [data-accent="orange"]{--acc:#c2410c}
 [data-theme="dark"][data-accent="orange"]{--acc:#f97316}

@@ -20,7 +20,7 @@ async function start(){
   catch(e){st.textContent=e&&e.name==='NotAllowedError'?T('Nincs engedély a kamerához – engedélyezd a böngészőben, vagy írd be a számot.','No camera permission – allow it in the browser, or type the number.'):T('A kamera nem indult el – írd be a számot.','The camera didn’t start – type the number.');return}
   v.srcObject=stream;try{await v.play()}catch(e){}
   if(!det&&!zx){
-    try{if('BarcodeDetector' in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes('ean_13'))det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']})}}catch(e){det=null}
+    try{if('BarcodeDetector' in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes('ean_13'))det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e'].concat(f.includes('qr_code')?['qr_code']:[])})}}catch(e){det=null}
     if(!det){if(!window.ZXingWASM){st.textContent=T('A vonalkód-olvasó nem töltődött be – írd be a számot.','The barcode reader didn’t load – type the number.');return}
       st.textContent=T('Olvasó betöltése…','Loading reader…');
       try{ZXingWASM.prepareZXingModule({overrides:{locateFile:(p,pre)=>p.endsWith('.wasm')?'/assets/'+p:pre+p},fireImmediately:true});await ZXingWASM.getZXingModule();zx=true}
@@ -29,13 +29,15 @@ async function start(){
   st.textContent=T('Tartsd a vonalkódot a keretbe','Hold the barcode inside the frame');loop()}
 const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
 async function scan(){
-  if(det){const r=await det.detect(v);return r.map(b=>b.rawValue)}
+  if(det){const r=await det.detect(v);return r.map(b=>({t:b.rawValue,qr:b.format==='qr_code'}))}
   const w=v.videoWidth,h=v.videoHeight;if(!w||!h)return[];
   const cw=Math.round(w*.86),ch=Math.round(Math.min(h,cw/1.6));cv.width=cw;cv.height=ch;cx.drawImage(v,(w-cw)/2,(h-ch)/2,cw,ch,0,0,cw,ch);
-  const r=await ZXingWASM.readBarcodes(cx.getImageData(0,0,cw,ch),{formats:['EAN13','EAN8','UPCA','UPCE'],tryHarder:true,maxNumberOfSymbols:1});
-  return r.filter(b=>b.isValid).map(b=>b.text)}
+  const r=await ZXingWASM.readBarcodes(cx.getImageData(0,0,cw,ch),{formats:['EAN13','EAN8','UPCA','UPCE','QRCode'],tryHarder:true,maxNumberOfSymbols:1});
+  return r.filter(b=>b.isValid).map(b=>({t:b.text,qr:b.format==='QRCode'}))}
 async function loop(){if(done||!stream)return;
-  if(!busy&&v.readyState>=2){busy=true;try{const codes=(await scan()).map(c=>String(c).replace(/\D/g,'')).filter(valid);
+  if(!busy&&v.readyState>=2){busy=true;try{const found=await scan(),q=found.find(c=>c.qr&&c.t);
+      if(q){if(!done){done=true;stop();try{navigator.vibrate&&navigator.vibrate(60)}catch(e){}post({type:'qr',text:String(q.t).slice(0,300000)})}return}
+      const codes=found.filter(c=>!c.qr).map(c=>String(c.t).replace(/\D/g,'')).filter(valid);
       if(codes.length){const c=codes[0];hits=c===last?hits+1:1;last=c;if(hits>=2||det)return finish(c)}}catch(e){}busy=false}
   timer=setTimeout(loop,det?120:180)}
 post({type:'ready'});start();

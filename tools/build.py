@@ -21,7 +21,7 @@ ICONDIR = SRC / "icons"
 ICONS = ["dumbbell","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
-         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat"]
+         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list"]
 LATIN = "U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2019,U+201C-201E,U+2026,U+2212,U+2022,U+2192,U+2191,U+2193,U+00D7,U+0394,U+2248,U+2264,U+2265"
 HU = "U+0150,U+0151,U+0170,U+0171"
 FONTS = [("Instrument Sans", w, "instrument-sans") for w in (400, 500, 600)] + \
@@ -103,11 +103,18 @@ boot = """if('serviceWorker' in navigator&&(location.protocol==='https:'||locati
   addEventListener('load',()=>navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(e=>console.warn('Service worker:',e)));
   navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had)toast(L('Új verzió telepítve – a következő indításkor aktív','New version installed – active from the next start'))});
 }"""
-js_d = js.replace("/*@BOOT@*/", boot).encode()
+# --- titkosítás: Argon2id (hash-wasm, MIT) mindig; jelszómérő (zxcvbn-ts + magyar Diceware-listák) csak igény szerint töltődik
+import subprocess
+argon_js = (NM / "hash-wasm/dist/argon2.umd.min.js").read_bytes(); (A / "argon2.js").write_bytes(argon_js)
+subprocess.run([str(NM / ".bin/esbuild"), str(SRC / "crypto/pwcheck.js"), "--bundle", "--minify", "--format=iife", "--loader:.txt=text",
+                "--target=es2019", "--legal-comments=eof", f"--outfile={A / 'pwcheck.js'}", "--log-level=warning"], check=True)
+pw_js = (A / "pwcheck.js").read_bytes()
+qr_js = (NM / "qrcode-generator/dist/qrcode.js").read_bytes(); (A / "qrcode.js").write_bytes(qr_js)
+js_d = js.replace("/*@BOOT@*/", boot).replace("@@SRI_ARGON@@", sri(argon_js)).replace("@@SRI_PW@@", sri(pw_js)).replace("@@SRI_QR@@", sri(qr_js)).encode()
 (A / "app.css").write_bytes(css_d); (A / "app.js").write_bytes(js_d)
 for f in ICONDIR.iterdir(): shutil.copy(f, A / f.name)
 
-# ========== vonalkód-olvasó: külön oldal, saját CSP-vel (csak itt van 'wasm-unsafe-eval') ==========
+# ========== vonalkód-olvasó: külön oldal, saját CSP-vel (kamera csak itt) ==========
 SC = SRC / "scanner"; ZX = NM / "zxing-wasm/dist"
 zx_js = (ZX / "iife/reader/index.js").read_bytes(); (A / "zxing-reader.js").write_bytes(zx_js)
 shutil.copy(ZX / "reader/zxing_reader.wasm", A / "zxing_reader.wasm")
@@ -116,7 +123,7 @@ sc_js = (SC / "scanner.js").read_bytes(); sc_css = (SC / "scanner.css").read_byt
 (PUB / "scanner.html").write_text((SC / "scanner.html").read_text(encoding="utf-8").replace("@@SRI_CSS@@", sri(sc_css))
     .replace("@@SRI_ZX@@", sri(zx_js)).replace("@@SRI_JS@@", sri(sc_js)), encoding="utf-8")
 
-head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://world.openfoodfacts.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self';">
+head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://world.openfoodfacts.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self';">
 <meta name="google-site-verification" content="Re288jc6stZsam8EJVN-Ufx_lNHClPDe0EuPK0cbYYQ">
 <meta name="description" content="Ingyenes, offline edzés- és étkezésnapló: kalória és makrók fotóból vagy leírásból AI-jal (Claude), rekordok, statisztikák. Regisztráció nélkül, adataid a készüléken maradnak.">
 <link rel="canonical" href="https://olupan.com/">
@@ -154,7 +161,7 @@ html = html.replace('<meta name="apple-mobile-web-app-capable" content="yes">\n'
 manifest = {"id": "/", "name": "Olupan", "short_name": "Olupan", "lang": "hu",
             "description": "Offline edzésnapló – sablonok, testadatok, étkezés, statisztikák. Minden adat a készüléken marad.",
             "start_url": "/", "scope": "/", "display": "standalone",
-            "background_color": "#1c2128", "theme_color": "#1c2128", "categories": ["health", "fitness"],
+            "background_color": "#06080b", "theme_color": "#06080b", "categories": ["health", "fitness"],
             "icons": [{"src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
@@ -197,7 +204,7 @@ for key, langs in DOCS.items():
 <link rel="alternate" hreflang="{lang}" href="{cfg["site"]}/{fname}">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
-<meta name="theme-color" content="#1c2128">
+<meta name="theme-color" content="#06080b">
 <script src="/assets/legal.js" integrity="{sri(ljs)}" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/assets/legal.css" integrity="{sri(lcss)}" crossorigin="anonymous">
 </head>
@@ -230,7 +237,7 @@ for key, langs in DOCS.items():
         sm.append(f"  <url><loc>{site}/{fname}</loc>{alts}</url>")
 sm.append("</urlset>")
 (PUB / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm"))
+core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm", "pwcheck.js", "qrcode.js"))
 ver = hashlib.sha256(b"".join((PUB / p.lstrip("/")).read_bytes() for p in core if p != "/")).hexdigest()[:12]
 sw = f"""/* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
 const CACHE='olupan-{ver}';
@@ -251,7 +258,7 @@ self.addEventListener('fetch',e=>{{
     const hit=await c.match(r,{{ignoreSearch:true}})||(r.mode==='navigate'?await c.match('/index.html'):null);
     if(hit)return hit;
     const res=await fetch(r);
-    if(res.ok&&new URL(r.url).pathname.endsWith('.wasm'))c.put(r,res.clone()); // a vonalkód-olvasó első használat után offline is elérhető
+    if(res.ok&&/(\\.wasm|pwcheck\\.js|qrcode\\.js)$/.test(new URL(r.url).pathname))c.put(r,res.clone()); // a vonalkód-olvasó első használat után offline is elérhető
     return res;
   }})());
 }});
