@@ -21,7 +21,7 @@ ICONDIR = SRC / "icons"
 ICONS = ["dumbbell","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
-         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal"]
+         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal","arrow-left-right","list-plus","key-round"]
 LATIN = "U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2019,U+201C-201E,U+2026,U+2212,U+2022,U+2192,U+2191,U+2193,U+00D7,U+0394,U+2248,U+2264,U+2265"
 HU = "U+0150,U+0151,U+0170,U+0171"
 FONTS = [("Instrument Sans", w, "instrument-sans") for w in (400, 500, 600)] + \
