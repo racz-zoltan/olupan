@@ -52,7 +52,7 @@ src = src.replace("/*@I18N@*/", "const EN=" + json.dumps(json.loads((SRC / "i18n
 # --- élelmiszer-adattár (src/data/foods.json) tömör tömbként a JS-be: [id,kat,hu,en,kcal,F,Sz,Zs,rost,alk,ml?,usda,adagok]
 _fd = json.loads((SRC / "data" / "foods.json").read_text(encoding="utf-8"))
 _rows = [[x["id"], x["cat"], x["hu"], x["en"], x["kcal"], x["p"], x["c"], x["f"], x["fib"], x.get("alc", 0), 1 if x["unit"] == "ml" else 0,
-          int(x["src"][5:]) if x["src"].startswith("usda:") else 0, x.get("portions", [])] for x in _fd["foods"]]
+          int(x["src"][5:]) if x["src"].startswith("usda:") else (-1 if x["src"] == "chain" else -2 if x["src"] == "brand" else 0), x.get("portions", [])] for x in _fd["foods"]]
 src = src.replace("/*@FOODS@*/", "const FOODDB=" + json.dumps(_rows, ensure_ascii=False, separators=(",", ":")) + ";")
 css = re.search(r"<style>\n?(.*?)</style>", src, re.S).group(1)
 js = re.search(r"<script>\n?(.*?)</script>", src, re.S).group(1)

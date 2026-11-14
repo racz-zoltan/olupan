@@ -647,16 +647,18 @@ function renderPlates(full=true){const m=plateMath(),pl=S.settings.plates||[25,2
 /* ===== Élelmiszer-adattár: alapkészlet (USDA + magyar becslés, EU-s számítás) és saját tételek =====
    Értékek 100 g-ra vagy 100 ml-re. kcal = 4·F + 4·Sz + 9·Zs + 2·rost + 7·alkohol (EU 1169/2011). */
 /*@FOODS@*/
-const DBF=FOODDB.map(r=>({id:'d'+r[0],hu:r[2],en:r[3],kcal:r[4],p:r[5],c:r[6],f:r[7],fib:r[8],alc:r[9]||0,unit:r[10]?'ml':'g',usda:r[11]||0,portions:r[12]||[]}));
+const DBF=FOODDB.map(r=>({id:'d'+r[0],hu:r[2],en:r[3],kcal:r[4],p:r[5],c:r[6],f:r[7],fib:r[8],alc:r[9]||0,unit:r[10]?'ml':'g',usda:r[11]>0?r[11]:0,chain:r[11]===-1,brand:r[11]===-2,portions:r[12]||[]}));
 const DB_BY=new Map(DBF.map(x=>[x.id,x]));
 const NUT=['kcal','p','c','f','fib','alc'];
 const foodName=x=>x.own||x.off||x.blank?x.name:(LANG==='en'?x.en:x.hu);
 const foodById=id=>id?(DB_BY.get(id)||(S.foods||[]).find(x=>x.id===id)||null):null;
 const ownFoods=()=>(S.foods||[]).map(x=>Object.assign({own:true},x));
 const euKcal=v=>Math.round(4*(v.p||0)+4*(v.c||0)+9*(v.f||0)+2*(v.fib||0)+7*(v.alc||0));
-function foodSrc(x){if(!x)return'';if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
-function foodSearch(q,n=12){const toks=deacc(q).split(/[\s,]+/).filter(Boolean);if(!toks.length)return[];
-  const res=[];for(const x of[...ownFoods(),...DBF]){const nm=deacc(foodName(x)),hay=x.own?nm:deacc(x.hu+' '+x.en);
+function foodSrc(x){if(!x)return'';if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');if(x.chain)return L('becslés (a lánc nyilvános adatai alapján, eltérhet)','estimate (based on the chain’s public data, may differ)');if(x.brand)return L('becslés (a termék jellemző címkeadata alapján – ellenőrizd a csomagoláson)','estimate (typical label values – check the package)');return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
+// az aposztróf és a kötőjel nem számít: „mcdonalds” = „McDonald's”
+const sNorm=t=>deacc(t).replace(/['’`]/g,'').replace(/-/g,' ');
+function foodSearch(q,n=20){const toks=sNorm(q).split(/[\s,]+/).filter(Boolean);if(!toks.length)return[];
+  const res=[];for(const x of[...ownFoods(),...DBF]){const nm=sNorm(foodName(x)),hay=x.own?nm:sNorm(x.hu+' '+x.en);
     if(!toks.every(t=>hay.includes(t)))continue;const words=nm.split(/[\s,()/]+/);
     const sc=(x.own?0:10)+(nm.startsWith(toks[0])?0:words.some(w=>w.startsWith(toks[0]))?2:5)+toks.filter(t=>!nm.includes(t)).length*3+nm.length/100;res.push([sc,x])}
   return res.sort((a,b)=>a[0]-b[0]).slice(0,n).map(r=>r[1])}
@@ -731,8 +733,8 @@ function mfSearch(q){mf.q=q;const box=$('#mfres');if(!box)return;const t=q.trim(
     if(r.length)note=L(`Nincs pontos találat – közeli találatok erre: „${esc(s)}”`,`No exact match – close matches for “${esc(s)}”`);
     else if(mfRes.length){r=mfRes;note=L('Nincs találat – az előző találatok:','No match – previous results:')}}
   mfRes=r;
-  box.innerHTML=r.length?`${note?`<div class="mut small" style="margin:8px 0 2px">${note}</div>`:''}<div class="exlist" style="max-height:46vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${fmt(x.kcal,0)} kcal/100 ${x.unit}</span></button>`).join('')}</div>`
-    :`<div class="mut small" style="padding:10px 0">${L('Nincs találat.','No match.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="mfTab('new')">${L('Felvétel új tételként','Add as a new item')}</button></div>`}
+  box.innerHTML=(r.length?`${note?`<div class="mut small" style="margin:8px 0 2px">${note}</div>`:''}<div class="exlist" style="max-height:46vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${fmt(x.kcal,0)} kcal/100 ${x.unit}</span></button>`).join('')}</div>`
+    :`<div class="mut small" style="padding:10px 0">${L('Nincs találat.','No match.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="mfTab('new')">${L('Felvétel új tételként','Add as a new item')}</button></div>`)}
 function mfChoose(i){const fd=mfRes[i];if(!fd)return;mf.qty='';mf.msg='';mfPick(mf,fd);renderMF();setTimeout(()=>{const q=$('#mfqty');if(q){q.focus();q.select&&q.select()}},60)}
 function mfSave(){const x=mf,isF=x.food&&x.tab==='search',t=mfTotals();if(!x.name.trim()){toast(L('Adj meg megnevezést','Enter a name'));return}
   if(isF&&mfGrams()==null){toast(L('Adj meg mennyiséget','Enter an amount'));return}
@@ -780,23 +782,28 @@ async function barcodeFound(code){if(!mf)openFoodEntry();
   const own=ownFoods().find(x=>x.ean===code||(alt&&x.ean===alt));
   if(own){mf.qty='';mfPick(mf,own);renderMF();toast(L('Megvan a saját tételeid között','Found in your own items'));return}
   if(!navigator.onLine){mfBlank(code,L('Nincs internetkapcsolat, így nem tudtam lekérdezni. Add meg a címkéről a 100 g-ra vagy 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem.','You’re offline, so I couldn’t look it up. Enter the per-100 g or per-100 ml values from the label: I’ll save the product with its barcode.'));return}
-  if(!S.settings.offOk){if(!await ask(L('A termék adatait az <b>Open Food Facts</b> nyílt, közösségi adatbázisából kérem le. Ehhez csak a vonalkód száma kerül el a szerverükre (az internetes kapcsolat miatt az IP-címed is látszik nekik); a naplódból semmi. Ez csak most, egyszer jelenik meg.','I’ll look the product up in the <b>Open Food Facts</b> open, community database. Only the barcode number is sent to their server (they also see your IP address, as with any connection) – nothing from your log. This message appears only once.'),{title:L('Vonalkód-lekérdezés','Barcode lookup'),ok:L('Rendben','OK')}))return;S.settings.offOk=true;save()}
+  if(!await offConsent())return;
   toast(L('Keresés az Open Food Facts adatbázisában…','Searching Open Food Facts…'));
   let p=null;
   for(const c of[code,alt].filter(Boolean)){try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
       const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${c}.json?fields=product_name,product_name_hu,product_name_en,brands,quantity,product_quantity,product_quantity_unit,serving_size,serving_quantity,nutriments&app_name=Olupan`,{signal:ctl.signal,credentials:'omit',referrerPolicy:'no-referrer'});clearTimeout(t);
       if(r.ok){const j=await r.json();if(j&&j.status===1&&j.product){p=j.product;break}}}catch(e){}}
-  const n=p&&p.nutriments||{};
+  const fd0=p&&offToFood(p,code);
+  if(!fd0){mfBlank(code,L('Ez a termék nincs benne az Open Food Facts adatbázisában (vagy nincs megadva a tápértéke). Add meg a címkéről a 100 g-ra vagy 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem, és legközelebb internet nélkül is megtalálom.','This product isn’t in Open Food Facts (or has no nutrition data). Enter the per-100 g or per-100 ml values from the label: I’ll save the product with its barcode and find it next time, even offline.'),p&&(p.product_name_hu||p.product_name||'')||'');return}
+  const fd=fd0;mf.qty='';mfPick(mf,fd);mf.name=fd.name;renderMF()}
+/* Open Food Facts termék → élelmiszer (100 g / 100 ml); null, ha nincs használható tápérték */
+function offToFood(p,code){const n=p&&p.nutriments||{};
   const kcal=offN(n['energy-kcal_100g'])??(offN(n.energy_100g)!=null?Math.round(n.energy_100g/4.184):null);
-  if(!p||(kcal==null&&offN(n.proteins_100g)==null)){mfBlank(code,L('Ez a termék nincs benne az Open Food Facts adatbázisában (vagy nincs megadva a tápértéke). Add meg a címkéről a 100 g-ra vagy 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem, és legközelebb internet nélkül is megtalálom.','This product isn’t in Open Food Facts (or has no nutrition data). Enter the per-100 g or per-100 ml values from the label: I’ll save the product with its barcode and find it next time, even offline.'),p&&(p.product_name_hu||p.product_name||'')||'');return}
+  if(!p||(kcal==null&&offN(n.proteins_100g)==null))return null;
   const nm=String((LANG==='en'?p.product_name_en||p.product_name:p.product_name_hu||p.product_name)||p.product_name_en||p.product_name_hu||'').trim(),br=String(p.brands||'').split(',')[0].trim();
   const ml=/\b(ml|cl|dl|l)\b/i.test(String(p.product_quantity_unit||p.quantity||''));
-  const fd={off:true,ean:code,unit:ml?'ml':'g',name:((nm||L('Termék','Product'))+(br&&!deacc(nm).includes(deacc(br))?` (${br})`:'')).slice(0,80),
+  const fd={off:true,ean:String(code||p.code||'').replace(/\D/g,'').slice(0,14),unit:ml?'ml':'g',name:((nm||L('Termék','Product'))+(br&&!deacc(nm).includes(deacc(br))?` (${br})`:'')).slice(0,80),
     p:offN(n.proteins_100g)??0,c:offN(n.carbohydrates_100g)??0,f:offN(n.fat_100g)??0,fib:offN(n.fiber_100g)??0,alc:offN(n.alcohol_100g)!=null?Math.round(n.alcohol_100g*0.789*10)/10:0,portions:[]};
   fd.kcal=kcal??euKcal(fd);
   const sq=offN(p.serving_quantity);if(sq&&sq>0&&sq<5000){const ss=String(p.serving_size||'').slice(0,40)||`${sq} ${fd.unit}`;const own=/[a-zá-ű]/i.test(ss.replace(/\b(g|ml|gr|gramm)\b/gi,''));fd.portions.push(own?[ss,ss,sq]:[`1 adag (${ss})`,`1 serving (${ss})`,sq])}
   const pq=offN(p.product_quantity);if(pq&&pq>0&&pq<5000&&pq!==sq)fd.portions.push([`1 csomag (${pq} ${fd.unit})`,`1 pack (${pq} ${fd.unit})`,pq]);
-  mf.qty='';mfPick(mf,fd);mf.name=fd.name;renderMF()}
+  return fd}
+async function offConsent(){if(S.settings.offOk)return true;if(!await ask(L('A terméket az <b>Open Food Facts</b> nyílt, közösségi adatbázisában keresem. Ehhez csak a vonalkód száma kerül el a szerverükre (az internetes kapcsolat miatt az IP-címed is látszik nekik); a naplódból semmi. Ez csak most, egyszer jelenik meg.','I’ll look the product up in the <b>Open Food Facts</b> open, community database. Only the barcode number is sent to their server (they also see your IP address, as with any connection) – nothing from your log. This message appears only once.'),{title:L('Vonalkód-lekérdezés','Barcode lookup'),ok:L('Rendben','OK')}))return false;S.settings.offOk=true;save();return true}
 function mfBlank(code,msg,name=''){const fd={blank:true,ean:code,unit:'g',name:String(name).slice(0,80),kcal:null,p:null,c:null,f:null,fib:null,alc:0,portions:[]};
   mf.qty='100';mfPick(mf,fd);mf.qty='100';mf.u='g';for(const k of NUT)mf.per[k]='';mf.per.alc='';mf.msg=msg;renderMF();setTimeout(()=>{const i=$(name?'#mf_kcal':'#mfname');i&&i.focus()},80)}
 
@@ -978,8 +985,8 @@ function render(){
   const home=tab==='home';
   if(home){const d=pYmd(homeDay),wd=d.toLocaleDateString(LOC(),{weekday:'long'});
     $('#hl').innerHTML=`<button class="hbtn" data-click="openCal()" aria-label="Naptár megnyitása">${I('calendar-days','sm')}<span>Ma</span></button>`;
-    $('#title').innerHTML=`<span class="hd1">${esc(wd.charAt(0).toUpperCase()+wd.slice(1))}</span><span class="hd2">${esc(d.toLocaleDateString(LOC(),{year:'numeric',month:'long',day:'numeric'}))}</span>`;
-    $('#hdr').innerHTML=`${(S.shop||[]).some(x=>!x.done)?`<button class="hico" data-click="openShop()" aria-label="${L('Bevásárlólista','Shopping list')}">${I('shopping-basket','sm')}</button>`:''}<button class="hico" data-click="go('stats')" aria-label="Statisztika">${I('chart-no-axes-combined','sm')}</button><button class="hico" data-click="go('more')" aria-label="Beállítások">${I('settings','sm')}</button>`;
+    $('#title').innerHTML=`<span class="hd1">${esc(wd.charAt(0).toUpperCase()+wd.slice(1))}</span><span class="hd2">${esc(d.toLocaleDateString(LOC(),menuActive()&&(S.shop||[]).some(x=>!x.done)?{month:'short',day:'numeric'}:{year:'numeric',month:'long',day:'numeric'}))}</span>`;
+    $('#hdr').innerHTML=`${menuHdrBtn()}${(S.shop||[]).some(x=>!x.done)?`<button class="hico" data-click="openShop()" aria-label="${L('Bevásárlólista','Shopping list')}">${I('shopping-basket','sm')}</button>`:''}<button class="hico" data-click="go('stats')" aria-label="Statisztika">${I('chart-no-axes-combined','sm')}</button><button class="hico" data-click="go('more')" aria-label="Beállítások">${I('settings','sm')}</button>`;
   }else{
     const toSet=tab==='more'&&setSub,bl=back?(back.sub?'Beállítások':BACK_LBL[back.tab]||'Vissza'):toSet?'Beállítások':'Ma';
     $('#hl').innerHTML=`<button class="hbtn" data-click="goBack()" aria-label="Vissza">${I('chevron-left','sm')}<span>${bl}</span></button>`;
@@ -1853,7 +1860,9 @@ function recFClearM(){recF.clear();render();recFilterBox()}
 /* Recept részletei: adagszám, hozzávalók, elkészítés, szavazás, megjegyzés */
 let recCur=null,recServ=1;
 const fmtQ=q=>q==null?'':q>=100?String(Math.round(q)):q>=10?hu(Math.round(q*2)/2,1):hu(Math.round(q*10)/10,1);
-function openRecipe(id){const r=(S.recipes||[]).find(x=>x.id===id);if(!r)return;recCur=r;recServ=r.serv;renderRecipe()}
+// slot: a menü helye, ahonnan megnyitották (≥0), -2 = főzőnapi útmutató, -1 = Receptjeim lista; recept törlése csak a listából
+let recSlot=-1;
+function openRecipe(id,slot){const r=(S.recipes||[]).find(x=>x.id===id);if(!r)return;recCur=r;recServ=r.serv;recSlot=slot==null?-1:slot;renderRecipe()}
 function renderRecipe(){const r=recCur,k=recServ/r.serv;
   const chips=[...r.meal.map(m=>lblL(REC_MEAL,m)),...r.cuisine.map(c=>lblL(PREF_CUISINE,c)),...r.tags.map(t=>lblL(REC_TAG,t)),...r.style.map(s=>lblL(REC_STYLE,s)),...r.season.map(s=>lblL(REC_SEASON,s))];
   openModal(`<h2 style="margin-bottom:4px">${esc(r.name)}</h2>${r.aliases.length?`<div class="hint" style="margin-top:0">${esc(r.aliases.join(', '))}</div>`:''}
@@ -1866,7 +1875,11 @@ function renderRecipe(){const r=recCur,k=recServ/r.serv;
   ${r.steps.length?`<b>${L('Elkészítés','Method')}</b><ol class="steps">${r.steps.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}
   <div class="row" style="gap:8px;margin-top:10px;flex-wrap:nowrap"><button class="btn ${r.vote===1?'p':''}" data-click="recVote(1)" aria-pressed="${r.vote===1}" aria-label="${L('Tetszik','Like')}">${I('thumbs-up','sm')}</button><button class="btn ${r.vote===-1?'d':''}" data-click="recVote(-1)" aria-pressed="${r.vote===-1}" aria-label="${L('Nem tetszik','Dislike')}">${I('thumbs-down','sm')}</button><span class="sp"></span><button class="btn" data-click="recToShop()">${I('shopping-basket','sm')} ${L('Bevásárlólistához','To shopping list')}</button></div>
   <label for="recnote">${L('Megjegyzés','Note')}</label><textarea id="recnote" rows="2" placeholder="${L('pl. kevesebb sóval, dupla zöldséggel','e.g. less salt, double veg')}" data-change="recNote(this.value)">${esc(r.note)}</textarea>
-  <div class="row" style="margin-top:14px">${r.kcal!=null?`<button class="btn" data-click="recLog()">${I('plus','sm')} ${L('Rögzítés','Log')}</button>`:''}<span class="sp"></span><button class="btn ico" data-click="recShare()" aria-label="${L('Megosztás','Share')}">${I('share','sm')}</button><button class="btn ico d" data-click="recDel()" aria-label="${L('Recept törlése','Delete recipe')}">${I('trash-2','sm')}</button><button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>`)}
+  <div class="row" style="margin-top:14px">${r.kcal!=null?`<button class="btn" data-click="recLog()">${I('plus','sm')} ${L('Rögzítés','Log')}</button>`:''}<span class="sp"></span><button class="btn ico" data-click="recShare()" aria-label="${L('Megosztás','Share')}">${I('share','sm')}</button>${recSlot===-1&&tab==='recipes'?`<button class="btn ico d" data-click="recDel()" aria-label="${L('Recept törlése','Delete recipe')}">${I('trash-2','sm')}</button>`:''}<button class="btn" data-click="closeModal()">${L('Bezárás','Close')}</button></div>
+  ${recSlotEditable()?`<div class="row" style="margin-top:10px;gap:8px;flex-wrap:nowrap"><button class="btn" style="flex:1 1 0;min-width:0" data-click="recSlotSwap()">${I('arrow-left-right','sm')} ${L('Csere','Swap')}</button><button class="btn" style="flex:1 1 0;min-width:0" data-click="recSlotRemove()">${I('x','sm')} ${L('Kivétel a menüből','Remove from menu')}</button></div><div class="hint" style="margin-top:6px">${L('Csak ezt a helyet módosítja a menüben, a recept megmarad a Receptjeim között.','Only changes this slot in the menu; the recipe stays in My recipes.')}</div>`:''}`)}
+function recSlotEditable(){const m=S.menu,x=m&&recSlot>=0&&m.slots[recSlot];return!!(x&&x.rid===recCur.id&&!(x.log&&S.meals.some(y=>y.id===x.log))&&slotDate(m,x)>=today())}
+function recSlotSwap(){const i=recSlot;closeModal();menuSwap(i)}
+function recSlotRemove(){const m=S.menu,x=m&&m.slots[recSlot];if(!x)return;const k=x.rid||('n:'+deacc(x.name)),old=x.name;x.rid=null;x.name='';x.cook=0;recalcCook(m,[k]);menuDirty(m,old,'');save();closeModal();render();toast(L('Kivéve a menüből','Removed from the menu'))}
 function recServSet(n){recServ=Math.max(1,Math.min(50,n|0));renderRecipe()}
 function recServAdd(d){recServ=Math.max(1,Math.min(50,recServ+d));renderRecipe()}
 function recVote(v){recCur.vote=recCur.vote===v?0:v;save();renderRecipe();render()}
@@ -2062,7 +2075,7 @@ function menuDayRows(m,date,compact){const xs=m.slots.map((x,i)=>[x,i]).filter((
   return xs.map(([x,i])=>{const r=x.rid&&(S.recipes||[]).find(y=>y.id===x.rid),logged=x.log&&S.meals.some(y=>y.id===x.log);
     const pp=m.people||1,meta=[lblL(REC_MEAL,x.meal),!x.name?'':x.cook?L(`főzés: ${fmt(x.cook,0)} adag`,`cook ${fmt(x.cook,0)} servings`)+(pp>1?L(` (${pp} főre)`,` (for ${pp})`):''):L('maradék','leftovers'),r&&r.kcal!=null&&!compact?`${fmt(r.kcal,0)} kcal`:''].filter(Boolean).join(' · ');
     if(!x.name)return compact?'':`<div class="mrow"><button class="mname" data-click="menuSwap(${i})"><span class="small mut" style="display:block">${lblL(REC_MEAL,x.meal)}</span><span class="rn" translate="no" style="color:var(--kj-blue-line)">${I('plus','sm')} ${L('Recept választása','Choose a recipe')}</span></button></div>`;
-    return`<div class="mrow${logged?' done':''}"><button class="mname" ${r?`data-click="openRecipe('${r.id}')"`:'disabled'}><span class="rn" translate="no">${esc(x.name)}</span><span class="small mut" style="display:block">${meta}</span></button>${!compact&&!logged&&date>=today()?`<button class="btn sm ico" data-click="menuSwap(${i})" aria-label="${L('Csere saját receptre','Swap for one of my recipes')}">${I('arrow-left-right','sm')}</button>`:''}${canLog&&r?`<button class="btn sm${logged?' p':''}" data-click="menuLog(${i})" aria-pressed="${!!logged}" aria-label="${logged?L('Rögzítve – visszavonás','Logged – undo'):L('Rögzítés','Log')}">${logged?I('check','sm'):I('plus','sm')+' '+((m.people||1)>1?L('1 adag','1 serving'):L('Rögzítés','Log'))}</button>`:''}</div>`}).join('')}
+    return`<div class="mrow${logged?' done':''}"><button class="mname" ${r?`data-click="openRecipe('${r.id}',${i})"`:'disabled'}><span class="rn" translate="no">${esc(x.name)}</span><span class="small mut" style="display:block">${meta}</span></button>${!compact&&!logged&&date>=today()?`<button class="btn sm ico" data-click="menuSwap(${i})" aria-label="${L('Csere saját receptre','Swap for one of my recipes')}">${I('arrow-left-right','sm')}</button>`:''}${canLog&&r?`<button class="btn sm${logged?' p':''}" data-click="menuLog(${i})" aria-pressed="${!!logged}" aria-label="${logged?L('Rögzítve – visszavonás','Logged – undo'):L('Rögzítés','Log')}">${logged?I('check','sm'):I('plus','sm')+' '+((m.people||1)>1?L('1 adag','1 serving'):L('Rögzítés','Log'))}</button>`:''}</div>`}).join('')}
 /* Menü szerkesztése: csere a saját receptekre (azonos étkezéstípus), saját menü összeállítása */
 let swapI=-1,swapQ='',swapAll=true,swapAny=false;
 const sameDish=(a,b)=>a.rid&&b.rid?a.rid===b.rid:deacc(a.name)===deacc(b.name);
@@ -2099,9 +2112,20 @@ async function menuManualNew(){const o=menuOpt(),cur=menuActive();
   if(cur&&!await ask(L('Az új menü lecseréli a mostanit. A már rögzített étkezéseid megmaradnak.','The new menu replaces the current one. Meals you already logged stay.'),{title:L('Saját heti menü','My own weekly menu'),ok:L('Csere','Replace')}))return;
   const start=menuStartDate(o.start),slots=[];for(let d=1;d<=o.days;d++)for(const meal of o.meals)slots.push({d,meal,rid:null,name:'',cook:0,log:null});
   S.menu={start,days:o.days,manual:true,people:fprefs().people,shop:[],plan:[],slots,at:Date.now()};save();closeModal();goFrom('menu');toast(L('Válassz receptet az üres helyekre','Pick recipes for the empty slots'))}
+/* Aki menüből főz: a fejlécből két koppintással rögzíthet (fazék ikon → Rögzítés) */
+function menuHdrBtn(){const m=menuActive();if(!m)return'';const td=today(),xs=m.slots.filter(x=>x.name&&x.rid&&slotDate(m,x)===td);if(!xs.length&&!cookLine(m,td))return'';
+  const left=xs.filter(x=>!(x.log&&S.meals.some(y=>y.id===x.log))).length;
+  return`<button class="hico ibtn" data-click="menuTodaySheet()" aria-label="${L('Mai menü rögzítése','Log today’s menu')}">${I('cooking-pot','sm')}${left?`<span class="bdg">${left}</span>`:''}</button>`}
+let mtOpen=false;
+function menuTodaySheet(){const m=menuActive();if(!m)return;const td=today(),rows=menuDayRows(m,td,true),ck=cookLine(m,td);mtOpen=true;
+  openModal(`<div class="row" style="flex-wrap:nowrap;margin-bottom:6px"><h2 style="flex:1;margin:0">${L('Mai menü','Today’s menu')}</h2><button class="linkbtn" style="width:auto;padding:0" data-click="mtGo()">${L('Heti menü','Weekly menu')} ${I('chevron-right','sm')}</button></div>
+  ${ck}<div class="tmc">${rows||`<div class="hint">${L('Mára nincs étkezés a menüben.','No meals in the menu for today.')}</div>`}</div>
+  <div class="row" style="margin-top:14px"><span class="sp"></span><button class="btn" data-click="mtClose()">${L('Bezárás','Close')}</button></div>`)}
+function mtClose(){mtOpen=false;closeModal()}
+function mtGo(){mtOpen=false;closeModal();goFrom('menu')}
 function menuLog(i){const m=S.menu,x=m&&m.slots[i];if(!x)return;const r=(S.recipes||[]).find(y=>y.id===x.rid);if(!r)return;
-  if(x.log&&S.meals.some(y=>y.id===x.log)){S.meals=S.meals.filter(y=>y.id!==x.log);x.log=null;save();render();toast(L('Rögzítés visszavonva','Log undone'));return}
-  const id=uid();S.meals.push({id,date:slotDate(m,x),meal:MEAL_OF[x.meal]||'ebed',name:(r.name+' '+L('1 adag','1 serving')).slice(0,100),kcal:Math.round(r.kcal||0),p:r.p||0,c:r.c||0,f:r.f||0,fib:r.fib});x.log=id;save();render();toast(L('Rögzítve','Logged'))}
+  if(x.log&&S.meals.some(y=>y.id===x.log)){S.meals=S.meals.filter(y=>y.id!==x.log);x.log=null;save();render();if(mtOpen&&$('#modal').classList.contains('on'))menuTodaySheet();toast(L('Rögzítés visszavonva','Log undone'));return}
+  const id=uid();S.meals.push({id,date:slotDate(m,x),meal:MEAL_OF[x.meal]||'ebed',name:(r.name+' '+L('1 adag','1 serving')).slice(0,100),kcal:Math.round(r.kcal||0),p:r.p||0,c:r.c||0,f:r.f||0,fib:r.fib});x.log=id;save();render();if(mtOpen&&$('#modal').classList.contains('on'))menuTodaySheet();toast(L('Rögzítve','Logged'))}
 /* Főzőnapi útmutató: a Claude cookplan-je; a 0. nap a menü előtti vasárnapi előfőzés */
 const planDate=(m,x)=>addDays(m.start,x.d-1);
 function cookLine(m,date){const i=(m.plan||[]).findIndex(x=>planDate(m,x)===date);if(i<0)return'';const x=m.plan[i];
@@ -2109,7 +2133,7 @@ function cookLine(m,date){const i=(m.plan||[]).findIndex(x=>planDate(m,x)===date
 const fmtMin=n=>n>=60?(Math.floor(n/60)+L(' óra',' h')+(n%60?' '+(n%60)+L(' perc',' min'):'')):n+L(' perc',' min');
 function cookDay(i){const m=menuActive(),x=m&&m.plan&&m.plan[i];if(!x)return;const date=planDate(m,x),wd=pYmd(date).toLocaleDateString(LOC(),{weekday:'long',month:'short',day:'numeric'});
   openModal(`<h2 style="margin-bottom:4px">${I('cooking-pot','sm')} ${L('Főzőnap','Cooking day')}</h2><div class="small mut">${esc(wd)}${x.d===0?' · '+L('előfőzés a hétre','prep for the week'):''}${x.time?` · ${L('kb.','approx.')} ${fmtMin(x.time)}`:''}</div>
-  <div class="grp" style="margin-top:14px">${L('Receptek','Recipes')}</div><div class="card reclist" style="margin-bottom:12px">${x.recipes.map((n,j)=>{const r=(x.rids&&x.rids[j]&&(S.recipes||[]).find(y=>y.id===x.rids[j]))||recByName(n);return r?`<button class="recrow" data-click="openRecipe('${r.id}')"><span class="rn" translate="no" style="flex:1;min-width:0">${esc(r.name)}</span><span class="mut">${I('chevron-right','sm')}</span></button>`:`<div class="recrow"><span class="rn" translate="no">${esc(n)}</span></div>`}).join('')}</div>
+  <div class="grp" style="margin-top:14px">${L('Receptek','Recipes')}</div><div class="card reclist" style="margin-bottom:12px">${x.recipes.map((n,j)=>{const r=(x.rids&&x.rids[j]&&(S.recipes||[]).find(y=>y.id===x.rids[j]))||recByName(n);return r?`<button class="recrow" data-click="openRecipe('${r.id}',-2)"><span class="rn" translate="no" style="flex:1;min-width:0">${esc(r.name)}</span><span class="mut">${I('chevron-right','sm')}</span></button>`:`<div class="recrow"><span class="rn" translate="no">${esc(n)}</span></div>`}).join('')}</div>
   ${x.stale?`<div class="hint">${L('A menüt módosítottad: a lépések még a csere előtti receptekre szólnak.','You changed the menu: the steps still refer to the recipes before the swap.')}</div>`:''}
   <div class="grp">${L('Menet','Plan')}</div><ol class="steps">${x.steps.map(t=>`<li>${esc(t.replace(/^\d+\.\s*/,''))}</li>`).join('')}</ol>
   ${x.store.length?`<div class="grp">${L('Tárolás','Storage')}</div><ul class="recing" style="padding-left:18px">${x.store.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>`:''}
