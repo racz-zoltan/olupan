@@ -696,14 +696,20 @@ const DBF=FOODDB.map(r=>({id:'d'+r[0],hu:r[2],en:r[3],kcal:r[4],p:r[5],c:r[6],f:
 const DB_BY=new Map(DBF.map(x=>[x.id,x]));
 const NUT=['kcal','p','c','f','fib','alc'];
 const foodName=x=>x.own||x.off||x.blank?x.name:(LANG==='en'?x.en:x.hu);
-const foodById=id=>id?(DB_BY.get(id)||(S.foods||[]).find(x=>x.id===id)||null):null;
+const foodById=id=>id?(DB_BY.get(id)||(S.foods||[]).find(x=>x.id===id)||(String(id).startsWith('rc')?recFoods().find(x=>x.id===id):null)||null):null;
 const ownFoods=()=>(S.foods||[]).map(x=>Object.assign({own:true},x));
+/* Saját receptek a keresőben: adagra és grammra is. Ha a receptben nincs adagtömeg, a nyers g/ml hozzávalókból becsüljük; ha az sem megy, csak adagra vihető fel */
+function recGrams(r){if(r.g)return[r.g,false];let t=0;for(const i of r.ing||[]){const u=deacc(i.u||'').trim();if(i.q==null)continue;if(u==='g'||u==='ml')t+=i.q;else if(u==='kg'||u==='l')t+=i.q*1000;else if(u==='dl')t+=i.q*100}
+  const g=Math.round(t/(r.serv||1)/10)*10;return g>=80?[g,true]:[null,false]}
+function recFoods(){return(S.recipes||[]).filter(r=>r.kcal!=null).map(r=>{const[g,est]=recGrams(r),G=g||100,k=v=>v==null?0:Math.round(v*100/G*10)/10;
+  return{id:'rc'+r.id,own:true,rec:true,noGram:!g,name:r.name,unit:'g',kcal:Math.round(r.kcal*100/G*10)/10,p:k(r.p),c:k(r.c),f:k(r.f),fib:k(r.fib),alc:0,
+    portions:[g?[`1 adag (${est?'kb. ':''}${g} g)`,`1 serving (${est?'approx. ':''}${g} g)`,g]:['1 adag','1 serving',100]]}})}
 const euKcal=v=>Math.round(4*(v.p||0)+4*(v.c||0)+9*(v.f||0)+2*(v.fib||0)+7*(v.alc||0));
-function foodSrc(x){if(!x)return'';if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');if(x.chain)return L('becslés (a lánc nyilvános adatai alapján, eltérhet)','estimate (based on the chain’s public data, may differ)');if(x.brand)return L('becslés (a termék jellemző címkeadata alapján – ellenőrizd a csomagoláson)','estimate (typical label values – check the package)');return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
+function foodSrc(x){if(!x)return'';if(x.rec)return L('saját recept (a recept adagonkénti értékei alapján)','own recipe (from the recipe’s per-serving values)');if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');if(x.chain)return L('becslés (a lánc nyilvános adatai alapján, eltérhet)','estimate (based on the chain’s public data, may differ)');if(x.brand)return L('becslés (a termék jellemző címkeadata alapján – ellenőrizd a csomagoláson)','estimate (typical label values – check the package)');return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
 // az aposztróf és a kötőjel nem számít: „mcdonalds” = „McDonald's”
 const sNorm=t=>deacc(t).replace(/['’`]/g,'').replace(/-/g,' ');
 function foodSearch(q,n=20){const toks=sNorm(q).split(/[\s,]+/).filter(Boolean);if(!toks.length)return[];
-  const res=[];for(const x of[...ownFoods(),...DBF]){const nm=sNorm(foodName(x)),hay=x.own?nm:sNorm(x.hu+' '+x.en);
+  const res=[];for(const x of[...ownFoods(),...recFoods(),...DBF]){const nm=sNorm(foodName(x)),hay=x.own?nm:sNorm(x.hu+' '+x.en);
     if(!toks.every(t=>hay.includes(t)))continue;const words=nm.split(/[\s,()/]+/);
     const sc=(x.own?0:10)+(nm.startsWith(toks[0])?0:words.some(w=>w.startsWith(toks[0]))?2:5)+toks.filter(t=>!nm.includes(t)).length*3+nm.length/100;res.push([sc,x])}
   return res.sort((a,b)=>a[0]-b[0]).slice(0,n).map(r=>r[1])}
@@ -724,7 +730,7 @@ function mfGrams(){const x=mf;if(!x.food)return null;const q=parseMacro(x.qty);i
 function mfTotals(){if(!mf.food||mf.tab==='new'){const m=parseMacro(mf.mult)??1,t={};for(const k of NUT){const v=parseMacro(mf.tot[k]);t[k]=v==null?0:(k==='kcal'?Math.round(v*m):Math.round(v*m*10)/10)}return t}
   const g=mfGrams(),t={};for(const k of NUT){const v=parseMacro(mf.per[k]);t[k]=g==null||v==null?0:v*g/100}t.kcal=Math.round(t.kcal);for(const k of['p','c','f','fib','alc'])t[k]=Math.round(t[k]*10)/10;return t}
 const mfEdited=()=>!!mf.food&&NUT.some(k=>{const a=parseMacro(mf.per[k]),b=mf.base[k]??0;return(a??0)!==b});
-function mfUnitOpts(){const fd=mf.food,u=fd.unit;if(fd.blank)return[['g','g'],['ml','ml']];return[[u,u],...(fd.portions||[]).map((p,i)=>['p'+i,LANG==='en'?p[1]:p[0]])]}
+function mfUnitOpts(){const fd=mf.food,u=fd.unit;if(fd.noGram)return(fd.portions||[]).map((p,i)=>['p'+i,LANG==='en'?p[1]:p[0]]);if(fd.blank)return[['g','g'],['ml','ml']];return[[u,u],...(fd.portions||[]).map((p,i)=>['p'+i,LANG==='en'?p[1]:p[0]])]}
 function mfQtyLbl(){const x=mf,q=parseMacro(x.qty);if(q==null)return'';if(x.u==='g'||x.u==='ml')return`${hu(q,1)} ${x.u}`;const p=x.food.portions[+x.u.slice(1)],pl=LANG==='en'?p[1]:p[0];return q===1?pl:`${hu(q,2)} × ${pl}`}
 const MF_L5=()=>[['kcal',L('Energia (kcal)','Energy (kcal)')],['p',L('Fehérje (g)','Protein (g)')],['c',L('Szénhidrát (g)','Carbs (g)')],['f',L('Zsír (g)','Fat (g)')],['fib',L('Rost (g)','Fibre (g)')]];
 function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
@@ -732,13 +738,13 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
   const tabs=`<div class="seg mftabs" role="tablist"><button role="tab" aria-selected="${isS}" class="${isS?'on':''}" data-click="mfTab('search')">${I('search','sm')} ${L('Keresés','Search')}</button><button role="tab" aria-selected="${!isS}" class="${!isS?'on':''}" data-click="mfTab('new')">${I('plus','sm')} ${L('Új tétel','New item')}</button></div>`;
   let body='';
   if(isS&&!fd){body=`<div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfq" type="search" style="flex:1;min-width:0" autocomplete="off" enterkeyhint="search" aria-label="${L('Keresés','Search')}" placeholder="${L('pl. túró, csirkemell, passata','e.g. quark, chicken breast, passata')}" value="${esc(x.q)}" data-input="mfSearch(this.value)">${canScan()?`<button class="btn ico" data-click="openScanner()" aria-label="${L('Vonalkód beolvasása','Scan barcode')}" title="${L('Vonalkód','Barcode')}">${I('scan-barcode','sm')}</button>`:''}</div>
-    <div id="mfres"></div>${x.q?'':`<div class="hint">${L('Keress az élelmiszerek és a saját tételeid között, vagy olvasd be a csomagolás vonalkódját. Ha nincs a listában, válts az <b>Új tétel</b> fülre.','Search the food list and your own items, or scan a package’s barcode. If it’s not listed, switch to the <b>New item</b> tab.')}</div>`}`}
+    <div id="mfres"></div>${x.q?'':`<div class="hint">${L('Keress az élelmiszerek, a saját tételeid és a receptjeid között, vagy olvasd be a csomagolás vonalkódját. Ha nincs a listában, válts az <b>Új tétel</b> fülre.','Search the food list, your own items and your recipes, or scan a package’s barcode. If it’s not listed, switch to the <b>New item</b> tab.')}</div>`}`}
   else if(isS){const u=fd.unit,showAlc=x.base.alc>0||(parseMacro(x.per.alc)||0)>0;
     body=`${x.msg?`<div class="hint" style="margin:0 0 8px">${esc(x.msg)}</div>`:''}<div class="mfsel"><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfname" style="flex:1;min-width:0;font-weight:600" autocomplete="off" aria-label="${L('Megnevezés','Name')}" value="${esc(x.name)}" placeholder="${L('Termék neve','Product name')}" data-input="mfName(this.value)"><button class="btn sm" data-click="mfClear()">${I('search','sm')} ${L('Másik','Other')}</button></div>
     <div class="grid2"><div><label for="mfqty">${L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
     <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
     <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
-    <div class="grp" style="margin-top:14px">${L(`Tápérték 100 ${u}-ben`,`Nutrition per 100 ${u}`)}</div>
+    <div class="grp" style="margin-top:14px">${fd.noGram?L('Tápérték 1 adagban','Nutrition per serving'):L(`Tápérték 100 ${u}-ben`,`Nutrition per 100 ${u}`)}</div>
     <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.per[k],1)).join('')}${showAlc?nf('alc',L('Alkohol (g)','Alcohol (g)'),x.per.alc,1):''}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>
     <div id="mfnote" class="hint">${mfNote()}</div><div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`}
@@ -778,7 +784,7 @@ function mfSearch(q){mf.q=q;const box=$('#mfres');if(!box)return;const t=q.trim(
     if(r.length)note=L(`Nincs pontos találat – közeli találatok erre: „${esc(s)}”`,`No exact match – close matches for “${esc(s)}”`);
     else if(mfRes.length){r=mfRes;note=L('Nincs találat – az előző találatok:','No match – previous results:')}}
   mfRes=r;
-  box.innerHTML=(r.length?`${note?`<div class="mut small" style="margin:8px 0 2px">${note}</div>`:''}<div class="exlist" style="max-height:46vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${fmt(x.kcal,0)} kcal/100 ${x.unit}</span></button>`).join('')}</div>`
+  box.innerHTML=(r.length?`${note?`<div class="mut small" style="margin:8px 0 2px">${note}</div>`:''}<div class="exlist" style="max-height:46vh">${r.map((x,i)=>`<button class="exi" data-click="mfChoose(${i})"><span>${esc(foodName(x))}${x.rec?` <span class="tag">${L('recept','recipe')}</span>`:x.own?` <span class="tag">${L('saját','own')}</span>`:''}</span><span class="mut small mono" style="white-space:nowrap">${x.rec?`${fmt(x.kcal*x.portions[0][2]/100,0)} kcal/${L('adag','serving')}`:`${fmt(x.kcal,0)} kcal/100 ${x.unit}`}</span></button>`).join('')}</div>`
     :`<div class="mut small" style="padding:10px 0">${L('Nincs találat.','No match.')} <button class="linkbtn" style="display:inline;width:auto;padding:0" data-click="mfTab('new')">${L('Felvétel új tételként','Add as a new item')}</button></div>`)}
 function mfChoose(i){const fd=mfRes[i];if(!fd)return;mf.qty='';mf.msg='';mfPick(mf,fd);renderMF();setTimeout(()=>{const q=$('#mfqty');if(q){q.focus();q.select&&q.select()}},60)}
 function mfSave(){const x=mf,isF=x.food&&x.tab==='search',t=mfTotals();if(!x.name.trim()){toast(L('Adj meg megnevezést','Enter a name'));return}
@@ -790,9 +796,9 @@ function mfSave(){const x=mf,isF=x.food&&x.tab==='search',t=mfTotals();if(!x.nam
     const o=Object.assign({id:'f'+uid(),name:fname.slice(0,80),unit:fd.unit,ean:fd.ean},fd.off?{src:'off'}:{},per);if(fd.portions?.length)o.portions=fd.portions.map(p=>[p[0],p[1],p[2]]);
     S.foods=S.foods||[];S.foods=S.foods.filter(y=>y.ean!==fd.ean);S.foods.push(o);fd=Object.assign({own:true},o)}
   else if(fd&&mfEdited()){const per={};for(const k of NUT)per[k]=Math.max(0,Math.min(k==='kcal'?1000:100,parseMacro(x.per[k])||0));
-    if(fd.own){const o=S.foods.find(y=>y.id===fd.id);if(o){Object.assign(o,per);if(fname!==foodName(fd))o.name=fname.slice(0,80)}fd=o?Object.assign({own:true},o):fd}
+    if(fd.own&&!fd.rec){const o=S.foods.find(y=>y.id===fd.id);if(o){Object.assign(o,per);if(fname!==foodName(fd))o.name=fname.slice(0,80)}fd=o?Object.assign({own:true},o):fd}
     else{if(fname===foodName(fd))fname=fname+L(' (saját rögzítés)',' (own entry)');
-      const o=Object.assign({id:'f'+uid(),name:fname.slice(0,80),unit:fd.unit,base:fd.id},per);if(fd.portions?.length)o.portions=fd.portions.map(p=>[p[0],p[1],p[2]]);
+      const o=Object.assign({id:'f'+uid(),name:fname.slice(0,80),unit:fd.unit},fd.rec?{}:{base:fd.id},per);if(fd.portions?.length)o.portions=fd.portions.map(p=>[p[0],p[1],p[2]]);
       S.foods=S.foods||[];S.foods.push(o);fd=Object.assign({own:true},o);toast(L('Saját tételként is mentve','Also saved as your own item'))}}
   const rec={meal:MEALS.some(m=>m[0]===x.meal)?x.meal:'nasi',name:(fd?`${fname} ${mfQtyLbl()}`:fname).slice(0,100),kcal:Math.min(10000,t.kcal),p:Math.min(1000,t.p),c:Math.min(1000,t.c),f:Math.min(1000,t.f),
     fib:fd?t.fib:(String(x.tot.fib??'').trim()===''?null:Math.min(500,t.fib))};
@@ -1890,14 +1896,14 @@ const recStyles=r=>[...r.style,...(r.season.length&&r.season.length<4?['seasonal
 /* A Claude-nak adott formátum (betöltéshez és a receptötletekhez is) */
 function recipeFormat(L2){return L2(`Formátum: egyetlen kódblokk, amelynek első sora \`olupan-recipes\`, utána egy JSON-tömb. Receptenként:
 {"name": "Recept neve", "aliases": ["becenév"], "servings": 2, "time": 25, "difficulty": "könnyű",
- "meal": ["breakfast"|"lunch"|"dinner"|"snack"], "cuisine": ["hu"|"it"|"es"|"med"|"us"|"mx"|"tr"|"me"|"ma"|"in"|"cn"|"jp"|"kr"|"th"|"vn"|"fr"|"gr"|"af"],
+ "meal": ["breakfast"|"lunch"|"dinner"|"snack"], "cuisine": [${PREF_CUISINE.map(c=>'"'+c[0]+'"').join('|')}],
  "tags": ["soup"|"salad"|"protein"|"fiber"|"dessert"], "style": ["quick"|"few"|"prep"|"handsoff"], "season": ["spring"|"summer"|"autumn"|"winter"],
  "ingredients": [{"name": "zabpehely", "qty": 50, "unit": "g", "cat": "dry"}], "steps": ["1. lépés szövege", "2. lépés szövege"],
  "per_serving": {"grams": 380, "kcal": 420, "protein": 30, "carbs": 45, "fat": 12, "fiber": 6}}
 A "grams" egy adag kész étel tömege grammban (köret nélkül, ha a köret külön készül): a nyers hozzávalók összsúlyából számold átlagos főzési veszteséggel (párolgás, sütési veszteség, a hús víz- és zsírvesztése), osztva az adagszámmal – ezt mérem ki a tányérra. A nevek, hozzávalók és lépések magyarul legyenek; a mennyiségek számok (g, ml, db, ek, tk, csipet). A "time" percben értendő. Szezonális receptnél a "season" az évszak(ok), egész évben elkészíthetőnél üres. A "protein" címke 25 g feletti, a "fiber" 8 g feletti adagonkénti értéknél jár. A szénhidrát rost nélkül értendő (EU-s címke szerint). A "cat" a hozzávaló áruházi csoportja: ${SHOP_CAT_HELP_HU}. Magyarországon könnyen kapható hozzávalókat használj: folyékony tojásfehérje helyett tojásfehérjét darabban (pl. "tojásfehérje", 6 db).`,
 `Format: a single code block whose first line is \`olupan-recipes\`, followed by a JSON array. For each recipe:
 {"name": "Recipe name", "aliases": ["nickname"], "servings": 2, "time": 25, "difficulty": "easy",
- "meal": ["breakfast"|"lunch"|"dinner"|"snack"], "cuisine": ["hu"|"it"|"es"|"med"|"us"|"mx"|"tr"|"me"|"ma"|"in"|"cn"|"jp"|"kr"|"th"|"vn"|"fr"|"gr"|"af"],
+ "meal": ["breakfast"|"lunch"|"dinner"|"snack"], "cuisine": [${PREF_CUISINE.map(c=>'"'+c[0]+'"').join('|')}],
  "tags": ["soup"|"salad"|"protein"|"fiber"|"dessert"], "style": ["quick"|"few"|"prep"|"handsoff"], "season": ["spring"|"summer"|"autumn"|"winter"],
  "ingredients": [{"name": "rolled oats", "qty": 50, "unit": "g", "cat": "dry"}], "steps": ["Step 1 text", "Step 2 text"],
  "per_serving": {"grams": 380, "kcal": 420, "protein": 30, "carbs": 45, "fat": 12, "fiber": 6}}
@@ -2550,9 +2556,11 @@ const PREF_DIET=[['dairy','Tejmentes','Dairy-free'],['sugar','Hozzáadott cukor 
 const PREF_EQUIP=[['oven','Sütő','Oven'],['stove','Tűzhely / főzőlap','Hob / stove'],['micro','Mikrohullámú sütő','Microwave'],['airfryer','Air fryer','Air fryer'],['robot','Konyhai robotgép','Food processor / stand mixer'],['blender','Turmix / botmixer','Blender / stick blender'],['pressure','Kukta / multicooker','Pressure cooker / multicooker'],['slow','Lassúfőző','Slow cooker'],['grill','Kontakt grill','Contact grill'],['toaster','Kenyérpirító','Toaster']];
 const PREF_STYLE=[['budget','Takarékos','Budget-friendly'],['prep','Több napra előre elkészíthető','Make-ahead'],['quick','Gyors (20 perc alatt)','Quick (under 20 min)'],['handsoff','Otthagyhatós (kevés aktív munka)','Hands-off (little active time)'],['dishes','Kevés mosogatás','Few dishes'],['season','Szezonális','Seasonal'],['protein','Fehérjedús','High-protein']];
 /* Konyhák régiók szerint. Napi/heti menünél az app 1–2-t választ közülük, a receptötleteknél mindet használja. */
-const PREF_CUISINE=[['hu','Magyaros','Hungarian'],['it','Olaszos','Italian'],['es','Spanyol','Spanish'],['med','Mediterrán','Mediterranean'],['us','Amerikai','American'],['mx','Mexikói','Mexican'],['tr','Török','Turkish'],['me','Közel-keleti','Middle Eastern'],['ma','Marokkói','Moroccan'],['wa','Nyugat-afrikai','West African'],['za','Dél-afrikai','South African'],['in','Indiai','Indian'],['th','Thai','Thai'],['vn','Vietnami','Vietnamese'],['cn','Kínai','Chinese'],['kr','Koreai','Korean'],['jp','Japán','Japanese']];
+const PREF_CUISINE=[['hu','Magyaros','Hungarian'],['it','Olaszos','Italian'],['es','Spanyol','Spanish'],['med','Mediterrán','Mediterranean'],['gr','Görög','Greek'],['fr','Francia','French'],['us','Amerikai','American'],['mx','Mexikói','Mexican'],['tr','Török','Turkish'],['me','Közel-keleti','Middle Eastern'],['ma','Marokkói','Moroccan'],['wa','Nyugat-afrikai','West African'],['za','Dél-afrikai','South African'],['in','Indiai','Indian'],['th','Thai','Thai'],['vn','Vietnami','Vietnamese'],['cn','Kínai','Chinese'],['kr','Koreai','Korean'],['jp','Japán','Japanese']];
 /* Beszerezhetőség: nem használható / helyettesítővel (az eredeti is odaírva) / nyugodtan használható */
 const CUISINE_RULES={
+ gr:{ok:[['feta','feta'],['olívabogyó','olives'],['oregánó','oregano'],['görög joghurt','Greek yoghurt'],['citrom','lemon'],['padlizsán','aubergine'],['cukkini','courgette'],['csicseriborsó','chickpeas'],['fillo tészta','filo pastry'],['olívaolaj','olive oil']]},
+ fr:{sub:[['herbes de Provence','kakukkfű, rozmaring és oregánó','herbes de Provence','thyme, rosemary and oregano']],ok:[['dijoni mustár','Dijon mustard'],['tárkony','tarragon'],['kakukkfű','thyme'],['babérlevél','bay leaf'],['póréhagyma','leek'],['crème fraîche','crème fraîche'],['lencse','lentils'],['fehérbor','white wine'],['gruyère vagy ementáli','Gruyère or Emmental']]},
  wa:{no:[['teff liszt','teff flour'],['vörös pálmaolaj','red palm oil'],['egusi mag','egusi seeds'],['fonio','fonio']],sub:[['főzőbanán','édesburgonya','plantain','sweet potato'],['jamgyökér','burgonya vagy édesburgonya','yam','potato or sweet potato'],['scotch bonnet paprika','habanero vagy friss chili','scotch bonnet pepper','habanero or fresh chilli']],ok:[['mogyoróvaj','peanut butter'],['rizs','rice'],['bab','beans'],['gyömbér','ginger'],['paradicsompüré','tomato purée']]},
  za:{sub:[['boerewors','fűszeres sertés-marha kolbász','boerewors','spiced pork-and-beef sausage']],ok:[['baracklekvár','apricot jam'],['chutney','chutney'],['curry por','curry powder'],['édesburgonya','sweet potato']]},
  ma:{sub:[['ras el hanout','saját keverék: római kömény, koriandermag, fahéj, gyömbér, kurkuma, paprika','ras el hanout','own blend: cumin, coriander seed, cinnamon, ginger, turmeric, paprika'],['sózott citrom','citromhéj és só','preserved lemon','lemon zest and salt']],ok:[['kuszkusz','couscous'],['csicseriborsó','chickpeas'],['datolya','dates'],['aszalt sárgabarack','dried apricots'],['harissza paszta','harissa paste']]},
