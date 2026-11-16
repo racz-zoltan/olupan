@@ -20,8 +20,8 @@ Nincs fiók, nincs szerver, nincs reklám és nincs követés. Ingyenes, interne
 - Edzéstervet Claude-dal is kérhetsz, a saját eszközeidhez és az elmúlt hetek edzéseihez igazítva.
 
 ### Étkezés
-- **Több mint 700 tételes élelmiszer-adatbázis**, amely a telefonon van, ezért a kereséshez nem kell internet. Benne vannak magyar ételek és a nagy gyorséttermi láncok becsült értékei is.
-- **Vonalkód-olvasás** a kamerával, iPhone-on is. A termékadatok az [Open Food Facts](https://world.openfoodfacts.org) nyílt adatbázisából jönnek, és csak a vonalkód száma megy el.
+- **Több mint 900 tételes élelmiszer-adatbázis**, amely a telefonon van, ezért a kereséshez nem kell internet. Benne vannak magyar ételek, valamint a Burger King, a KFC és a Subway saját, hivatalos tápértéktáblázatának adatai is.
+- **Vonalkód-olvasás** a kamerával, iPhone-on is. A termékadatok az [Open Food Facts](https://world.openfoodfacts.org) nyílt adatbázisából jönnek, és csak a vonalkód száma megy el. Ha egy termék ott nem szerepel, a tápértéktábla lefotózható: a felismerés a telefonon történik, a kép nem megy el sehova.
 - Saját receptek, amelyek adagra vagy grammra is felvihetők.
 - **Heti menü Claude-dal:** kevés, előre jelzett esti főzéssel a következő 1–2 napra, adagonkénti kalóriával és makrókkal. Bevásárlólista is jár hozzá, boltrészlegek szerint csoportosítva, és figyelembe veszi, mi van otthon.
 - Napi kalória- és makrókeret a profilod és a célod alapján, heti korrekcióval a tényleges súlyváltozásod szerint.
@@ -68,7 +68,7 @@ Hibát találtál, vagy ötleted van? Nyiss egy [issue-t](../../issues), vagy í
 **A workout, food and body log that stays on your device.** No account, no server, no ads, no tracking. Free, works offline, and installs on any phone or computer from the browser: **[olupan.com](https://olupan.com)**.
 
 - **Workouts:** templates, sets, supersets, rest timer, and a progression suggestion for every exercise based on last time. Weekly plans, history and muscle-group stats.
-- **Food:** a 700+ item food database stored on the phone, so searching works offline. Barcode scanning (also on iPhone) via [Open Food Facts](https://world.openfoodfacts.org), own recipes, and daily calorie and macro targets.
+- **Food:** a 900+ item food database stored on the phone, so searching works offline. Barcode scanning (also on iPhone) via [Open Food Facts](https://world.openfoodfacts.org); if a product is missing, photograph its nutrition label and it is read on the device, own recipes, and daily calorie and macro targets.
 - **Weekly menu with Claude:** a few planned evening cooking sessions for the next 1–2 days, with a shopping list grouped by store section.
 - **Body:** weight, body fat and steps with trends, plus a healthy weight range and a warning for unhealthy target weights.
 - **Privacy:** everything is stored in your browser. Backups are password-encrypted (Argon2id + AES-GCM). Claude features are optional: the app prepares the request and you paste the reply back, and the app itself sends nothing.

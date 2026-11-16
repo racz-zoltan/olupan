@@ -732,7 +732,7 @@ function recFoods(){return(S.recipes||[]).filter(r=>r.kcal!=null).map(r=>{const[
   return{id:'rc'+r.id,own:true,rec:true,noGram:!g,name:r.name,unit:'g',kcal:Math.round(r.kcal*100/G*10)/10,p:k(r.p),c:k(r.c),f:k(r.f),fib:k(r.fib),alc:0,
     portions:[g?[`1 adag (${est?'kb. ':''}${g} g)`,`1 serving (${est?'approx. ':''}${g} g)`,g]:['1 adag','1 serving',100]]}})}
 const euKcal=v=>Math.round(4*(v.p||0)+4*(v.c||0)+9*(v.f||0)+2*(v.fib||0)+7*(v.alc||0));
-function foodSrc(x){if(!x)return'';if(x.rec)return L('saját recept (a recept adagonkénti értékei alapján)','own recipe (from the recipe’s per-serving values)');if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');if(x.chain)return L('becslés (a lánc nyilvános adatai alapján, eltérhet)','estimate (based on the chain’s public data, may differ)');if(x.brand)return L('becslés (a termék jellemző címkeadata alapján – ellenőrizd a csomagoláson)','estimate (typical label values – check the package)');return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
+function foodSrc(x){if(!x)return'';if(x.rec)return L('saját recept (a recept adagonkénti értékei alapján)','own recipe (from the recipe’s per-serving values)');if(x.off)return L('Open Food Facts (ODbL), közösségi adat – ellenőrizd a címkével','Open Food Facts (ODbL), community data – check against the label');if(x.blank)return L('saját rögzítés a címke alapján','own entry from the label');if(x.own)return x.src==='off'?L('saját rögzítés (Open Food Facts alapján)','own entry (based on Open Food Facts)'):L('saját rögzítés','own entry');if(x.chain){const n=x.hu||'',w=/\(Burger King\)$/.test(n)?L('Burger King, 2026. július','Burger King, July 2026'):/\(Subway\)$/.test(n)?L('Subway, 2025. március','Subway, March 2025'):/\(KFC\)$/.test(n)?'KFC':'';return L(`a lánc hivatalos magyarországi tápértéktáblázata${w?` (${w})`:''} – az étteremben kis eltérés lehet`,`the chain’s official Hungarian nutrition table${w?` (${w})`:''} – small differences in the restaurant are possible`)}return x.usda?L('USDA (európai kalóriaszámítási módszerrel)','USDA (European calorie calculation method)'):L('becslés (magyar termékátlag)','estimate (Hungarian product average)')}
 // az aposztróf és a kötőjel nem számít: „mcdonalds” = „McDonald's”
 const sNorm=t=>deacc(t).replace(/['’`]/g,'').replace(/-/g,' ');
 function foodSearch(q,n=20){const toks=sNorm(q).split(/[\s,]+/).filter(Boolean);if(!toks.length)return[];
@@ -772,6 +772,8 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
     <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
     <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
     <div class="grp" style="margin-top:14px">${fd.noGram?L('Tápérték 1 adagban','Nutrition per serving'):L(`Tápérték 100 ${u}-ben`,`Nutrition per 100 ${u}`)}</div>
+    ${fd.blank?`<div class="row" style="margin:6px 0 4px;flex-wrap:nowrap;gap:8px"><button class="btn sm p" style="flex:1" data-click="mfOcrPick()"${x.ocr&&x.ocr.busy?' disabled':''}>${I('camera','sm')} ${L('Címke fotózása','Photo of label')}</button><button class="btn sm" style="flex:1" data-click="mfOcrPaste()">${I('clipboard-paste','sm')} ${L('Szöveg beillesztése','Paste text')}</button><input type="file" id="mfocrin" accept="image/*" capture="environment" style="display:none" data-change="mfOcrFile(this)"></div>
+    ${x.ocr&&x.ocr.busy?`<div class="hint" id="mfocrst" style="margin:0 0 6px">${L('Felismerő betöltése…','Loading the reader…')}</div>`:x.ocr&&x.ocr.msg?`<div class="hint" style="margin:0 0 6px${x.ocr.bad?';color:var(--kj-red)':''}">${esc(x.ocr.msg)}</div>`:''}`:''}
     <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.per[k],1)).join('')}${showAlc?nf('alc',L('Alkohol (g)','Alcohol (g)'),x.per.alc,1):''}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>
     <div id="mfnote" class="hint">${mfNote()}</div><div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`}
@@ -793,7 +795,7 @@ function mfNote(){if(mf.food&&(mf.food.off||mf.food.blank))return L('Mentéskor 
     :L(`Módosított értékek: mentéskor saját tételként is elmentődik${mf.name===foodName(mf.food)?` „${esc(mf.name)} (saját rögzítés)” néven – fent átnevezheted`:` „${esc(mf.name)}” néven`}.`,`Changed values: saved as your own item too${mf.name===foodName(mf.food)?`, as “${esc(mf.name)} (own entry)” – you can rename it above`:`, as “${esc(mf.name)}”`}.`)}
 function mfLive(){const t=$('#mftot');if(t)t.innerHTML=mfTotHtml(mfTotals());const n=$('#mfnote');if(n)n.innerHTML=mfNote()}
 function mfTab(t){if(mf.tab===t)return;mf.tab=t;mf.msg='';if(t==='new'&&mf.food){mf.name='';mf.food=null}renderMF();mfFocus()}
-function mfClear(){mf.food=null;mf.msg='';mf.qty='';mf.name='';renderMF();mfFocus()}
+function mfClear(){mf.food=null;mf.msg='';mf.ocr=null;mf.qty='';mf.name='';renderMF();mfFocus()}
 function mfMeal(v){mf.meal=v}
 function mfName(v){mf.name=String(v).slice(0,100);mfLive()}
 function mfQty(v){mf.qty=v;mfLive()}
@@ -864,26 +866,101 @@ async function barcodeFound(code){if(!mf)openFoodEntry();
   toast(L('Keresés az Open Food Facts adatbázisában…','Searching Open Food Facts…'));
   let p=null;
   for(const c of[code,alt].filter(Boolean)){try{const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),9000);
-      const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${c}.json?fields=product_name,product_name_hu,product_name_en,brands,quantity,product_quantity,product_quantity_unit,serving_size,serving_quantity,nutriments&app_name=Olupan`,{signal:ctl.signal,credentials:'omit',referrerPolicy:'no-referrer'});clearTimeout(t);
+      const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${c}.json?fields=product_name,product_name_hu,product_name_en,generic_name,generic_name_hu,abbreviated_product_name,brands,quantity,product_quantity,product_quantity_unit,serving_size,serving_quantity,nutriments&app_name=Olupan`,{signal:ctl.signal,credentials:'omit',referrerPolicy:'no-referrer'});clearTimeout(t);
       if(r.ok){const j=await r.json();if(j&&j.status===1&&j.product){p=j.product;break}}}catch(e){}}
   const fd0=p&&offToFood(p,code);
+  if(!fd0&&p){const nm=offName(p);mfBlank(code,L('Ez a termék szerepel az Open Food Facts adatbázisában, de nincs megadva a tápértéke. Fotózd le a tápértéktáblát, vagy add meg a 100 g-ra / 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem.','This product is in Open Food Facts, but without nutrition data. Take a photo of the nutrition label, or enter the per-100 g / 100 ml values: I’ll save the product with its barcode.'),nm,offMl(p)?'ml':'g');return}
   if(!fd0){mfBlank(code,L('Ez a termék nincs benne az Open Food Facts adatbázisában (vagy nincs megadva a tápértéke). Add meg a címkéről a 100 g-ra vagy 100 ml-re vonatkozó értékeket: a terméket a vonalkóddal együtt mentem, és legközelebb internet nélkül is megtalálom.','This product isn’t in Open Food Facts (or has no nutrition data). Enter the per-100 g or per-100 ml values from the label: I’ll save the product with its barcode and find it next time, even offline.'),p&&(p.product_name_hu||p.product_name||'')||'');return}
   const fd=fd0;mf.qty='';mfPick(mf,fd);mf.name=fd.name;renderMF()}
 /* Open Food Facts termék → élelmiszer (100 g / 100 ml); null, ha nincs használható tápérték */
-function offToFood(p,code){const n=p&&p.nutriments||{};
-  const kcal=offN(n['energy-kcal_100g'])??(offN(n.energy_100g)!=null?Math.round(n.energy_100g/4.184):null);
-  if(!p||(kcal==null&&offN(n.proteins_100g)==null))return null;
-  const nm=String((LANG==='en'?p.product_name_en||p.product_name:p.product_name_hu||p.product_name)||p.product_name_en||p.product_name_hu||'').trim(),br=String(p.brands||'').split(',')[0].trim();
-  const ml=/\b(ml|cl|dl|l)\b/i.test(String(p.product_quantity_unit||p.quantity||''));
-  const fd={off:true,ean:String(code||p.code||'').replace(/\D/g,'').slice(0,14),unit:ml?'ml':'g',name:((nm||L('Termék','Product'))+(br&&!deacc(nm).includes(deacc(br))?` (${br})`:'')).slice(0,80),
-    p:offN(n.proteins_100g)??0,c:offN(n.carbohydrates_100g)??0,f:offN(n.fat_100g)??0,fib:offN(n.fiber_100g)??0,alc:offN(n.alcohol_100g)!=null?Math.round(n.alcohol_100g*0.789*10)/10:0,portions:[]};
+/* név: termék neve, ha nincs, az általános vagy rövidített név; a márka zárójelben, ha a névben nem szerepel */
+function offName(p){const nm=String((LANG==='en'?p.product_name_en||p.product_name:p.product_name_hu||p.product_name)||p.product_name_en||p.product_name_hu||(LANG==='en'?'':p.generic_name_hu)||p.generic_name||p.abbreviated_product_name||'').trim(),br=String(p.brands||'').split(',')[0].trim();
+  return(nm?nm+(br&&!deacc(nm).includes(deacc(br))?` (${br})`:''):br).slice(0,80)}
+const offMl=p=>/\b(ml|cl|dl|l)\b/i.test(String(p.product_quantity_unit||p.quantity||''));
+function offToFood(p,code){if(!p)return null;const n=p.nutriments||{},sq0=offN(p.serving_quantity);
+  /* 100 g-os érték; ha csak adagra van megadva, átszámolva */
+  const g=k=>offN(n[k+'_100g'])??(sq0>0&&offN(n[k+'_serving'])!=null?Math.round(n[k+'_serving']*1000/sq0)/10:null);
+  const kj=g('energy-kj')??g('energy');
+  const kcal=g('energy-kcal')??(kj!=null?Math.round(kj/4.184):null);
+  if(kcal==null&&g('proteins')==null)return null;
+  const ml=offMl(p),alc=g('alcohol');
+  const fd={off:true,ean:String(code||p.code||'').replace(/\D/g,'').slice(0,14),unit:ml?'ml':'g',name:offName(p)||L('Termék','Product'),
+    p:g('proteins')??0,c:g('carbohydrates')??0,f:g('fat')??0,fib:g('fiber')??0,alc:alc!=null?Math.round(alc*0.789*10)/10:0,portions:[]};
   fd.kcal=kcal??euKcal(fd);
-  const sq=offN(p.serving_quantity);if(sq&&sq>0&&sq<5000){const ss=String(p.serving_size||'').slice(0,40)||`${sq} ${fd.unit}`;const own=/[a-zá-ű]/i.test(ss.replace(/\b(g|ml|gr|gramm)\b/gi,''));fd.portions.push(own?[ss,ss,sq]:[`1 adag (${ss})`,`1 serving (${ss})`,sq])}
+  const sq=sq0;if(sq&&sq>0&&sq<5000){const ss=String(p.serving_size||'').slice(0,40)||`${sq} ${fd.unit}`;const own=/[a-zá-ű]/i.test(ss.replace(/\b(g|ml|gr|gramm)\b/gi,''));fd.portions.push(own?[ss,ss,sq]:[`1 adag (${ss})`,`1 serving (${ss})`,sq])}
   const pq=offN(p.product_quantity);if(pq&&pq>0&&pq<5000&&pq!==sq)fd.portions.push([`1 csomag (${pq} ${fd.unit})`,`1 pack (${pq} ${fd.unit})`,pq]);
   return fd}
 async function offConsent(){if(S.settings.offOk)return true;if(!await ask(L('A terméket az <b>Open Food Facts</b> nyílt, közösségi adatbázisában keresem. Ehhez csak a vonalkód száma kerül el a szerverükre (az internetes kapcsolat miatt az IP-címed is látszik nekik); a naplódból semmi. Ez csak most, egyszer jelenik meg.','I’ll look the product up in the <b>Open Food Facts</b> open, community database. Only the barcode number is sent to their server (they also see your IP address, as with any connection) – nothing from your log. This message appears only once.'),{title:L('Vonalkód-lekérdezés','Barcode lookup'),ok:L('Rendben','OK')}))return false;S.settings.offOk=true;save();return true}
-function mfBlank(code,msg,name=''){const fd={blank:true,ean:code,unit:'g',name:String(name).slice(0,80),kcal:null,p:null,c:null,f:null,fib:null,alc:0,portions:[]};
-  mf.qty='100';mfPick(mf,fd);mf.qty='100';mf.u='g';for(const k of NUT)mf.per[k]='';mf.per.alc='';mf.msg=msg;renderMF();setTimeout(()=>{const i=$(name?'#mf_kcal':'#mfname');i&&i.focus()},80)}
+function mfBlank(code,msg,name='',unit='g'){const fd={blank:true,ean:code,unit,name:String(name).slice(0,80),kcal:null,p:null,c:null,f:null,fib:null,alc:0,portions:[]};
+  mf.qty='100';mfPick(mf,fd);mf.qty='100';mf.u=unit;mf.ocr=null;for(const k of NUT)mf.per[k]='';mf.per.alc='';mf.msg=msg;renderMF();setTimeout(()=>{const i=$(name?'#mf_kcal':'#mfname');i&&i.focus()},80)}
+
+/* tápértéktábla szövege → 100 g-os értékek. OCR-hibák: a „g” gyakran 9-nek olvasódik, a tizedesvessző elveszhet; a jelöltek közül az a kombináció nyer,
+   amely a legjobban kiadja a címkén szereplő energiát (4·fehérje + 4·szénhidrát + 9·zsír + 2·rost), és teljesíti a korlátokat */
+function labelParse(txt){
+  const T=String(txt||'').replace(/\r/g,'').split('\n').map(l=>l.trim()).filter(Boolean);
+  const nrm=deacc;
+  const FIELDS=[['sat',/telitett|saturat/],['sug',/cukor|cukrok|sugar/],['fib',/rost|fib(re|er)/],['p',/feherje|protein/],['salt',/(^|\W)so(\W|$)|salt|natrium/],['c',/szenhidrat|carbohydrate/],['f',/zsir|(^|\W)fat(\W|$)/]];
+  const out={},raw={};
+  const lines=T.map(l=>({l,n:nrm(l)}));
+  /* energia: kcal-t keresünk az egész szövegben (két oszlopnál az első a 100 g-os), ha nincs, kJ-ból */
+  const num=x=>parseFloat(x.replace(/\s/g,'').replace(',','.'));
+  for(const {n} of lines){const k=n.match(/(\d[\d.,]*)\s*k\s*c\s*a\s*l/);if(k&&num(k[1])<=1000){out.kcal=num(k[1]);break}}
+  if(out.kcal==null)for(const {n} of lines){const j=n.match(/(\d[\d\s.,]*?)\s*k\s*j/);if(j&&num(j[1])<=4200){out.kcal=Math.round(num(j[1])/4.184);break}}
+  /* a többi sor: a mező neve UTÁNI első szám (két oszlopnál ez a 100 g-os) */
+  for(const {n} of lines){for(const [k,re] of FIELDS){if(raw[k]!=null)continue;const mm=re.exec(n);if(!mm)continue;
+      if(k==='f'&&/telitett|saturat/.test(n))continue;if(k==='c'&&/cukor|sugar/.test(n))continue;
+      const rest=n.slice(mm.index+mm[0].length).replace(/o(?=\d)/g,'0').replace(/(\d[.,]?)o/g,(_,d)=>d+'0'),m=rest.match(/(\d+(?:[.,]\d+)?)(\s*[gq](?![a-z]))?/);
+      if(m){raw[k]=m[1];raw[k+'_g']=!!m[2]}break}}
+  /* jelölt + költség: ahogy olvasható 0; a végén álló 9 levágva (g volt) 0,002; elveszett tizedesvessző egy tizedesre 0,003, máshová 0,006;
+     1 feletti, két tizedesjegyű érték ritka a címkén: +0,005 */
+  const cands=k=>{const r=raw[k];if(r==null)return[{v:null,c:0}];const s=r.replace(',','.'),M=new Map();
+    const add=(v,c)=>{if(!isFinite(v)||v<0||v>100)return;v=Math.round(v*100)/100;if(v>=1&&Math.round(v*10)!==v*10)c+=0.005;if(!M.has(v)||M.get(v)>c)M.set(v,c)};
+    const strip9=/9$/.test(s)&&s.length>1?s.slice(0,-1).replace(/\.$/,''):null;
+    for(const [base,c0] of [[s,0],[strip9,0.002]]){if(!base)continue;add(parseFloat(base),c0+((base.split('.')[1]||'').length>2?0.004:0));
+      if(!base.includes('.')&&base.length>=2)for(let i=1;i<base.length;i++)add(parseFloat(base.slice(0,i)+'.'+base.slice(i)),c0+(i===base.length-1?0.003:0.006))}
+    return M.size?[...M].map(([v,c])=>({v,c})):[{v:null,c:0}]};
+  const keys=['f','sat','c','sug','fib','p','salt'],C=Object.fromEntries(keys.map(k=>[k,cands(k)]));
+  /* a kombináció, amely a legjobban kiadja az energiát, és teljesíti a korlátokat (telített ≤ zsír, cukor ≤ szénhidrát, összeg ≤ 100) */
+  let best=null;const E=out.kcal;
+  const pick=(i,cur)=>{if(i===keys.length){const v=cur;const g=x=>x??0;
+      if(v.sat!=null&&v.f!=null&&v.sat>v.f+0.05)return;if(v.sug!=null&&v.c!=null&&v.sug>v.c+0.05)return;if(g(v.f)+g(v.c)+g(v.p)+g(v.fib)+g(v.salt)>101)return;
+      const est=4*g(v.p)+4*g(v.c)+9*g(v.f)+2*g(v.fib),err=E?Math.abs(est-E)/E:0;
+      /* kisebb eltérés jobb; azonos eltérésnél az OCR-szöveghez közelebbi (kevesebb javítás) */
+      const sc=err+cost;if(!best||sc<best.sc)best={sc,v:{...v},err};return}
+    for(const x of C[keys[i]]){cur[keys[i]]=x.v;cost+=x.c;pick(i+1,cur);cost-=x.c}};
+  let cost=0;pick(0,{});
+  if(best)Object.assign(out,best.v,{err:best.err});
+  return out}
+
+/* ===== Tápértéktábla felismerése fotóról: tesseract.js, teljesen a készüléken fut (a kép nem megy el sehova). Első használatkor ~4 MB letöltés. ===== */
+let ocrW=null;
+async function ocrWorker(){if(ocrW)return ocrW;const T=await loadJs('/assets/ocr/tesseract.min.js','@@SRI_OCR@@','Tesseract');
+  ocrW=await T.createWorker('hun',1,{workerPath:'/assets/ocr/worker.min.js',corePath:'/assets/ocr/',langPath:'/assets/ocr',gzip:true,workerBlobURL:false,
+    logger:m=>{const e=$('#mfocrst');if(!e)return;const pc=Math.round((m.progress||0)*100);e.textContent=/recogniz/.test(m.status)?L(`Felismerés… ${pc}%`,`Reading… ${pc}%`):L('Felismerő betöltése… (első alkalommal pár MB)','Loading the reader… (a few MB the first time)')}});
+  return ocrW}
+function mfOcrPick(){const i=$('#mfocrin');i&&i.click()}
+/* a kép előkészítése: max. 2000 px, szürkeárnyalat, nyújtott kontraszt */
+async function ocrPrep(file){const bm=await createImageBitmap(file),k=Math.min(1,2000/Math.max(bm.width,bm.height)),w=Math.round(bm.width*k),h=Math.round(bm.height*k);
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d');cx.drawImage(bm,0,0,w,h);bm.close&&bm.close();
+  const d=cx.getImageData(0,0,w,h),a=d.data;let lo=255,hi=0;for(let i=0;i<a.length;i+=4){const y=(a[i]*299+a[i+1]*587+a[i+2]*114)/1000;a[i]=y;if(y<lo)lo=y;if(y>hi)hi=y}
+  const r=hi-lo>20?255/(hi-lo):1;for(let i=0;i<a.length;i+=4){const y=Math.max(0,Math.min(255,(a[i]-lo)*r));a[i]=a[i+1]=a[i+2]=y}cx.putImageData(d,0,0);return cv}
+async function mfOcrFile(inp){const f=inp.files&&inp.files[0];inp.value='';if(!f||!mf.food)return;
+  if(typeof createImageBitmap!=='function'||typeof Worker!=='function'||typeof WebAssembly!=='object'){toast(L('Ez a böngésző nem tudja felismerni a képet. Használd a Szöveg beillesztése gombot.','This browser can’t read the image. Use Paste text instead.'));return}
+  mf.ocr={busy:true};renderMF();
+  try{const cv=await ocrPrep(f),w=await ocrWorker(),r=await w.recognize(cv);mfOcrApply(r.data.text||'',L('A fotóról','From the photo'))}
+  catch(e){console.warn(e);mf.ocr={msg:L('Nem sikerült a felismerés (lehet, hogy most nincs internet, és a felismerő még nincs letöltve). Add meg kézzel az értékeket.','Recognition failed (you may be offline and the reader isn’t downloaded yet). Enter the values by hand.'),bad:true};renderMF()}}
+async function mfOcrPaste(){if(!mf.food)return;
+  const r=await form(L('Tápértéktábla szövege','Nutrition label text'),[{id:'t',label:L('Beillesztett szöveg','Pasted text'),type:'textarea',placeholder:L('Energia 2256 kJ / 544 kcal\nZsír 35,5 g\nSzénhidrát 51 g\nFehérje 4,9 g','Energy 2256 kJ / 544 kcal\nFat 35.5 g\nCarbohydrate 51 g\nProtein 4.9 g'),hint:L('iPhone-on a Kamera vagy a Fotók app „Szöveg” funkciójával, Androidon a Google Lens „Szöveg” → Másolás funkciójával kimásolhatod a címke szövegét. Ez sokszor pontosabb, mint a fotó.','On iPhone, use Live Text in Camera or Photos; on Android, Google Lens “Text” → Copy. This is often more accurate than the photo reader.')}],{ok:L('Feldolgozás','Process')});
+  if(r)mfOcrApply(r.t||'',L('A beillesztett szövegből','From the pasted text'))}
+function mfOcrApply(txt,from){const v=labelParse(txt),got=['kcal','p','c','f','fib'].filter(k=>v[k]!=null);
+  if(got.length<3){mf.ocr={msg:L('Nem találtam elég tápértéket. Tipp: a tápértéktáblát egyenesen, közelről, jó fényben fotózd úgy, hogy csak a táblázat legyen a képen; íves palacknál fordítsd a táblázatot a kamera felé, vagy használd a Szöveg beillesztése gombot.','I couldn’t find enough values. Tip: photograph the table straight on, close up, in good light, with only the table in the frame; on a curved bottle turn the table to face the camera, or use Paste text.'),bad:true};renderMF();return}
+  for(const k of ['kcal','p','c','f','fib'])if(v[k]!=null)mf.per[k]=String(v[k]).replace('.',LANG==='en'?'.':',');
+  if(v.kcal==null)mf.per.kcal=String(Math.round(euKcal({p:v.p||0,c:v.c||0,f:v.f||0,fib:v.fib||0})));
+  const ex=[v.sug!=null&&L(`cukor ${fmt1(v.sug)} g`,`sugar ${fmt1(v.sug)} g`),v.sat!=null&&L(`telített zsír ${fmt1(v.sat)} g`,`saturated fat ${fmt1(v.sat)} g`),v.salt!=null&&L(`só ${fmt1(v.salt)} g`,`salt ${fmt1(v.salt)} g`)].filter(Boolean);
+  const off=v.kcal!=null&&v.err>0.12;
+  mf.ocr={msg:`${from} ${L('kitöltöttem az értékeket','I filled in the values')}${ex.length?` (${L('a címkén még','also on the label')}: ${ex.join(', ')} – ${L('ezeket az app nem tárolja','the app doesn’t store these')})`:''}. ${off?L('Az energia és a makrók nem egészen egyeznek – nézd át a címkével!','Energy and macros don’t quite match – check against the label!'):L('Mentés előtt vesd össze a címkével.','Check against the label before saving.')}`,bad:off};
+  renderMF()}
+const fmt1=x=>String(Math.round(x*100)/100).replace('.',LANG==='en'?'.':',');
 
 /* ===== Saját élelmiszerek kezelése (Beállítások → Étkezés); az alapkészlet nem törölhető ===== */
 function ownFoodsCard(){const l=(S.foods||[]).slice().sort((a,b)=>a.name.localeCompare(b.name,'hu'));

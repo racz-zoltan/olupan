@@ -21,7 +21,7 @@ ICONDIR = SRC / "icons"
 ICONS = ["dumbbell","triangle-alert","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
-         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal","arrow-left-right","list-plus","key-round","house"]
+         "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal","arrow-left-right","list-plus","key-round","house","camera"]
 LATIN = "U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2019,U+201C-201E,U+2026,U+2212,U+2022,U+2192,U+2191,U+2193,U+00D7,U+0394,U+2248,U+2264,U+2265"
 HU = "U+0150,U+0151,U+0170,U+0171"
 FONTS = [("Instrument Sans", w, "instrument-sans") for w in (400, 500, 600)] + \
@@ -110,7 +110,13 @@ subprocess.run([str(NM / ".bin/esbuild"), str(SRC / "crypto/pwcheck.js"), "--bun
                 "--target=es2019", "--legal-comments=eof", f"--outfile={A / 'pwcheck.js'}", "--log-level=warning"], check=True)
 pw_js = (A / "pwcheck.js").read_bytes()
 qr_js = (NM / "qrcode-generator/dist/qrcode.js").read_bytes(); (A / "qrcode.js").write_bytes(qr_js)
-js_d = js.replace("/*@BOOT@*/", boot).replace("@@SRI_ARGON@@", sri(argon_js)).replace("@@SRI_PW@@", sri(pw_js)).replace("@@SRI_QR@@", sri(qr_js)).encode()
+# tápértéktábla-felismerés (OCR): tesseract.js + magyar nyelvi adat; csak első használatkor töltődik le, nem kerül az előtöltésbe
+OCR = A / "ocr"; OCR.mkdir(exist_ok=True)
+ocr_js = (NM / "tesseract.js/dist/tesseract.min.js").read_bytes(); (OCR / "tesseract.min.js").write_bytes(ocr_js)
+shutil.copy(NM / "tesseract.js/dist/worker.min.js", OCR / "worker.min.js")
+for v in ("", "simd-", "relaxedsimd-"): shutil.copy(NM / f"tesseract.js-core/tesseract-core-{v}lstm.wasm.js", OCR / f"tesseract-core-{v}lstm.wasm.js")
+shutil.copy(NM / "@tesseract.js-data/hun/4.0.0_best_int/hun.traineddata.gz", OCR / "hun.traineddata.gz")
+js_d = js.replace("/*@BOOT@*/", boot).replace("@@SRI_ARGON@@", sri(argon_js)).replace("@@SRI_PW@@", sri(pw_js)).replace("@@SRI_QR@@", sri(qr_js)).replace("@@SRI_OCR@@", sri(ocr_js)).encode()
 (A / "app.css").write_bytes(css_d); (A / "app.js").write_bytes(js_d)
 for f in ICONDIR.iterdir(): shutil.copy(f, A / f.name)
 
@@ -125,11 +131,6 @@ sc_js = (SC / "scanner.js").read_bytes(); sc_css = (SC / "scanner.css").read_byt
 # harmadik féltől származó licencszövegek: a kiszolgált oldallal együtt terjesztjük (Apache-2.0 4. pont, MIT)
 (PUB / "licenses").mkdir(exist_ok=True)
 for lf in sorted((ROOT / "licenses").glob("*.txt")): shutil.copy(lf, PUB / "licenses" / lf.name)
-# diagnosztikai tesztoldal (külső fejlesztőknek, webview-próbához): /scanner-test.html – nincs a navigációban és a precache-ben
-st_js = (SC / "test.js").read_bytes(); st_css = (SC / "test.css").read_bytes()
-(A / "scanner-test.js").write_bytes(st_js); (A / "scanner-test.css").write_bytes(st_css)
-(PUB / "scanner-test.html").write_text((SC / "test.html").read_text(encoding="utf-8").replace("@@SRI_CSS@@", sri(st_css))
-    .replace("@@SRI_ZX@@", sri(zx_js)).replace("@@SRI_JS@@", sri(st_js)), encoding="utf-8")
 
 head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://world.openfoodfacts.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self';">
 <meta name="google-site-verification" content="Re288jc6stZsam8EJVN-Ufx_lNHClPDe0EuPK0cbYYQ">
@@ -245,7 +246,7 @@ for key, langs in DOCS.items():
         sm.append(f"  <url><loc>{site}/{fname}</loc>{alts}</url>")
 sm.append("</urlset>")
 (PUB / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm", "pwcheck.js", "qrcode.js", "scanner-test.js", "scanner-test.css"))
+core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm", "pwcheck.js", "qrcode.js") and "ocr" not in p.relative_to(A).parts)
 ver = hashlib.sha256(b"".join((PUB / p.lstrip("/")).read_bytes() for p in core if p != "/")).hexdigest()[:12]
 sw = f"""/* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
 const CACHE='olupan-{ver}';
@@ -263,10 +264,12 @@ self.addEventListener('fetch',e=>{{
   const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
   e.respondWith((async()=>{{
     const c=await caches.open(CACHE);
-    const hit=await c.match(r,{{ignoreSearch:true}})||(r.mode==='navigate'?await c.match('/index.html'):null);
+    const hit=await c.match(r,{{ignoreSearch:true}});
     if(hit)return hit;
+    /* gyorsítótárban nem szereplő oldal: előbb a hálózat; ha nincs net vagy nincs ilyen oldal, az app */
+    if(r.mode==='navigate'){{try{{const res=await fetch(r);if(res.ok)return res}}catch(err){{}}return await c.match('/index.html')||fetch(r)}}
     const res=await fetch(r);
-    if(res.ok&&/(\\.wasm|pwcheck\\.js|qrcode\\.js)$/.test(new URL(r.url).pathname))c.put(r,res.clone()); // a vonalkód-olvasó első használat után offline is elérhető
+    if(res.ok&&/(\\.wasm|pwcheck\\.js|qrcode\\.js|\\/ocr\\/[^/]+\\.js)$/.test(new URL(r.url).pathname))c.put(r,res.clone()); // a vonalkód-olvasó és a címkefelismerő első használat után offline is elérhető
     return res;
   }})());
 }});

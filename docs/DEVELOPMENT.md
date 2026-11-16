@@ -10,7 +10,7 @@ src/
   i18n/en.json      angol szótár (magyar forrásszöveg → angol)
   data/foods.json   beépített élelmiszer-adatbázis (100 g / 100 ml)
   data/diceware_*   magyar Diceware-szólisták a jelszómérőhöz
-  scanner/          vonalkód-olvasó (külön oldal, saját CSP) és diagnosztikai tesztoldala
+  scanner/          vonalkód-olvasó (külön oldal, saját CSP)
   crypto/           jelszóerősség-mérő (igény szerint töltődik be)
   icons/            app-ikonok (PNG) és favicon (SVG)
   pages/            tájékoztató oldalak: útmutató, adatkezelés, jogi nyilatkozat (hu + en), config.json
@@ -26,7 +26,7 @@ vercel.json         Vercel-beállítás: a public/ kiszolgálása, biztonsági f
 ## Build és helyi futtatás
 
 ```bash
-npm ci                              # ikonok, betűk, zxing-wasm, hash-wasm stb.
+npm ci                              # ikonok, betűk, zxing-wasm, hash-wasm, tesseract.js stb.
 pip install -r requirements.txt     # fontTools (betű-subset)
 python3 tools/build.py              # public/ újraépítése
 npm run serve                       # http://localhost:8080
@@ -68,7 +68,7 @@ Az adatok az eszközön maradnak.
 
 - Szigorú CSP (`script-src 'self'`, nincs inline script), SRI a CSS-en és a JS-en.
 - Nincs inline eseménykezelő. A `data-click` / `data-input` / … attribútumokból a build engedélylistát készít, csak ezek a függvények hívhatók.
-- A WebAssembly (`'wasm-unsafe-eval'`) csak a vonalkód-olvasó külön oldalán engedélyezett.
+- A WebAssembly (`'wasm-unsafe-eval'`) a vonalkód-olvasóhoz és a címkefelismerőhöz kell; távoli szkript, `eval` nincs.
 - Titkosított mentés: Argon2id kulcsszármaztatás (hash-wasm) + AES-GCM (Web Crypto).
 - A CSV-exportban képlet-injekció elleni védelem van.
 
@@ -78,7 +78,13 @@ A `/scanner.html` egy külön oldal, amely iframe-ben fut, és a beolvasott kód
 - ahol van, a beépített `BarcodeDetector`-t használja;
 - máshol, például iOS-en, a [zxing-wasm](https://github.com/Sec-ant/zxing-wasm)-ot.
 
-A `/scanner-test.html` ugyanezt lépésenkénti naplóval futtatja. Hibakereséshez és webview-próbához való, a navigációban nem szerepel.
+## Tápértéktábla-felismerés (OCR)
+
+Ha a vonalkódhoz nincs (használható) Open Food Facts adat, a kézi rögzítésnél a **Címke fotózása** gomb a fotóból kitölti a 100 g-os értékeket:
+- [tesseract.js](https://github.com/naptha/tesseract.js) magyar modellel, teljesen a készüléken (a kép nem megy el);
+- a fájlokat (`public/assets/ocr/`, ~4 MB tömörítve az első használatkor) a build a `node_modules`-ból másolja; nincsenek az előtöltésben, a service worker az első használat után tárolja őket, a nyelvi modellt a tesseract.js IndexedDB-ben;
+- a `labelParse()` a felismert szövegből a mező neve utáni első számot veszi (két oszlopnál ez a 100 g-os), és az OCR-hibákat (a „g” 9-nek olvasva, elveszett tizedesvessző) jelöltekkel kezeli: az a kombináció nyer, amely a legjobban kiadja a címkén szereplő energiát;
+- a **Szöveg beillesztése** ugyanezt a feldolgozót használja (iOS Élő szöveg, Google Lens).
 
 ## Telepítés (Vercel)
 

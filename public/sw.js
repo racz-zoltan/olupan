@@ -1,5 +1,5 @@
 /* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
-const CACHE='olupan-b641122cab22';
+const CACHE='olupan-1d92094a0e58';
 const CORE=["/", "/index.html", "/manifest.webmanifest", "/scanner.html", "/utmutato.html", "/guide.html", "/adatvedelem.html", "/privacy.html", "/jogi-nyilatkozat.html", "/disclaimer.html", "/assets/app.css", "/assets/app.js", "/assets/apple-touch-icon.png", "/assets/argon2.js", "/assets/favicon.svg", "/assets/fonts/bricolage-grotesque-600-hu.woff2", "/assets/fonts/bricolage-grotesque-600.woff2", "/assets/fonts/instrument-sans-400-hu.woff2", "/assets/fonts/instrument-sans-400.woff2", "/assets/fonts/instrument-sans-500-hu.woff2", "/assets/fonts/instrument-sans-500.woff2", "/assets/fonts/instrument-sans-600-hu.woff2", "/assets/fonts/instrument-sans-600.woff2", "/assets/fonts/jetbrains-mono-400-hu.woff2", "/assets/fonts/jetbrains-mono-400.woff2", "/assets/fonts/jetbrains-mono-500-hu.woff2", "/assets/fonts/jetbrains-mono-500.woff2", "/assets/fonts/jetbrains-mono-600-hu.woff2", "/assets/fonts/jetbrains-mono-600.woff2", "/assets/icon-192.png", "/assets/icon-32.png", "/assets/icon-512.png", "/assets/icon-maskable-512.png", "/assets/legal.css", "/assets/legal.js", "/assets/scanner.css", "/assets/scanner.js", "/assets/zxing-reader.js"];
 self.addEventListener('install',e=>e.waitUntil((async()=>{
   const c=await caches.open(CACHE);
@@ -14,10 +14,12 @@ self.addEventListener('fetch',e=>{
   const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
   e.respondWith((async()=>{
     const c=await caches.open(CACHE);
-    const hit=await c.match(r,{ignoreSearch:true})||(r.mode==='navigate'?await c.match('/index.html'):null);
+    const hit=await c.match(r,{ignoreSearch:true});
     if(hit)return hit;
+    /* gyorsítótárban nem szereplő oldal: előbb a hálózat; ha nincs net vagy nincs ilyen oldal, az app */
+    if(r.mode==='navigate'){try{const res=await fetch(r);if(res.ok)return res}catch(err){}return await c.match('/index.html')||fetch(r)}
     const res=await fetch(r);
-    if(res.ok&&/(\.wasm|pwcheck\.js|qrcode\.js)$/.test(new URL(r.url).pathname))c.put(r,res.clone()); // a vonalkód-olvasó első használat után offline is elérhető
+    if(res.ok&&/(\.wasm|pwcheck\.js|qrcode\.js|\/ocr\/[^/]+\.js)$/.test(new URL(r.url).pathname))c.put(r,res.clone()); // a vonalkód-olvasó és a címkefelismerő első használat után offline is elérhető
     return res;
   })());
 });
