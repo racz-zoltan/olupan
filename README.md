@@ -1,72 +1,86 @@
 # Olupan
 
-Offline, adatvédelem-központú edzésnapló PWA – edzéssablonok, sorozatok és pihenőidő, testadatok, lépésszám, étkezés (Claude-dal), naptár és statisztikák. Magyar és angol felület.
+**Edzés-, étkezés- és testnapló, ami a te készülékeden marad.**
+Nincs fiók, nincs szerver, nincs reklám és nincs követés. Ingyenes, internet nélkül is működik, és bármelyik telefonra vagy gépre telepíthető a böngészőből.
 
-**Minden adat csak a készüléken van** (a böngésző helyi tárhelyén): nincs fiók, szerver, analitika, süti vagy követés. Az első megnyitás után internet nélkül is működik; főképernyőre telepítve natív appként viselkedik.
+👉 **[olupan.com](https://olupan.com)**
 
 > A név a „napló” szó visszafelé, japános kiejtéssel: *na-pu-lo* → **olupan**.
 
-## Szerkezet
+*[English below](#english)*
 
-```
-src/
-  app.html          az app teljes forrása (HTML + CSS + JS, egy fájlban)
-  i18n/en.json      angol szótár (magyar forrásszöveg → angol)
-  icons/            app-ikonok (PNG) és favicon (SVG)
-  pages/            tájékoztató oldalak: útmutató, adatkezelés, jogi nyilatkozat (hu + en), config.json, legal.css/js
-tools/
-  build.py          src/ → public/ (SRI, service worker, betű-subset, ikon-sprite)
-public/             a kész, kiszolgált oldal – a GitHub Actions generálja, kézzel ne szerkeszd
-.github/workflows/
-  build.yml         push után újraépíti a public/-t, és visszacommitolja
-vercel.json         Vercel-beállítás: a public/ kiszolgálása, biztonsági fejlécek
-```
+---
 
-## Tájékoztató oldalak
+## Mire jó
 
-| | Magyar | English |
-|---|---|---|
-| Felhasználói útmutató | `/utmutato.html` | `/guide.html` |
-| Adatkezelési tájékoztató | `/adatvedelem.html` | `/privacy.html` |
-| Jogi nyilatkozat | `/jogi-nyilatkozat.html` | `/disclaimer.html` |
+### Edzés
+- Edzéssablonok, sorozatok, szuperszettek, bemelegítő sorozatok és pihenőidő-számláló.
+- **Javaslat minden gyakorlatnál** az előző alkalom alapján (kettős progresszió). Csak akkor javasol nehezebb súlyt, ha minden sorozat megvolt.
+- Heti edzésterv 1, 2 vagy 4 hétre, edzéstörténet, izomcsoport-statisztika és az elmúlt 7 nap áttekintése.
+- Edzéstervet Claude-dal is kérhetsz, a saját eszközeidhez és az elmúlt hetek edzéseihez igazítva.
 
-Tartalmuk a `src/pages/<név>.<nyelv>.html` fájlokban van, a közös fejlécet, nyelvváltót és láblécet a build adja hozzá. A `src/pages/config.json` tartalmazza az adatkezelő nevét, a **kapcsolati e-mail-címet** (`contact_email`) és a hatálybalépés dátumát – ha az e-mail üres, a build figyelmeztet, és az oldalakon helyőrző jelenik meg. Az app a Beállítások végén, a „Tudnivalók” kártyán az aktuális nyelvű oldalakra linkel; az oldalak a service worker gyorsítótárában vannak, így offline is megnyílnak.
+### Étkezés
+- **Több mint 700 tételes élelmiszer-adatbázis**, amely a telefonon van, ezért a kereséshez nem kell internet. Benne vannak magyar ételek és a nagy gyorséttermi láncok becsült értékei is.
+- **Vonalkód-olvasás** a kamerával, iPhone-on is. A termékadatok az [Open Food Facts](https://world.openfoodfacts.org) nyílt adatbázisából jönnek, és csak a vonalkód száma megy el.
+- Saját receptek, amelyek adagra vagy grammra is felvihetők.
+- **Heti menü Claude-dal:** kevés, előre jelzett esti főzéssel a következő 1–2 napra, adagonkénti kalóriával és makrókkal. Bevásárlólista is jár hozzá, boltrészlegek szerint csoportosítva, és figyelembe veszi, mi van otthon.
+- Napi kalória- és makrókeret a profilod és a célod alapján, heti korrekcióval a tényleges súlyváltozásod szerint.
 
-## Fejlesztés
+### Test
+- Testsúly, testzsír és lépésszám, trendekkel és grafikonokkal.
+- **Egészséges súlytartomány** a BMI és, ha méred, a testzsírod alapján. Figyelmeztetést kapsz, ha a célsúlyod egészségtelenül alacsony.
 
-```bash
-npm ci                              # Lucide-ikonok és @fontsource betűk
-pip install -r requirements.txt     # fontTools (betű-subset)
-python3 tools/build.py              # public/ újraépítése
-npm run serve                       # http://localhost:8080
-```
+### Claude-dal, ha szeretnéd
+Az Olupan összeállítja a kérést (étkezés fényképről vagy diktálva, receptötletek, heti menü, edzésterv), és megnyitja a [Claude](https://claude.ai)-t. A választ te illeszted vissza. Az app maga nem küld adatot senkinek: azt látja a Claude, amit te beillesztesz. A Claude használatához saját Claude-fiók kell, az Olupan nélküle is teljes értékű.
 
-A szerkesztés mindig a `src/`-ben történik. Pushkor a **Build** workflow újraépíti a `public/` mappát: kiszámolja az SRI-hasheket (`integrity` a CSS-en és a JS-en), a service worker gyorsítótár-verzióját a tartalom hash-éből, subseteli a betűket, és ha a `public/` változott, visszacommitolja (`build: public/ frissítése … [skip ci]`). A build determinisztikus: változatlan forrásból bájtra azonos kimenet jön, így nincs felesleges commit.
+## Adatvédelem
 
-### Új szöveg a felületen
-A forrásnyelv a magyar. Angol módban az app a `src/i18n/en.json` szótár alapján fordít (a megjelenő szövegeket és a `placeholder` / `aria-label` / `title` attribútumokat). Új magyar szöveg mellé az angol párját is fel kell venni, különben angolul is magyarul jelenik meg. A dátum- és számformátum, a relatív idő, a CSV és a Claude-utasítás nyelvfüggése a forrásban van (`L()`, `LOC()`).
+- **Minden adat a készüléken van**, a böngésző helyi tárhelyén. Fiók, felhő, analitika és süti nincs.
+- **Titkosított mentés:** a mentésfájlt jelszóval titkosítod (Argon2id + AES-GCM), és oda viszed, ahová akarod.
+- **Megosztás** linkkel vagy QR-kóddal: edzéssablont és receptet küldhetsz másnak. Szerver ehhez sem kell.
+- Részletek az [adatkezelési tájékoztatóban](https://olupan.com/adatvedelem.html).
 
-### Tárolás
+## Telepítés
 
-Az adatok az eszközön maradnak. Fő tár az IndexedDB (`olupan` adatbázis, `kv` tároló, `state` kulcs: `{json, ts}`); a localStorage (`olupan.v1` + `olupan.v1.ts`) tükörként megmarad, amíg az adat elfér benne. Induláskor az app azonnal a localStorage-ből tölt, majd az IndexedDB-t is beolvassa: a frissebb időbélyegű nyer. Az első indulás az új tárral átemeli a meglévő adatot, és visszaolvasással ellenőrzi. Ha az IndexedDB nem érhető el, a localStorage marad. Az `olupan.ui` kulcs csak a témát és a kiemelőszínt tárolja a tájékoztató oldalaknak.
+Nyisd meg az [olupan.com](https://olupan.com) oldalt, és add hozzá a főképernyőhöz:
+- **iPhone (Safari):** Megosztás → *Főképernyőhöz adás*
+- **Android (Chrome):** menü → *Alkalmazás telepítése*
+- **Számítógép (Chrome, Edge):** a címsor jobb oldalán a telepítés ikon
 
-### Biztonság
-- Szigorú CSP (`script-src 'self'`, nincs inline script), SRI a CSS-en és a JS-en.
-- Nincs inline eseménykezelő: a `data-click` / `data-input` / … attribútumokból a build engedélylistát készít, csak ezek a függvények hívhatók.
-- Minden betöltött és importált adat sémaellenőrzésen megy át (`sanitizeState`); a CSV-exportban képlet-injekció elleni védelem.
+Az első megnyitás után internet nélkül is működik.
 
-## Vercel
+## Hasznos oldalak
 
-1. Vercel → **Add New… → Project** → az `olupan` repó importálása (privát repó is mehet).
-2. Framework Preset: **Other**. A build- és telepítő parancsot, valamint a `public` kimeneti mappát a `vercel.json` adja meg – nem kell átírni.
-3. Domain hozzáadása (pl. `olupan.hu`) a projekt **Settings → Domains** oldalán.
+- [Felhasználói útmutató](https://olupan.com/utmutato.html)
+- [Adatkezelési tájékoztató](https://olupan.com/adatvedelem.html)
+- [Jogi nyilatkozat](https://olupan.com/jogi-nyilatkozat.html)
 
-A `vercel.json` `ignoreCommand`-ja kihagyja a telepítést, ha egy commit nem érinti a `public/`-t – így a forrás-push után a workflow által készített build-commit kerül ki.
+Az Olupan tájékoztató becsléseket ad, nem orvosi tanácsot. Egészségügyi kérdésben fordulj szakemberhez.
 
-## Átállás a kockajelszo.hu/edzesnaplo.html-ről
+## Visszajelzés
 
-Az új címen az app üresen indul (a böngésző az adatokat domainenként tárolja). Átköltözés: a régi címen **Beállítások → Mentés / megosztás**, az új címen **Beállítások → Import**. iPhone-on a főképernyős ikont is újra kell telepíteni az új címről.
+Hibát találtál, vagy ötleted van? Nyiss egy [issue-t](../../issues), vagy írj az **olupan@proton.me** címre.
 
-## Licenc
+---
 
-Saját kód: MIT (`LICENSE`). Harmadik féltől származó összetevők: `THIRD_PARTY_NOTICES.md`.
+## English
+
+**A workout, food and body log that stays on your device.** No account, no server, no ads, no tracking. Free, works offline, and installs on any phone or computer from the browser: **[olupan.com](https://olupan.com)**.
+
+- **Workouts:** templates, sets, supersets, rest timer, and a progression suggestion for every exercise based on last time. Weekly plans, history and muscle-group stats.
+- **Food:** a 700+ item food database stored on the phone, so searching works offline. Barcode scanning (also on iPhone) via [Open Food Facts](https://world.openfoodfacts.org), own recipes, and daily calorie and macro targets.
+- **Weekly menu with Claude:** a few planned evening cooking sessions for the next 1–2 days, with a shopping list grouped by store section.
+- **Body:** weight, body fat and steps with trends, plus a healthy weight range and a warning for unhealthy target weights.
+- **Privacy:** everything is stored in your browser. Backups are password-encrypted (Argon2id + AES-GCM). Claude features are optional: the app prepares the request and you paste the reply back, and the app itself sends nothing.
+
+Available in Hungarian and English. See the [user guide](https://olupan.com/guide.html), [privacy policy](https://olupan.com/privacy.html) and [disclaimer](https://olupan.com/disclaimer.html). Olupan gives estimates, not medical advice.
+
+---
+
+## Fejlesztőknek / For developers
+
+Az Olupan egyetlen HTML-forrásból épülő, build-lépéssel kiszolgált PWA. Keretrendszer és futásidejű függőség nincs. A forrás szerkezete, a build és a telepítés leírása: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
+## Licenc / License
+
+A saját kód MIT licencű ([LICENSE](LICENSE)). A felhasznált összetevők és adatforrások: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

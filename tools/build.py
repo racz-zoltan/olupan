@@ -18,7 +18,7 @@ from fontTools.ttLib import TTFont
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 NM, SRC, PUB = ROOT / "node_modules", ROOT / "src", ROOT / "public"
 ICONDIR = SRC / "icons"
-ICONS = ["dumbbell","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
+ICONS = ["dumbbell","triangle-alert","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
          "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal","arrow-left-right","list-plus","key-round","house"]
@@ -122,6 +122,14 @@ sc_js = (SC / "scanner.js").read_bytes(); sc_css = (SC / "scanner.css").read_byt
 (A / "scanner.js").write_bytes(sc_js); (A / "scanner.css").write_bytes(sc_css)
 (PUB / "scanner.html").write_text((SC / "scanner.html").read_text(encoding="utf-8").replace("@@SRI_CSS@@", sri(sc_css))
     .replace("@@SRI_ZX@@", sri(zx_js)).replace("@@SRI_JS@@", sri(sc_js)), encoding="utf-8")
+# harmadik féltől származó licencszövegek: a kiszolgált oldallal együtt terjesztjük (Apache-2.0 4. pont, MIT)
+(PUB / "licenses").mkdir(exist_ok=True)
+for lf in sorted((ROOT / "licenses").glob("*.txt")): shutil.copy(lf, PUB / "licenses" / lf.name)
+# diagnosztikai tesztoldal (külső fejlesztőknek, webview-próbához): /scanner-test.html – nincs a navigációban és a precache-ben
+st_js = (SC / "test.js").read_bytes(); st_css = (SC / "test.css").read_bytes()
+(A / "scanner-test.js").write_bytes(st_js); (A / "scanner-test.css").write_bytes(st_css)
+(PUB / "scanner-test.html").write_text((SC / "test.html").read_text(encoding="utf-8").replace("@@SRI_CSS@@", sri(st_css))
+    .replace("@@SRI_ZX@@", sri(zx_js)).replace("@@SRI_JS@@", sri(st_js)), encoding="utf-8")
 
 head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://world.openfoodfacts.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self';">
 <meta name="google-site-verification" content="Re288jc6stZsam8EJVN-Ufx_lNHClPDe0EuPK0cbYYQ">
@@ -237,7 +245,7 @@ for key, langs in DOCS.items():
         sm.append(f"  <url><loc>{site}/{fname}</loc>{alts}</url>")
 sm.append("</urlset>")
 (PUB / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
-core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm", "pwcheck.js", "qrcode.js"))
+core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm", "pwcheck.js", "qrcode.js", "scanner-test.js", "scanner-test.css"))
 ver = hashlib.sha256(b"".join((PUB / p.lstrip("/")).read_bytes() for p in core if p != "/")).hexdigest()[:12]
 sw = f"""/* Olupan service worker – gyorsítótár: olupan-<tartalom-hash>. A buildet a tools/build.py generálja, ne szerkeszd kézzel. */
 const CACHE='olupan-{ver}';

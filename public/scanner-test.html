@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<!-- Olupan vonalkód-olvasó – diagnosztikai tesztoldal. Ugyanaz a felismerés, mint az appban, plusz lépésenkénti napló.
+     Nem küld semmit sehová: nincs hálózati kérés a saját fájlokon kívül, nincs analitika. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self' blob:; base-uri 'none'; form-action 'none';">
+<title>Olupan – vonalkód-olvasó teszt</title>
+<link rel="stylesheet" href="/assets/scanner-test.css" integrity="sha384-T6aY9UEEeQBoddEFWRnP1EtNCS5IHcNdHjtAFI/JuSuK1pxa2XNW+UlrOCZ9I8wm" crossorigin="anonymous">
+<script src="/assets/zxing-reader.js" integrity="sha384-WftrM7hFN3CZH1pg8fvonijN1mDx8lh1U3L267n+snjsk/o7oBdEbUx5R8P3uw9S" crossorigin="anonymous" defer></script>
+<script src="/assets/scanner-test.js" integrity="sha384-hqepVcKUazgQhap3A3rGll+/pC3g41N0xTFVlpdYJx7nyMteaE4pxJ+wwZXBjKbs" crossorigin="anonymous" defer></script>
+</head>
+<body>
+<header><h1>Vonalkód-olvasó teszt</h1><p>Az Olupan felismerője, lépésenkénti naplóval. A kép a készüléken marad, ez az oldal semmit nem küld el.</p></header>
+<div class="cam"><video id="v" playsinline muted autoplay></video><div class="frame"><i></i></div><div id="hit" class="hit"></div></div>
+<div class="ctl">
+<button id="go" type="button">Kamera indítása</button>
+<label class="chk"><input id="force" type="checkbox"> zxing-wasm kényszerítése (BarcodeDetector helyett)</label>
+<button id="copy" type="button" class="sec">Napló másolása</button>
+</div>
+<ol id="log" class="log"></ol>
+</body>
+</html>
