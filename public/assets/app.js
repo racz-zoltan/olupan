@@ -739,7 +739,7 @@ function render(){
   document.body.classList.toggle('home',home);
   for(const k in CH)delete CH[k];
   $('main').innerHTML=(['home','food','recipes','menu','workout','tpls','mywo'].includes(tab)?claudeBar():'')+({mywo:vMywo,wplan:vWplan,report:vReport,recipes:vRecipes,menu:vMenu,home:vHome,workout:S.active?vActive:vWorkout,food:vFood,body:vBody,stats:vStats,more:vMore,hist:vHist,tpls:vTpls})[tab]();
-  attachCharts();tick();updAvol();syncWake();updWakeUI();
+  attachCharts();tick();updAvol();syncWake();updWakeUI();document.querySelectorAll(".ftiles").forEach(fdSync);
 }
 function goBack(){if(back){const b=back;back=null;tab=b.tab;setSub=b.sub;render();scrollTo(0,b.y||0);return}if(tab==='more'&&setSub){setSub=null;render();scrollTo(0,0)}else go('home')}
 document.addEventListener('focusin',e=>{const t=e.target;if(t&&t.closest&&t.closest('#sheet')&&/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))setTimeout(()=>{try{t.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(_){}},350)});
@@ -1018,7 +1018,7 @@ function woTiles(){const tile=(act,ic,t,sub,dis)=>`<button class="ftile" ${act}$
     tile('data-click="openPlanReq()"','sparkles',L('Edzésterv Claude-dal','Plan with Claude'),L('Kiegyensúlyozó vagy célzott','Balanced or targeted')),
     tile('data-click="openHist()"','history',L('Edzéstörténet','History'),S.workouts.length?L(`${S.workouts.length} edzés`,`${S.workouts.length} workouts`):L('Még üres','Empty yet')),
     tile('data-click="goFrom(\'wplan\')"','calendar-days',L('Heti edzésterv','Weekly plan'),nPl?L(`${nPl} betervezett nap`,`${nPl} planned days`):L('1, 2 vagy 4 hétre','For 1, 2 or 4 weeks')),
-    tile('data-click="woShareBox()"','share',L('Megosztás','Sharing'),L('Sablonok küldése, fogadása','Send or receive templates'))].join('')}</div><div class="fdots" aria-hidden="true"><i class="on"></i><i></i></div>`}
+    tile('data-click="woShareBox()"','share',L('Megosztás','Sharing'),L('Sablonok küldése, fogadása','Send or receive templates'))].join('')}</div>${fdotsHtml()}`}
 function last7Html(){const td=today(),{wDay}={wDay:{}};const by={};for(const w of S.workouts){const d=ymd(new Date(w.start));(by[d]=by[d]||[]).push(w)}
   let h=`<h3 style="margin:22px 2px 10px">${L('Az elmúlt 7 nap','The last 7 days')}</h3>`;
   for(let i=0;i<7;i++){const d=addDays(td,-i),ws=(by[d]||[]).sort((a,b)=>a.start-b.start),pl=plans()[d],pt=pl&&S.templates.find(t=>t.id===pl),wd=pYmd(d).toLocaleDateString(LOC(),{weekday:'long',month:'short',day:'numeric'});
@@ -1910,8 +1910,19 @@ function foodTiles(){const k=!!targets().kcal;
     tile('data-click="claudeBox()"','sparkles',L('Claude-dal','With Claude'),L('Fotóból vagy leírásból','From a photo or description')),
     tile('data-click="restBox()"','utensils',L('Mit egyek még ma?','What else today?'),L('Abból, ami kéznél van','From what you have'),!k),
     tile('data-click="goFrom(\'recipes\')"','cooking-pot',L('Receptjeim','My recipes'),(menuActive()||S.menuNext)?L('Heti menü, receptek','Weekly menu, recipes'):(S.recipes||[]).length?L(`${S.recipes.length} recept`,`${S.recipes.length} recipe${S.recipes.length>1?'s':''}`):L('Heti menü, receptötletek','Weekly menu, recipe ideas')),
-    canScan()?tile('data-click="scanFood()"','scan-barcode',L('Vonalkód','Barcode'),L('Csomagolt termékhez','For packaged food')):''].join('')}</div><div class="fdots" aria-hidden="true"><i class="on"></i><i></i></div>`}
-document.addEventListener('scroll',e=>{const t=e.target;if(!t.classList||!t.classList.contains('ftiles'))return;const pg=t.scrollLeft>(t.scrollWidth-t.clientWidth)/2?1:0;t.nextElementSibling?.querySelectorAll('i').forEach((x,i)=>x.classList.toggle('on',i===pg))},true);
+    canScan()?tile('data-click="scanFood()"','scan-barcode',L('Vonalkód','Barcode'),L('Csomagolt termékhez','For packaged food')):''].join('')}</div>${fdotsHtml()}`}
+/* Csempesor: érintéssel húzható; egérrel is (húzás, a pöttyökre vagy a nyilakra kattintás) – asztali gépen nincs vízszintes görgetés */
+function fdotsHtml(){return`<div class="fdots"><button type="button" class="fdnav" data-fd="0" aria-label="${L('Előző','Previous')}" disabled>${I('chevron-left','sm')}</button><i class="on" data-fd="0" aria-hidden="true"></i><i data-fd="1" aria-hidden="true"></i><button type="button" class="fdnav" data-fd="1" aria-label="${L('Következő','Next')}">${I('chevron-right','sm')}</button></div>`}
+function fdSync(t){const pg=t.scrollLeft>(t.scrollWidth-t.clientWidth)/2?1:0,d=t.nextElementSibling;if(!d)return;d.querySelectorAll('i').forEach((x,i)=>x.classList.toggle('on',i===pg));const b=d.querySelectorAll('.fdnav');if(b.length===2){b[0].disabled=pg===0;b[1].disabled=pg===1||t.scrollWidth<=t.clientWidth+2}}
+document.addEventListener('scroll',e=>{const t=e.target;if(t.classList&&t.classList.contains('ftiles'))fdSync(t)},true);
+document.addEventListener('click',e=>{const d=e.target.closest&&e.target.closest('.fdots [data-fd]');if(!d)return;const t=d.closest('.fdots').previousElementSibling;if(!t||!t.classList.contains('ftiles'))return;e.preventDefault();t.scrollTo({left:d.dataset.fd==='1'?t.scrollWidth:0,behavior:'smooth'})});
+{let fd=null;
+  document.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0)return;const t=e.target.closest&&e.target.closest('.ftiles');if(!t||t.scrollWidth<=t.clientWidth+2)return;fd={t,x:e.clientX,sl:t.scrollLeft,moved:false}});
+  document.addEventListener('pointermove',e=>{if(!fd)return;const dx=e.clientX-fd.x;if(!fd.moved&&Math.abs(dx)>6){fd.moved=true;fd.t.classList.add('drag')}if(fd.moved)fd.t.scrollLeft=fd.sl-dx});
+  const end=()=>{if(!fd)return;const f=fd;fd=null;if(!f.moved)return;f.t.classList.remove('drag');const dx=f.t.scrollLeft-f.sl,half=(f.t.scrollWidth-f.t.clientWidth)/2;f.t.scrollTo({left:Math.abs(dx)>40?(dx>0?f.t.scrollWidth:0):(f.sl>half?f.t.scrollWidth:0),behavior:'smooth'});
+    /* a húzás végén ne nyíljon meg a csempe, amin felengedtük */
+    const stop=ev=>{ev.stopPropagation();ev.preventDefault()};window.addEventListener('click',stop,{capture:true,once:true});setTimeout(()=>window.removeEventListener('click',stop,{capture:true}),50)};
+  document.addEventListener('pointerup',end);document.addEventListener('pointercancel',end)}
 function fbGo(k){closeModal();({paste:claudePaste,help:foodHelp,prefs:()=>openSub('food','fprefs'),profile:()=>openSub('profile')})[k]?.()}
 function scanFood(){openFoodEntry();openScanner()}
 /* ===== Heti menü: Claude olupan-menu blokkban adja vissza; egy aktív menü, napokra bontva, rögzíthető, bevásárlólistát ad ===== */
