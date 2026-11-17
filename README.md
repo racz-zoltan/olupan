@@ -17,21 +17,21 @@ Nincs fiók, nincs szerver, nincs reklám és nincs követés. Ingyenes, interne
 - Edzéssablonok, sorozatok, szuperszettek, bemelegítő sorozatok és pihenőidő-számláló.
 - **Javaslat minden gyakorlatnál** az előző alkalom alapján (kettős progresszió). Csak akkor javasol nehezebb súlyt, ha minden sorozat megvolt.
 - Heti edzésterv 1, 2 vagy 4 hétre, edzéstörténet, izomcsoport-statisztika és az elmúlt 7 nap áttekintése.
-- Edzéstervet Claude-dal is kérhetsz, a saját eszközeidhez és az elmúlt hetek edzéseihez igazítva.
+- Edzéstervet a saját AI-asszisztensedtől is kérhetsz, a saját eszközeidhez és az elmúlt hetek edzéseihez igazítva.
 
 ### Étkezés
 - **Több mint 900 tételes élelmiszer-adatbázis**, amely a telefonon van, ezért a kereséshez nem kell internet. Benne vannak magyar ételek, valamint a Burger King, a KFC és a Subway saját, hivatalos tápértéktáblázatának adatai is.
 - **Vonalkód-olvasás** a kamerával, iPhone-on is. A termékadatok az [Open Food Facts](https://world.openfoodfacts.org) nyílt adatbázisából jönnek, és csak a vonalkód száma megy el. Ha egy termék ott nem szerepel, a tápértéktábla lefotózható: a felismerés a telefonon történik, a kép nem megy el sehova.
 - Saját receptek, amelyek adagra vagy grammra is felvihetők.
-- **Heti menü Claude-dal:** kevés, előre jelzett esti főzéssel a következő 1–2 napra, adagonkénti kalóriával és makrókkal. Bevásárlólista is jár hozzá, boltrészlegek szerint csoportosítva, és figyelembe veszi, mi van otthon.
+- **Heti menü AI-asszisztenssel:** kevés, előre jelzett esti főzéssel a következő 1–2 napra, adagonkénti kalóriával és makrókkal. Bevásárlólista is jár hozzá, boltrészlegek szerint csoportosítva, és figyelembe veszi, mi van otthon.
 - Napi kalória- és makrókeret a profilod és a célod alapján, heti korrekcióval a tényleges súlyváltozásod szerint.
 
 ### Test
 - Testsúly, testzsír és lépésszám, trendekkel és grafikonokkal.
 - **Egészséges súlytartomány** a BMI és, ha méred, a testzsírod alapján. Figyelmeztetést kapsz, ha a célsúlyod egészségtelenül alacsony.
 
-### Claude-dal, ha szeretnéd
-Az Olupan összeállítja a kérést (étkezés fényképről vagy diktálva, receptötletek, heti menü, edzésterv), és megnyitja a [Claude](https://claude.ai)-t. A választ te illeszted vissza. Az app maga nem küld adatot senkinek: azt látja a Claude, amit te beillesztesz. A Claude használatához saját Claude-fiók kell, az Olupan nélküle is teljes értékű.
+### AI-asszisztenssel, ha szeretnéd
+Az Olupan összeállítja a kérést (étkezés fényképről vagy diktálva, receptötletek, heti menü, edzésterv), és megnyitja a választott asszisztensben létrehozott projektedet: [Claude](https://claude.ai) (alapértelmezett), [ChatGPT](https://chatgpt.com), [Gemini](https://gemini.google.com) (skillként) vagy [Mistral Le Chat](https://chat.mistral.ai). A választ te illeszted vissza. Az app maga nem küld adatot senkinek: az asszisztens azt látja, amit te beillesztesz. Ehhez saját fiók kell a választott szolgáltatásnál; az Olupan nélküle is teljes értékű.
 
 ## Adatvédelem
 
@@ -69,9 +69,9 @@ Hibát találtál, vagy ötleted van? Nyiss egy [issue-t](../../issues), vagy í
 
 - **Workouts:** templates, sets, supersets, rest timer, and a progression suggestion for every exercise based on last time. Weekly plans, history and muscle-group stats.
 - **Food:** a 900+ item food database stored on the phone, so searching works offline. Barcode scanning (also on iPhone) via [Open Food Facts](https://world.openfoodfacts.org); if a product is missing, photograph its nutrition label and it is read on the device, own recipes, and daily calorie and macro targets.
-- **Weekly menu with Claude:** a few planned evening cooking sessions for the next 1–2 days, with a shopping list grouped by store section.
+- **Weekly menu with an AI assistant:** a few planned evening cooking sessions for the next 1–2 days, with a shopping list grouped by store section.
 - **Body:** weight, body fat and steps with trends, plus a healthy weight range and a warning for unhealthy target weights.
-- **Privacy:** everything is stored in your browser. Backups are password-encrypted (Argon2id + AES-GCM). Claude features are optional: the app prepares the request and you paste the reply back, and the app itself sends nothing.
+- **Privacy:** everything is stored in your browser. Backups are password-encrypted (Argon2id + AES-GCM). AI assistant features are optional and work with Claude (default), ChatGPT, Gemini or Mistral Le Chat using your own account: the app prepares the request and you paste the reply back, and the app itself sends nothing.
 
 Available in Hungarian and English. See the [user guide](https://olupan.com/guide.html), [privacy policy](https://olupan.com/privacy.html) and [disclaimer](https://olupan.com/disclaimer.html). Olupan gives estimates, not medical advice.
 

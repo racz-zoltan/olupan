@@ -78,6 +78,10 @@ A `/scanner.html` egy külön oldal, amely iframe-ben fut, és a beolvasott kód
 - ahol van, a beépített `BarcodeDetector`-t használja;
 - máshol, például iOS-en, a [zxing-wasm](https://github.com/Sec-ant/zxing-wasm)-ot.
 
+## AI-asszisztens (saját fiókkal)
+
+Az app nem hív AI-szolgáltatást: összeállítja a kérést, vágólapra teszi, megnyitja a felhasználó projektlinkjét, és a visszakapott kódblokkot a Beillesztéssel dolgozza fel. A választható szolgáltatások az `AI_SVC` listában vannak (Claude – alapértelmezett –, ChatGPT, Gemini, Mistral Le Chat; a Geminiben skill van projekt helyett, ezért ott a link fix: új csevegést nyit, a `fixed` mező): név, engedélyezett linkminta, a magyar toldalékos alakok (`AI('val')` → „ChatGPT-vel”) és a projekt létrehozásának lépései. Új szolgáltatás felvételéhez elég ide egy elem; a projekt-utasítás és a kódblokk-formátum mindegyiknél ugyanaz. A link a `settings.claudeUrl` mezőben marad (régi mentésekkel kompatibilis).
+
 ## Tápértéktábla-felismerés (OCR)
 
 Ha a vonalkódhoz nincs (használható) Open Food Facts adat, a kézi rögzítésnél a **Címke fotózása** gomb a fotóból kitölti a 100 g-os értékeket:
