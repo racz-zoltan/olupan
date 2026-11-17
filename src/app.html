@@ -797,10 +797,10 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
     <div id="mfres"></div>${x.q?'':`<div class="hint">${L('Keress az élelmiszerek, a saját tételeid és a receptjeid között, vagy olvasd be a csomagolás vonalkódját. Ha nincs a listában, válts az <b>Új tétel</b> fülre.','Search the food list, your own items and your recipes, or scan a package’s barcode. If it’s not listed, switch to the <b>New item</b> tab.')}</div>`}`}
   else if(isS){const u=fd.unit,showAlc=x.base.alc>0||(parseMacro(x.per.alc)||0)>0,lock=(!!x.id||!!x.again)&&!fd.blank&&!fd.off;
     body=`${x.msg?`<div class="hint" style="margin:0 0 8px">${esc(x.msg)}</div>`:''}<div class="mfsel"><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfname" style="flex:1;min-width:0;font-weight:600${lock?';border-color:transparent;background:none;padding-left:0':''}" autocomplete="off" aria-label="${L('Megnevezés','Name')}" value="${esc(x.name)}" placeholder="${L('Termék neve','Product name')}" ${lock?'readonly tabindex="-1"':'data-input="mfName(this.value)"'}>${x.again?'':`<button class="btn sm" data-click="mfClear()">${I('search','sm')} ${L('Másik','Other')}</button>`}</div>
-    <div class="grid2"><div><label for="mfqty">${L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
+    <div class="grid2"><div><label for="mfqty">${x.again?L('Hozzáadott mennyiség','Amount to add'):L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
     <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
     <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
-    ${lock?`<div class="hint" style="margin-top:12px">${L('Itt csak a mennyiséget módosíthatod. A tápértékeket a saját élelmiszereknél vagy a receptnél tudod javítani.','Only the amount can be changed here. Fix nutrition values under your own foods or in the recipe.')}</div>`:`
+    ${lock?`<div class="hint" id="mfagain" style="margin-top:12px">${x.again?mfAgainNote():L('Itt csak a mennyiséget módosíthatod. A tápértékeket a saját élelmiszereknél vagy a receptnél tudod javítani.','Only the amount can be changed here. Fix nutrition values under your own foods or in the recipe.')}</div>`:`
     <div class="grp" style="margin-top:14px">${fd.noGram?L('Tápérték 1 adagban','Nutrition per serving'):L(`Tápérték 100 ${u==='g'?'g-ban':'ml-ben'}`,`Nutrition per 100 ${u}`)}</div>
     ${fd.blank?`<div class="row" style="margin:6px 0 4px;flex-wrap:nowrap;gap:8px"><button class="btn sm p" style="flex:1" data-click="mfOcrPick()"${x.ocr&&x.ocr.busy?' disabled':''}>${I('camera','sm')} ${L('Címke fotózása','Photo of label')}</button><button class="btn sm" style="flex:1" data-click="mfOcrPaste()">${I('clipboard-paste','sm')} ${L('Szöveg beillesztése','Paste text')}</button><input type="file" id="mfocrin" accept="image/*" capture="environment" style="display:none" data-change="mfOcrFile(this)"></div>
     ${x.ocr&&x.ocr.busy?`<div class="hint" id="mfocrst" style="margin:0 0 6px">${L('Felismerő betöltése…','Loading the reader…')}</div>`:x.ocr&&x.ocr.msg?`<div class="hint" style="margin:0 0 6px${x.ocr.bad?';color:var(--kj-red)':''}">${esc(x.ocr.msg)}</div>`:''}`:''}
@@ -808,9 +808,9 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
     <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>`}
     <div id="mfnote" class="hint">${mfNote()}</div><div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`}
   else if(x.again){body=`<div class="mfsel"><div style="font-weight:600;margin-bottom:8px">${esc(x.name)}</div>
-    <label for="mfmult">${L('Mennyiség (szorzó)','Amount (multiplier)')}</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="mfmult" type="text" inputmode="decimal" class="mono" style="width:76px" autocomplete="off" value="${esc(x.mult)}" data-input="mfMult(this.value)">${[['0,5','½'],['1','1'],['1,5','1½'],['2','2']].map(([v,l])=>`<button class="chip${x.mult===v?' on':''}" data-click="mfMultSet('${v}')">× ${l}</button>`).join('')}</div>
+    <label for="mfmult">${L('Hány adagot adsz hozzá?','How many servings to add?')}</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="mfmult" type="text" inputmode="decimal" class="mono" style="width:76px" autocomplete="off" value="${esc(x.mult)}" data-input="mfMult(this.value)">${[['0,5','½'],['1','1'],['1,5','1½'],['2','2']].map(([v,l])=>`<button class="chip${x.mult===v?' on':''}" data-click="mfMultSet('${v}')">+ ${l}</button>`).join('')}</div>
     <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
-    <div class="hint" style="margin-top:12px">${L('Ugyanaz a tétel még egyszer: itt csak a mennyiséget módosíthatod.','The same item once more: only the amount can be changed here.')}</div>`}
+    <div class="hint" id="mfagain" style="margin-top:12px">${mfAgainNote()}</div>`}
   else{body=`<label for="mfname">${L('Megnevezés','Name')}</label><input id="mfname" autocomplete="off" value="${esc(x.name)}" placeholder="${L('pl. Zabkása 60 g banánnal','e.g. Porridge 60 g with banana')}" data-input="mfName(this.value)">
     <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.tot[k],0)).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>
@@ -823,14 +823,21 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
   <div style="margin-top:12px">${body}</div>${done}
   <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">${x.id?L('Mégse','Cancel'):x.added.length?L('Kész','Done'):L('Bezárás','Close')}</button><span class="sp"></span>${isS&&!fd?'':`<button class="btn p" data-click="mfSave()">${x.id?L('Mentés','Save'):`${I('plus','sm')} ${L('Hozzáadás','Add')}`}</button>`}</div>`);
   if(isS&&!fd&&x.q)mfSearch(x.q)}
+/* Még egy adag: ugyanabba az étkezésbe az eredeti tétel mennyisége nő, másik étkezésbe új tétel kerül */
+function mfAgainMerge(){const x=mf;if(!x.again)return null;const o=S.meals.find(y=>y.id===x.orig);if(!o||o.meal!==x.meal||o.date!==x.date)return null;
+  if(x.tab==='new')return o;return o.fid&&x.food&&o.fid===x.food.id&&o.u===x.u?o:null}
+function mfAgainNote(){const x=mf,o=mfAgainMerge(),ml=T((MEALS.find(m=>m[0]===x.meal)||[0,''])[1]);
+  if(!o)return L(`Új tételként kerül ide: <b>${esc(ml)}</b>. Itt csak a mennyiséget módosíthatod.`,`Added as a new item to <b>${esc(ml)}</b>. Only the amount can be changed here.`);
+  if(x.tab==='new'){const n=x.n0+(parseMacro(x.mult)??1);return L(`Az eredeti tétel mennyisége nő: összesen <b>${hu(n,2)} adag</b> lesz.`,`The original item grows: <b>${hu(n,2)} servings</b> in total.`)}
+  const sv=x.qty,q=x.qty0+(parseMacro(x.qty)||0);x.qty=String(q);const t=mfQtyLbl();x.qty=sv;return L(`Az eredeti tétel mennyisége nő: összesen <b>${esc(t)}</b> lesz.`,`The original item grows: <b>${esc(t)}</b> in total.`)}
 function mfTotHtml(t){const q=mf.food&&mf.tab==='search'?mfQtyLbl():((parseMacro(mf.mult)??1)!==1?'× '+hu(parseMacro(mf.mult),2):'');return`<b class="mono">${fmt(t.kcal,0)} kcal</b>${q?` <span class="mut small">· ${esc(q)}</span>`:''}<br><span class="small mut mono">${L(`F ${hu(t.p,1)} · Sz ${hu(t.c,1)} · Zs ${hu(t.f,1)} · R ${hu(t.fib,1)} g`,`P ${hu(t.p,1)} · C ${hu(t.c,1)} · F ${hu(t.f,1)} · Fib ${hu(t.fib,1)} g`)}</span>`}
 function mfNote(){if(mf.food&&(mf.food.off||mf.food.blank))return L('Mentéskor saját élelmiszerként, a vonalkóddal együtt elmentődik – legközelebb a beolvasás internet nélkül is megtalálja.','On save it’s stored as your own food with its barcode – next time a scan finds it even offline.');if(!mf.food||!mfEdited())return'';const own=mf.food.own;
   return own?L('Módosított értékek: mentéskor a saját tételed is frissül.','Changed values: your own item is updated on save.')
     :L(`Módosított értékek: mentéskor saját tételként is elmentődik${mf.name===foodName(mf.food)?` „${esc(mf.name)} (saját rögzítés)” néven – fent átnevezheted`:` „${esc(mf.name)}” néven`}.`,`Changed values: saved as your own item too${mf.name===foodName(mf.food)?`, as “${esc(mf.name)} (own entry)” – you can rename it above`:`, as “${esc(mf.name)}”`}.`)}
-function mfLive(){const t=$('#mftot');if(t)t.innerHTML=mfTotHtml(mfTotals());const n=$('#mfnote');if(n)n.innerHTML=mfNote()}
+function mfLive(){const t=$('#mftot');if(t)t.innerHTML=mfTotHtml(mfTotals());const ag=$('#mfagain');if(ag&&mf.again)ag.innerHTML=mfAgainNote();const n=$('#mfnote');if(n)n.innerHTML=mfNote()}
 function mfTab(t){if(mf.tab===t)return;mf.tab=t;mf.msg='';if(t==='new'&&mf.food){mf.name='';mf.food=null}renderMF();mfFocus()}
 function mfClear(){mf.food=null;mf.msg='';mf.ocr=null;mf.qty='';mf.name='';renderMF();mfFocus()}
-function mfMeal(v){mf.meal=v}
+function mfMeal(v){mf.meal=v;if(mf.again)renderMF()}
 function mfName(v){mf.name=String(v).slice(0,100);mfLive()}
 function mfQty(v){mf.qty=v;mfLive()}
 function mfUnit(v){if(mf.food.blank){mf.food.unit=v;mf.u=v;renderMF();return}const old=mfGrams();mf.u=v;mf.qty=v===mf.food.unit?(old!=null?String(Math.round(old)):'100'):'1';renderMF()}
@@ -867,6 +874,12 @@ function mfSave(){const x=mf,isF=x.food&&x.tab==='search',t=mfTotals();if(!x.nam
     fib:fd?t.fib:(String(x.tot.fib??'').trim()===''?null:Math.min(500,t.fib))};
   if(t.alc>0)rec.alc=Math.min(500,t.alc);
   if(fd){rec.fid=fd.id;rec.qty=Math.round((parseMacro(x.qty)||0)*100)/100;rec.u=x.u;rec.fname=fname.slice(0,80)}
+  const mo=mfAgainMerge();if(mo){
+    for(const k of['kcal','p','c','f','fib','alc']){const a0=mo[k],a1=rec[k];if(a1==null&&a0==null)continue;const v=(a0||0)+(a1||0);mo[k]=k==='kcal'?Math.round(v):Math.round(v*10)/10}
+    if(!mo.alc)delete mo.alc;
+    if(x.tab==='new'){const n=x.n0+(parseMacro(x.mult)??1);mo.name=`${x.name} ×${hu(n,2)}`.slice(0,100)}
+    else{const q=Math.round((x.qty0+(parseMacro(x.qty)||0))*100)/100;mo.qty=q;x.qty=String(q);mo.name=`${mo.fname||fname} ${mfQtyLbl()}`.slice(0,100)}
+    closeModal();save();render();toast(L('Mennyiség növelve','Amount increased'));return}
   if(x.id){const m=S.meals.find(y=>y.id===x.id);if(m){for(const k of['alc','fid','qty','u','fname'])delete m[k];Object.assign(m,rec)}closeModal();save();render();return}
   S.meals.push(Object.assign({id:uid(),date:x.date},rec));save();render();
   if(x.again){closeModal();toast(L('Hozzáadva','Added'));return}
@@ -1176,7 +1189,7 @@ function sanitizeState(d){
     prs:(Array.isArray(w.prs)?w.prs:[]).filter(p=>p&&['w','e','r','v'].includes(p.type)).map(p=>({exId:fix(p.exId),type:p.type,val:num(p.val,0,1e7)||0}))}));
   o.body=(Array.isArray(d.body)?d.body:[]).filter(b=>b&&DATE_RE.test(b.date)).map(b=>{const x={date:b.date};const w=num(b.weight,20,400),f=num(b.fat,2,70),wa=num(b.waist,30,250),st=num(b.steps,0,200000);if(w!=null)x.weight=w;if(f!=null)x.fat=f;if(wa!=null)x.waist=wa;for(const[k]of BODY_X){const v=num(b[k],10,250);if(v!=null)x[k]=v}if(st!=null)x.steps=Math.round(st);return x}).filter(b=>Object.keys(b).length>1);
   o.meals=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name).map(m=>({id:fix(m.id),date:m.date,meal:MEALS.some(x=>x[0]===m.meal)?m.meal:'nasi',name:str(m.name,100),kcal:Math.round(num(m.kcal,0,10000)??0),p:num(m.p,0,1000)??0,c:num(m.c,0,1000)??0,f:num(m.f,0,1000)??0,fib:m.fib==null||m.fib===''?null:num(m.fib,0,500)}));
-  {const src=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name);o.meals.forEach((x,i)=>{const m=src[i];const a=num(m.alc,0,500);if(a)x.alc=a;if(typeof m.fid==='string'&&/^(d\d{1,5}|f[A-Za-z0-9_-]{1,40})$/.test(m.fid)){const q=num(m.qty,0,100000);if(q!=null){x.fid=m.fid;x.qty=q;x.u=/^(g|ml|p\d{1,2})$/.test(m.u)?m.u:'g';x.fname=str(m.fname||'',80)}}})}
+  {const src=(Array.isArray(d.meals)?d.meals:[]).filter(m=>m&&DATE_RE.test(m.date)&&m.name);o.meals.forEach((x,i)=>{const m=src[i];const a=num(m.alc,0,500);if(a)x.alc=a;if(typeof m.fid==='string'&&/^(d\d{1,5}|f[A-Za-z0-9_-]{1,40}|rc[A-Za-z0-9_-]{1,41})$/.test(m.fid)){const q=num(m.qty,0,100000);if(q!=null){x.fid=m.fid;x.qty=q;x.u=/^(g|ml|p\d{1,2})$/.test(m.u)?m.u:'g';x.fname=str(m.fname||'',80)}}})}
   o.recipes=(Array.isArray(d.recipes)?d.recipes:[]).slice(0,2000).map(recSan).filter(Boolean);for(const r of o.recipes)if(!r.g)r.g=recTextGrams(r);
   {const sanM=m=>{if(m&&DATE_RE.test(m.start)&&Array.isArray(m.slots)){const ids=new Set(o.recipes.map(r=>r.id)),mids=new Set(o.meals.map(x=>x.id)),days=Math.max(1,Math.min(14,Math.round(num(m.days,1,14)||7)));
     const sl=m.slots.slice(0,120).filter(x=>x&&REC_MEAL.some(y=>y[0]===x.meal)&&num(x.d,1,days)).map(x=>({d:Math.round(x.d),meal:x.meal,rid:typeof x.rid==='string'&&ids.has(x.rid)?x.rid:null,name:str(x.name||'',100),cook:num(x.cook,0,100)||0,...(x.asm===true?{asm:true}:{}),log:typeof x.log==='string'&&mids.has(fix(x.log))?fix(x.log):null}));
@@ -2093,7 +2106,12 @@ function addMeal(){openFoodEntry()}
 function editMeal(id){const m=S.meals.find(x=>x.id===id);if(m)openFoodEntry(m)}
 async function delMeal(id){const m=S.meals.find(x=>x.id===id);if(!m)return;if(!await ask(`Törlöd: <b>${esc(m.name)}</b> (${m.kcal} kcal)?`,{title:'Tétel törlése',ok:'Törlés',danger:true}))return;S.meals=S.meals.filter(x=>x.id!==id);save();render()}
 /* Még egy adag: ugyanaz a tétel és mennyiség új bejegyzésként; az étkezés választható, mentés előtt a mennyiség módosítható */
-function mealAgain(id){const m=S.meals.find(x=>x.id===id);if(!m)return;closeScanner();mf=mfNew(m);mf.id=null;mf.again=true;mf.date=foodDate;mf.meal=foodDate===today()?guessMeal():m.meal;if(mf.tab==='new')mf.name=m.name;renderMF()}
+/* „×N” utótag a kézi tételek nevén: ennyi adag van már benne */
+function splitN(name){const r=String(name||'').match(/^(.*\S) ×(\d+(?:[.,]\d+)?)$/);return r?[r[1],parseMacro(r[2])||1]:[String(name||''),1]}
+function mealAgain(id){const m=S.meals.find(x=>x.id===id);if(!m)return;closeScanner();mf=mfNew(m);mf.id=null;mf.again=true;mf.orig=m.id;mf.date=m.date;mf.meal=m.meal;
+  if(mf.tab==='new'){const[b,n0]=splitN(m.name);mf.name=b;mf.n0=n0;for(const k of NUT){const v=parseMacro(m[k]);mf.tot[k]=v==null?'':String(k==='kcal'?Math.round(v/n0):Math.round(v/n0*10)/10)}mf.mult='1'}
+  else{mf.qty0=parseMacro(m.qty)||0;mf.u0=m.u;mf.qty=String(m.qty)}
+  renderMF()}
 function copyMealToday(id){const m=S.meals.find(x=>x.id===id);if(!m)return;S.meals.push(Object.assign({},m,{id:uid(),date:today()}));save();toast('Hozzáadva a mai naphoz')}
 function foodNav(d){const x=pYmd(foodDate);x.setDate(x.getDate()+d);const k=ymd(x);if(k>today())return;foodDate=k;render()}
 function setFoodDate(v){foodDate=DATE_RE.test(v)&&v<=today()?v:today();render()}
