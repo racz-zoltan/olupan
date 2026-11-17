@@ -810,8 +810,8 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
   let body='';
   if(isS&&!fd){body=`<div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfq" type="search" style="flex:1;min-width:0" autocomplete="off" enterkeyhint="search" aria-label="${L('Keresés','Search')}" placeholder="${L('pl. túró, csirkemell, passata','e.g. quark, chicken breast, passata')}" value="${esc(x.q)}" data-input="mfSearch(this.value)">${canScan()?`<button class="btn ico" data-click="openScanner()" aria-label="${L('Vonalkód beolvasása','Scan barcode')}" title="${L('Vonalkód','Barcode')}">${I('scan-barcode','sm')}</button>`:''}</div>
     <div id="mfres"></div>${x.q?'':`<div class="hint">${L('Keress az élelmiszerek, a saját tételeid és a receptjeid között, vagy olvasd be a csomagolás vonalkódját. Ha nincs a listában, válts az <b>Új tétel</b> fülre.','Search the food list, your own items and your recipes, or scan a package’s barcode. If it’s not listed, switch to the <b>New item</b> tab.')}</div>`}`}
-  else if(isS){const u=fd.unit,showAlc=x.base.alc>0||(parseMacro(x.per.alc)||0)>0,lock=!!x.id&&!fd.blank&&!fd.off;
-    body=`${x.msg?`<div class="hint" style="margin:0 0 8px">${esc(x.msg)}</div>`:''}<div class="mfsel"><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfname" style="flex:1;min-width:0;font-weight:600${lock?';border-color:transparent;background:none;padding-left:0':''}" autocomplete="off" aria-label="${L('Megnevezés','Name')}" value="${esc(x.name)}" placeholder="${L('Termék neve','Product name')}" ${lock?'readonly tabindex="-1"':'data-input="mfName(this.value)"'}><button class="btn sm" data-click="mfClear()">${I('search','sm')} ${L('Másik','Other')}</button></div>
+  else if(isS){const u=fd.unit,showAlc=x.base.alc>0||(parseMacro(x.per.alc)||0)>0,lock=(!!x.id||!!x.again)&&!fd.blank&&!fd.off;
+    body=`${x.msg?`<div class="hint" style="margin:0 0 8px">${esc(x.msg)}</div>`:''}<div class="mfsel"><div class="row" style="flex-wrap:nowrap;gap:8px"><input id="mfname" style="flex:1;min-width:0;font-weight:600${lock?';border-color:transparent;background:none;padding-left:0':''}" autocomplete="off" aria-label="${L('Megnevezés','Name')}" value="${esc(x.name)}" placeholder="${L('Termék neve','Product name')}" ${lock?'readonly tabindex="-1"':'data-input="mfName(this.value)"'}>${x.again?'':`<button class="btn sm" data-click="mfClear()">${I('search','sm')} ${L('Másik','Other')}</button>`}</div>
     <div class="grid2"><div><label for="mfqty">${L('Mennyiség','Amount')}</label><input id="mfqty" type="text" inputmode="decimal" class="mono" autocomplete="off" value="${esc(x.qty)}" data-input="mfQty(this.value)"></div>
     <div><label for="mfu">${L('Egység','Unit')}</label><select id="mfu" data-change="mfUnit(this.value)">${mfUnitOpts().map(([k,l])=>`<option value="${k}" ${k===x.u?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>
     <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
@@ -822,6 +822,10 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
     <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.per[k],1)).join('')}${showAlc?nf('alc',L('Alkohol (g)','Alcohol (g)'),x.per.alc,1):''}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>`}
     <div id="mfnote" class="hint">${mfNote()}</div><div class="mfsrc">${L('Forrás: ','Source: ')}${esc(foodSrc(fd))}</div>`}
+  else if(x.again){body=`<div class="mfsel"><div style="font-weight:600;margin-bottom:8px">${esc(x.name)}</div>
+    <label for="mfmult">${L('Mennyiség (szorzó)','Amount (multiplier)')}</label><div class="row" style="flex-wrap:nowrap;gap:6px"><input id="mfmult" type="text" inputmode="decimal" class="mono" style="width:76px" autocomplete="off" value="${esc(x.mult)}" data-input="mfMult(this.value)">${[['0,5','½'],['1','1'],['1,5','1½'],['2','2']].map(([v,l])=>`<button class="chip${x.mult===v?' on':''}" data-click="mfMultSet('${v}')">× ${l}</button>`).join('')}</div>
+    <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div></div>
+    <div class="hint" style="margin-top:12px">${L('Ugyanaz a tétel még egyszer: itt csak a mennyiséget módosíthatod.','The same item once more: only the amount can be changed here.')}</div>`}
   else{body=`<label for="mfname">${L('Megnevezés','Name')}</label><input id="mfname" autocomplete="off" value="${esc(x.name)}" placeholder="${L('pl. Zabkása 60 g banánnal','e.g. Porridge 60 g with banana')}" data-input="mfName(this.value)">
     <div class="grid3 mfgrid">${MF_L5().map(([k,l])=>nf(k,l,x.tot[k],0)).join('')}</div>
     <div class="row" style="margin-top:8px"><button class="btn sm" data-click="mfRecalc()">${L('Kalória újraszámítása','Recalculate calories')}</button></div>
@@ -829,8 +833,8 @@ function renderMF(){const x=mf,fd=x.food,isS=x.tab==='search';
     <div id="mftot" class="mftot">${mfTotHtml(mfTotals())}</div>
     <div class="hint">${L('A mezők egy adag értékei; a szorzóval (pl. fél adag, dupla adag) a mentett mennyiség módosul. A kalória a makrókból is kiszámolható (EU-s módszer).','The fields are values for one portion; the multiplier (e.g. half, double) changes the amount saved. Calories can be calculated from the macros (EU method).')}</div>`}
   const done=x.added.length?`<div class="mfadded">${I('check','sm')} ${L(`Hozzáadva: ${x.added.length} tétel`,`Added: ${x.added.length} item${x.added.length>1?'s':''}`)} <span class="mut">· ${esc(x.added.slice(-2).join(', '))}</span></div>`:'';
-  openModal(`<h2>${x.id?L('Tétel szerkesztése','Edit item'):L('Étkezés rögzítése','Log food')}</h2><div class="hint" style="margin-top:-4px">${esc(fmtDate(x.date))}</div>
-  <div class="grid2" style="align-items:end"><div><label for="mfmeal">${L('Étkezés','Meal')}</label><select id="mfmeal" data-change="mfMeal(this.value)">${MEALS.map(([k,l])=>`<option value="${k}" ${k===x.meal?'selected':''}>${l}</option>`).join('')}</select></div><div>${x.id?'':tabs}</div></div>
+  openModal(`<h2>${x.id?L('Tétel szerkesztése','Edit item'):x.again?L('Még egy adag','One more serving'):L('Étkezés rögzítése','Log food')}</h2><div class="hint" style="margin-top:-4px">${esc(fmtDate(x.date))}</div>
+  <div class="grid2" style="align-items:end"><div><label for="mfmeal">${L('Étkezés','Meal')}</label><select id="mfmeal" data-change="mfMeal(this.value)">${MEALS.map(([k,l])=>`<option value="${k}" ${k===x.meal?'selected':''}>${l}</option>`).join('')}</select></div><div>${x.id||x.again?'':tabs}</div></div>
   <div style="margin-top:12px">${body}</div>${done}
   <div class="row" style="margin-top:14px"><button class="btn" data-click="closeModal()">${x.id?L('Mégse','Cancel'):x.added.length?L('Kész','Done'):L('Bezárás','Close')}</button><span class="sp"></span>${isS&&!fd?'':`<button class="btn p" data-click="mfSave()">${x.id?L('Mentés','Save'):`${I('plus','sm')} ${L('Hozzáadás','Add')}`}</button>`}</div>`);
   if(isS&&!fd&&x.q)mfSearch(x.q)}
@@ -880,6 +884,7 @@ function mfSave(){const x=mf,isF=x.food&&x.tab==='search',t=mfTotals();if(!x.nam
   if(fd){rec.fid=fd.id;rec.qty=Math.round((parseMacro(x.qty)||0)*100)/100;rec.u=x.u;rec.fname=fname.slice(0,80)}
   if(x.id){const m=S.meals.find(y=>y.id===x.id);if(m){for(const k of['alc','fid','qty','u','fname'])delete m[k];Object.assign(m,rec)}closeModal();save();render();return}
   S.meals.push(Object.assign({id:uid(),date:x.date},rec));save();render();
+  if(x.again){closeModal();toast(L('Hozzáadva','Added'));return}
   /* a modal nyitva marad a következő tételhez */
   const keep={meal:x.meal,tab:x.tab,q:x.tab==='search'?x.q:'',added:[...x.added,rec.name]};mf=mfNew();Object.assign(mf,keep);renderMF();mfFocus()}
 
@@ -2103,7 +2108,7 @@ function addMeal(){openFoodEntry()}
 function editMeal(id){const m=S.meals.find(x=>x.id===id);if(m)openFoodEntry(m)}
 async function delMeal(id){const m=S.meals.find(x=>x.id===id);if(!m)return;if(!await ask(`Törlöd: <b>${esc(m.name)}</b> (${m.kcal} kcal)?`,{title:'Tétel törlése',ok:'Törlés',danger:true}))return;S.meals=S.meals.filter(x=>x.id!==id);save();render()}
 /* Még egy adag: ugyanaz a tétel és mennyiség új bejegyzésként; az étkezés választható, mentés előtt a mennyiség módosítható */
-function mealAgain(id){const m=S.meals.find(x=>x.id===id);if(!m)return;closeScanner();mf=mfNew(m);mf.id=null;mf.date=foodDate;mf.meal=foodDate===today()?guessMeal():m.meal;if(mf.tab==='new')mf.name=m.name;renderMF()}
+function mealAgain(id){const m=S.meals.find(x=>x.id===id);if(!m)return;closeScanner();mf=mfNew(m);mf.id=null;mf.again=true;mf.date=foodDate;mf.meal=foodDate===today()?guessMeal():m.meal;if(mf.tab==='new')mf.name=m.name;renderMF()}
 function copyMealToday(id){const m=S.meals.find(x=>x.id===id);if(!m)return;S.meals.push(Object.assign({},m,{id:uid(),date:today()}));save();toast('Hozzáadva a mai naphoz')}
 function foodNav(d){const x=pYmd(foodDate);x.setDate(x.getDate()+d);const k=ymd(x);if(k>today())return;foodDate=k;render()}
 function setFoodDate(v){foodDate=DATE_RE.test(v)&&v<=today()?v:today();render()}
