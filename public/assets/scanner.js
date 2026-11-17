@@ -4,7 +4,7 @@ const $=s=>document.querySelector(s),v=$('#v'),st=$('#st');
 const EN=(document.documentElement.lang=(new URLSearchParams(location.search).get('lang')==='en'?'en':'hu'))==='en';
 const T=(hu,en)=>EN?en:hu;
 $('#lbl').textContent=T('Vagy írd be a vonalkód számát','Or type the barcode number');$('#ok').textContent=T('Keresés','Search');$('#x').setAttribute('aria-label',T('Bezárás','Close'));
-let stream=null,det=null,zx=false,busy=false,done=false,closed=false,last='',hits=0,timer=0;
+let stream=null,det=null,zx=false,busy=false,done=false,closed=false,paused=false,last='',hits=0,timer=0;
 const post=m=>{if(parent!==window)parent.postMessage(Object.assign({src:'olupan-scan'},m),location.origin)};
 function stop(){clearTimeout(timer);if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}try{v.srcObject=null}catch(e){}}
 /* a főapp a keret eltávolítása előtt ezt hívja: iOS-en a keret törlése önmagában nem mindig állítja le a kamerát */
@@ -15,13 +15,17 @@ function valid(c){if(!/^(\d{8}|\d{12,14})$/.test(c))return false;const d=[...c].
 $('#x').addEventListener('click',()=>{stop();post({type:'close'})});
 $('#man').addEventListener('submit',e=>{e.preventDefault();const c=$('#code').value.replace(/\D/g,'');if(!valid(c)){st.textContent=T('Ez nem érvényes vonalkód – ellenőrizd a számokat.','That isn’t a valid barcode – check the digits.');return}finish(c)});
 addEventListener('pagehide',stop);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();else if(!done&&!closed&&!stream)start()});
+/* Háttérbe kerülve leáll, és visszatéréskor SOHA nem indul újra magától: csak koppintásra */
+const attached=()=>{try{return parent===window||!!(window.frameElement&&window.frameElement.isConnected)}catch(e){return false}};
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stop();if(!done&&!closed){paused=true;st.textContent=T('A kamera leállt. Koppints ide az újraindításhoz.','The camera stopped. Tap here to restart it.')}}});
+st.addEventListener('click',()=>{if(paused&&!done&&!closed){paused=false;start()}});
 async function start(){
+  if(closed||done||document.hidden||!attached())return;
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){st.textContent=T('A kamera itt nem érhető el – írd be a számot.','The camera isn’t available here – type the number.');return}
   try{stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}})}
   catch(e){st.textContent=e&&e.name==='NotAllowedError'?T('Nincs engedély a kamerához – engedélyezd a böngészőben, vagy írd be a számot.','No camera permission – allow it in the browser, or type the number.'):T('A kamera nem indult el – írd be a számot.','The camera didn’t start – type the number.');return}
   /* ha a kamera engedélyezése alatt bezárták vagy háttérbe került, azonnal leállítjuk */
-  if(closed||done||document.hidden){stop();return}
+  if(closed||done||document.hidden||!attached()){stop();return}
   v.srcObject=stream;try{await v.play()}catch(e){}
   if(!det&&!zx){
     try{if('BarcodeDetector' in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes('ean_13'))det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e'].concat(f.includes('qr_code')?['qr_code']:[])})}}catch(e){det=null}
