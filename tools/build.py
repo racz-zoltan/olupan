@@ -18,7 +18,7 @@ from fontTools.ttLib import TTFont
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 NM, SRC, PUB = ROOT / "node_modules", ROOT / "src", ROOT / "public"
 ICONDIR = SRC / "icons"
-ICONS = ["dumbbell","triangle-alert","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
+ICONS = ["dumbbell","repeat","calendar-plus","triangle-alert","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
          "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal","arrow-left-right","list-plus","key-round","house","camera"]

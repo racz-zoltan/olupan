@@ -70,6 +70,7 @@ header h1{font:600 20px/1.2 var(--display);letter-spacing:0;margin:0;flex:1;min-
 .iconbtn:hover{border-color:var(--kj-border-strong)}
 .grp{font:500 13px var(--ui);color:var(--kj-muted);margin:16px 2px 8px;display:flex;align-items:center;gap:8px}.grp::after{content:"";flex:1;height:1px;background:var(--kj-border)}
 .linkbtn{display:flex;align-items:center;justify-content:center;gap:4px;width:100%;background:none;border:0;padding:8px 0 12px;font:500 14px var(--ui);color:var(--kj-blue-line);cursor:pointer}
+.issbox{border:1.5px solid var(--kj-gold-line);background:color-mix(in srgb,var(--kj-gold-line) 12%,transparent);border-radius:14px;padding:12px 14px;margin:12px 0;color:var(--kj-text);font-size:14px;line-height:1.45}.issbox .isshd{display:flex;gap:8px;align-items:center;font-weight:700}.issbox .isshd svg{color:var(--kj-gold-line);flex:none}.issbox ul{margin:6px 0 10px;padding-left:20px}.issbox .issnote{color:var(--kj-muted);font-size:13px;margin:0 0 10px}.issbox .btn.p{width:100%;justify-content:center}
 .notice{border-color:color-mix(in srgb,var(--kj-gold-line) 45%,transparent);padding:4px 16px}.notice .li{gap:12px;padding:12px 0}.notice .nd{width:8px;height:8px;border-radius:50%;background:var(--kj-gold-line);flex:none}
 .pill{display:inline-flex;align-items:center;gap:6px;background:var(--kj-green-fill);color:var(--kj-green-ink);border:0;border-radius:999px;padding:8px 12px;font:600 14px var(--mono);cursor:pointer}
 main{padding:20px 16px;max-width:760px;margin:0 auto}
