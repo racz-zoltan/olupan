@@ -1416,12 +1416,19 @@ function notices(){
   return `<div class="card notice">${rows.map(([t,b])=>`<div class="row li" style="flex-wrap:wrap"><span class="nd"></span><span class="small" style="flex:1 1 180px">${t}</span><span class="row" style="gap:6px;margin-left:auto;flex-wrap:nowrap">${b}</span></div>`).join('')}</div>`;
 }
 /* ===== Adaptív kalóriakeret: a tényleges energiaigény a bevitelből és a súlytrendből (28 nap) ===== */
+/* Adaptív keret. Óvatossági szabályok:
+   – a rögzítés első 14 napja kimarad (diéta eleji víz- és glikogénvesztés gyorsabb fogyást mutat, mint a valós zsírvesztés);
+   – két módosítás között legalább 7 nap telik el, és közben új adat gyűlik. */
+const ADAPT_SKIP=14,ADAPT_GAP=7;
+function adaptLast(){const l=(S.profileLog||[]).filter(e=>e.src==='adapt');return l.length?l[l.length-1].ts:0}
 function adaptive(){const t=targets();if(!t.tdee||!t.adult)return null;
-  const td=today(),start=ymd(new Date(pYmd(td).getTime()-28*DAY)),byDay={};
+  const td=today(),firstLog=S.meals.reduce((a,m)=>!a||m.date<a?m.date:a,null),w0=ymd(new Date(pYmd(td).getTime()-28*DAY)),skipTo=firstLog?addDays(firstLog,ADAPT_SKIP):td,start=skipTo>w0?skipTo:w0,byDay={};
+  const last=adaptLast(),wait=last?Math.ceil((last+ADAPT_GAP*DAY-Date.now())/DAY):0;
   for(const m of S.meals)if(m.date>=start&&m.date<td)byDay[m.date]=(byDay[m.date]||0)+(m.kcal||0);
   const logged=Object.values(byDay).filter(k=>k>=800);
   const ws=series('weight').filter(p=>p.x>=pYmd(start).getTime()),span=ws.length?(ws[ws.length-1].x-ws[0].x)/DAY:0;
-  if(logged.length<14||ws.length<8||span<14)return{ready:false,days:logged.length,weights:ws.length,span:Math.round(span)};
+  if(logged.length<14||ws.length<8||span<14)return{ready:false,days:logged.length,weights:ws.length,span:Math.round(span),early:start===skipTo&&skipTo>w0,from:start};
+  if(wait>0)return{ready:false,cool:wait,days:logged.length,weights:ws.length,span:Math.round(span)};
   const avgIn=logged.reduce((a,b)=>a+b,0)/logged.length,slope=slopeWeek(ws);if(slope==null)return{ready:false,days:logged.length,weights:ws.length,span:Math.round(span)};
   const tdeeA=Math.round(avgIn-slope*7700/7),cur=t.kcal||t.suggested;
   /* Biztonsági korlát: a becslés az alapanyagcsere alatt valószínűleg hiányos rögzítést jelez – ilyenkor nem javaslunk csökkentést;
@@ -1430,7 +1437,8 @@ function adaptive(){const t=targets();if(!t.tdee||!t.adult)return null;
   let step=Math.max(low,Math.max(cur-250,Math.min(cur+250,ideal)));if(suspect&&step<cur)step=cur;
   return{ready:true,days:logged.length,avgIn:Math.round(avgIn),slope,tdeeA,ideal,cur,step:r5(step),diff:r5(step)-cur,suspect}}
 function adaptCard(){const a=adaptive();if(!a)return'';
-  if(!a.ready)return`<div class="card" id="adapt"><h2>Adaptív keret</h2><div class="hint" style="margin-top:-4px">A tényleges energiaigényedet az étkezéseidből és a súlyod változásából számolom. Ehhez az elmúlt 4 hétből kell legalább 14 rögzített nap (napi 800 kcal felett) és legalább 8 mérés 2 hét alatt.</div>
+  if(a.cool)return`<div class="card" id="adapt"><h2>Adaptív keret</h2><div class="hint" style="margin-top:-4px">${L(`A keretet nemrég módosítottad. A következő javaslat ${a.cool} nap múlva jön, amikor már látszik, hogyan hat az új keret.`,`You changed your target recently. The next suggestion comes in ${a.cool} day(s), once the effect of the new target shows.`)}</div>${S.profile.kcalOverride?`<button class="linkbtn" style="justify-content:flex-start;padding:8px 0 0" data-click="resetKcal()">${L('Vissza a képlet szerinti értékre','Back to the formula value')}</button>`:''}</div>`;
+  if(!a.ready)return`<div class="card" id="adapt"><h2>Adaptív keret</h2><div class="hint" style="margin-top:-4px">A tényleges energiaigényedet az étkezéseidből és a súlyod változásából számolom. Ehhez az elmúlt 4 hétből kell legalább 14 rögzített nap (napi 800 kcal felett) és legalább 8 mérés 2 hét alatt.${a.early?L(` A rögzítés első 14 napját kihagyom, mert a diéta elején a víz- és glikogénvesztés miatt gyorsabbnak látszik a fogyás, mint amilyen valójában; a számolás kezdete: ${fmtDate(a.from)}.`,` I skip the first 14 days of logging, because early water and glycogen loss makes weight loss look faster than it really is; counting starts on ${fmtDate(a.from)}.`):''}</div>
     <div class="grid3" style="margin-top:10px">${stat('Rögzített nap',a.days+' / 14')}${stat('Mérés',a.weights+' / 8')}${stat('Időtáv',a.span+' / 14 nap')}</div></div>`;
   return`<div class="card" id="adapt"><h2>Adaptív keret</h2>
   <div class="grid3">${stat('Átlagos bevitel',fmt(a.avgIn,0)+' kcal')}${stat('Súlytrend',sgn(a.slope)+' kg/hét')}${stat('Tényleges energiaigény',fmt(a.tdeeA,0)+' kcal')}</div>
@@ -2611,7 +2619,7 @@ function slotEve(m,x){const sd=slotDate(m,x),c=(m.plan||[]).filter(p=>planDate(m
   return c?pYmd(planDate(m,c)).toLocaleDateString(LOC(),{weekday:'long'}):''}
 function menuDayRows(m,date,compact){const xs=m.slots.map((x,i)=>[x,i]).filter(([x])=>slotDate(m,x)===date);if(!xs.length)return'';const canLog=date<=today();
   return xs.map(([x,i])=>{const r=x.rid&&(S.recipes||[]).find(y=>y.id===x.rid),logged=x.log&&S.meals.some(y=>y.id===x.log);
-    const pp=m.people||1,ev=x.cook&&slotEve(m,x),meta=[lblL(REC_MEAL,x.meal),!x.name?'':x.asm?L('összerakós','quick assembly'):x.cook?(ev?L(`${ev} esti főzésből: ${fmt(x.cook,0)} adag`,`from ${ev} evening’s cooking: ${fmt(x.cook,0)} servings`):L(`főzés: ${fmt(x.cook,0)} adag`,`cook ${fmt(x.cook,0)} servings`))+(pp>1?L(` (${pp} főre)`,` (for ${pp})`):''):L('maradék','leftovers'),r&&r.g?`${fmt(r.g,0)} g`:'',r&&r.kcal!=null&&!compact?`${fmt(r.kcal,0)} kcal`:''].filter(Boolean).join(' · ');
+    const pp=m.people||1,ev=x.cook&&slotEve(m,x),meta=[lblL(REC_MEAL,x.meal),!x.name?'':x.asm?L('összerakós','quick assembly'):x.cook?(ev?L(`${ev} esti főzésből: ${fmt(x.cook,0)} adag`,`from ${ev} evening’s cooking: ${fmt(x.cook,0)} serving${x.cook===1?'':'s'}`):L(`főzés: ${fmt(x.cook,0)} adag`,`cook ${fmt(x.cook,0)} serving${x.cook===1?'':'s'}`))+(pp>1?L(` (${pp} főre)`,` (for ${pp})`):''):L('maradék','leftovers'),r&&r.g?`${fmt(r.g,0)} g`:'',r&&r.kcal!=null&&!compact?`${fmt(r.kcal,0)} kcal`:''].filter(Boolean).join(' · ');
     const ri=mRef(m,i);if(!x.name)return compact?'':`<div class="mrow"><button class="mname" data-click="menuSwap(${ri})"><span class="small mut" style="display:block">${lblL(REC_MEAL,x.meal)}</span><span class="rn" translate="no" style="color:var(--kj-blue-line)">${I('plus','sm')} ${L('Recept választása','Choose a recipe')}</span></button></div>`;
     return`<div class="mrow${logged?' done':''}"><button class="mname" ${r?`data-click="openRecipe('${r.id}',${ri})"`:'disabled'}><span class="rn" translate="no">${esc(x.name)}</span><span class="small mut" style="display:block">${meta}</span></button>${!compact&&!logged&&date>=today()?`<button class="btn sm ico" data-click="menuSwap(${ri})" aria-label="${L('Csere saját receptre','Swap for one of my recipes')}">${I('arrow-left-right','sm')}</button>`:''}${canLog&&r?`<button class="btn sm${logged?' p':''}" data-click="menuLog(${ri})" aria-pressed="${!!logged}" aria-label="${logged?L('Rögzítve – visszavonás','Logged – undo'):L('Rögzítés','Log')}">${logged?I('check','sm'):I('plus','sm')+' '+((m.people||1)>1?L('1 adag','1 serving'):L('Rögzítés','Log'))}</button>`:''}</div>`}).join('')}
 /* Menü szerkesztése: csere a saját receptekre (azonos étkezéstípus), saját menü összeállítása */
