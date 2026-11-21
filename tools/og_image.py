@@ -24,8 +24,8 @@ h1{{font:700 96px/1 'Bri','Brix',sans-serif;letter-spacing:-2px}}
 .url{{position:absolute;right:80px;top:96px;font:600 28px 'Ins','Insx',sans-serif;color:#22d3ee}}
 </style></head><body>
 <div class="top">{logo}<h1>Olupan</h1></div><div class="url">olupan.com</div>
-<div class="t">Offline edzés-, étkezés- és testadatnapló</div>
-<div class="e">Offline workout, food &amp; body log · no account, your data stays on your device</div>
+<div class="t">Offline edzésnapló és kalóriaszámláló</div>
+<div class="e">Offline workout log &amp; calorie counter · no account, stored on your device</div>
 <div class="chips"><span>Edzéssablonok &amp; rekordok</span><span>Kalória &amp; makrók AI-jal</span><span>Izomcsoport-statisztika</span><span>Ingyenes · regisztráció nélkül</span></div>
 </body></html>"""
 async def main():

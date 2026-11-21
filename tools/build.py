@@ -82,19 +82,20 @@ LDJSON = json.dumps({"@context": "https://schema.org", "@type": "WebApplication"
     "applicationCategory": "HealthApplication", "applicationSubCategory": "Fitness", "operatingSystem": "iOS, Android, Windows, macOS, Linux (böngésző)",
     "browserRequirements": "Requires JavaScript; works offline after the first visit", "image": "https://olupan.com/assets/og-image.png",
     "inLanguage": ["hu", "en"], "isAccessibleForFree": True, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "HUF"},
-    "description": "Ingyenes, offline edzés-, étkezés- és testadatnapló: kalória és makrók fotóból vagy leírásból AI-jal (Claude), edzésterv-import, rekordok, statisztikák. Regisztráció nélkül, minden adat a készüléken marad. Free offline workout, food and body log with AI-assisted meal logging – no account, data stays on your device.",
+    "description": "Ingyenes, offline edzésnapló és kalóriaszámláló, testadatnaplóval: kalória és makrók fotóból vagy leírásból AI-jal (Claude), edzésterv-import, rekordok, statisztikák. Regisztráció nélkül; az adataidat a készülékeden tárolja, te rendelkezel róluk. Free offline workout log and calorie counter with AI-assisted meal logging – no account, your data is stored on your device and you are in control of it.",
+    "keywords": "edzésnapló, kalóriaszámláló, étkezésnapló, makrókövetés, testsúlynapló, workout log, calorie counter, macro tracker",
     "featureList": ["Edzéssablonok, szuperszettek, bemelegítő-kalkulátor, tárcsakalkulátor", "Személyes rekordok, becsült 1RM és erőtrendek", "Izomcsoportonkénti heti sorozatszám és relatív erő",
         "Kalória- és makrókövetés AI-jal (Claude) fotóból vagy leírásból", "Kb. 650 élelmiszeres kereshető adattár (USDA, EU-s számítás)", "Adaptív napi kalóriakeret (TDEE) a súlytrend alapján",
         "Heti menü- és receptjavaslat", "Testsúly, testzsír, testméretek, lépések", "Offline működés, regisztráció nélkül, adatexport"],
     "author": {"@type": "Person", "name": "Rácz Zoltán"}}, ensure_ascii=False).replace("</", "<\\/")
 NOSCRIPT = """<main></main>
 <noscript><section style="max-width:680px;margin:24px auto;padding:0 16px;font-family:system-ui,sans-serif;line-height:1.5">
-<h1>Olupan – offline edzés-, étkezés- és testadatnapló</h1>
-<p>Ingyenes napló telefonra és számítógépre. Regisztráció nélkül, internet nélkül is működik, minden adat a készüléken marad.</p>
+<h1>Olupan – offline edzésnapló és kalóriaszámláló</h1>
+<p>Ingyenes edzés-, étkezés- és testadatnapló telefonra és számítógépre. Regisztráció nélkül, internet nélkül is működik. Az adataidat a készülékeden tárolja, te rendelkezel róluk.</p>
 <h2>Edzés</h2><ul><li>Edzéssablonok, szuperszettek, pihenőidő-időzítő</li><li>Bemelegítő sorozatok kalkulátora, tárcsakalkulátor</li><li>Személyes rekordok, becsült 1RM, erőtrendek, relatív erő</li><li>Heti sorozatszám izomcsoportonként, gyakoriság, edzésnaptár</li><li>Edzésterv importálása Claude-ból</li></ul>
 <h2>Étkezés</h2><ul><li>Kalória, makrók és rost: rögzítés fotóból vagy leírásból AI-jal (Claude), kézzel vagy gyors rögzítéssel</li><li>Kereshető élelmiszer-adattár (USDA, európai kalóriaszámítással), saját tételek</li><li>Adaptív napi kalóriakeret (TDEE) a súlytrend és az étkezések alapján</li><li>Heti menü- és receptjavaslat az étkezési preferenciáid szerint</li></ul>
 <h2>Testadatok</h2><ul><li>Testsúly, testzsír, derék- és testméretek, lépések, trendek</li></ul>
-<div lang="en"><h2>Olupan – offline workout, food and body log</h2><p>Free, no account, works offline; your data stays on your device. Workout templates, warm-up and plate calculators, personal records and estimated 1RM, weekly sets per muscle group; calories, macros and fibre with AI-assisted meal logging (Claude) from a photo or description, a searchable food database, adaptive calorie target (TDEE); body weight, measurements and steps.</p></div>
+<div lang="en"><h2>Olupan – offline workout log and calorie counter</h2><p>Free, no account, works offline; your data is stored on your device and you are in control of it. Workout templates, warm-up and plate calculators, personal records and estimated 1RM, weekly sets per muscle group; calories, macros and fibre with AI-assisted meal logging (Claude) from a photo or description, a searchable food database, adaptive calorie target (TDEE); body weight, measurements and steps.</p></div>
 <p>Az app használatához kapcsold be a JavaScriptet. · <a href="/utmutato.html">Felhasználói útmutató</a> · <a href="/guide.html" lang="en">User guide</a> · <a href="/adatvedelem.html">Adatkezelés</a> · <a href="/privacy.html" lang="en">Privacy</a></p>
 </section></noscript>"""
 css_d = css.replace("/*@FONTS@*/", "\n".join(ff_files)).encode()
@@ -134,24 +135,24 @@ for lf in sorted((ROOT / "licenses").glob("*.txt")): shutil.copy(lf, PUB / "lice
 
 head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://world.openfoodfacts.org; manifest-src 'self'; worker-src 'self'; object-src 'none'; frame-src 'self'; base-uri 'self'; form-action 'self';">
 <meta name="google-site-verification" content="Re288jc6stZsam8EJVN-Ufx_lNHClPDe0EuPK0cbYYQ">
-<meta name="description" content="Ingyenes, offline edzés- és étkezésnapló: kalória és makrók fotóból vagy leírásból AI-jal (Claude), rekordok, statisztikák. Regisztráció nélkül, adataid a készüléken maradnak.">
+<meta name="description" content="Ingyenes, offline edzésnapló és kalóriaszámláló: kalória és makrók fotóból vagy leírásból AI-jal (Claude), rekordok, statisztikák. Regisztráció nélkül, az adataidat a készülékeden tárolja.">
 <link rel="canonical" href="https://olupan.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Olupan">
 <meta property="og:locale" content="hu_HU">
 <meta property="og:locale:alternate" content="en_GB">
-<meta property="og:title" content="Olupan – offline edzés- és étkezésnapló">
+<meta property="og:title" content="Olupan – offline edzésnapló és kalóriaszámláló">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Olupan – offline edzés- és étkezésnapló">
-<meta name="twitter:description" content="Edzés, kalória és makrók (AI-jal fotóból vagy leírásból), testadatok – regisztráció nélkül, minden adat a készüléken marad.">
+<meta name="twitter:title" content="Olupan – offline edzésnapló és kalóriaszámláló">
+<meta name="twitter:description" content="Edzésnapló és kalóriaszámláló: edzés, kalória és makrók (AI-jal fotóból vagy leírásból), testadatok – regisztráció nélkül, az adataidat a készülékeden tárolja.">
 <meta name="twitter:image" content="https://olupan.com/assets/og-image.png">
 <script type="application/ld+json">{LDJSON}</script>
-<meta property="og:description" content="Edzés, kalória és makrók (AI-jal fotóból vagy leírásból), testadatok – regisztráció nélkül, minden adat a készüléken marad. · Offline workout, food and body log – no account, your data stays on your device.">
+<meta property="og:description" content="Edzésnapló és kalóriaszámláló: edzés, kalória és makrók (AI-jal fotóból vagy leírásból), testadatok – regisztráció nélkül, az adataidat a készülékeden tárolja. · Offline workout log & calorie counter – no account, your data is stored on your device.">
 <meta property="og:url" content="https://olupan.com/">
 <meta property="og:image" content="https://olupan.com/assets/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Olupan – offline edzés-, étkezés- és testadatnapló">
+<meta property="og:image:alt" content="Olupan – offline edzésnapló és kalóriaszámláló">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon-32.png">
@@ -161,16 +162,16 @@ head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self
 <link rel="preload" href="/assets/fonts/instrument-sans-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
 <link rel="stylesheet" href="/assets/app.css" integrity="{sri(css_d)}" crossorigin="anonymous">'''
 html = re.sub(r"<style>.*?</style>", lambda m: head, src, count=1, flags=re.S)
-html = html.replace("<title>Olupan</title>", "<title>Olupan – offline edzésnapló és étkezésnapló</title>", 1)
+html = html.replace("<title>Olupan</title>", "<title>Olupan – ingyenes offline edzésnapló és kalóriaszámláló</title>", 1)
 html = html.replace("<main></main>", NOSCRIPT, 1)
 html = re.sub(r"<script>.*?</script>", lambda m: f'<script src="/assets/app.js" integrity="{sri(js_d)}" crossorigin="anonymous"></script>', html, count=1, flags=re.S)
 html = html.replace('<meta name="apple-mobile-web-app-capable" content="yes">\n', '')
 (PUB / "index.html").write_text(html, encoding="utf-8")
 
 manifest = {"id": "/", "name": "Olupan", "short_name": "Olupan", "lang": "hu",
-            "description": "Offline edzésnapló – sablonok, testadatok, étkezés, statisztikák. Minden adat a készüléken marad.",
+            "description": "Offline edzésnapló és kalóriaszámláló – sablonok, étkezés, testadatok, statisztikák. Az adataidat a készülékeden tárolja.",
             "start_url": "/", "scope": "/", "display": "standalone",
-            "background_color": "#06080b", "theme_color": "#06080b", "categories": ["health", "fitness"],
+            "background_color": "#0f151d", "theme_color": "#0f151d", "categories": ["health", "fitness"],
             "icons": [{"src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
@@ -207,7 +208,7 @@ for key, langs in DOCS.items():
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
 <title>{title} – Olupan</title>
-<meta name="description" content="{title} – Olupan, {t("ingyenes offline edzésnapló, étkezés- és testadatnapló. Regisztráció nélkül, minden adat a készüléken marad.", "a free offline workout, food and body log. No account – your data stays on your device.")}">
+<meta name="description" content="{title} – Olupan, {t("ingyenes offline edzésnapló és kalóriaszámláló, testadatnaplóval. Regisztráció nélkül, az adataidat a készülékeden tárolja.", "a free offline workout log and calorie counter with body tracking. No account – your data is stored on your device.")}">
 <link rel="canonical" href="{cfg["site"]}/{fname}">
 <link rel="alternate" hreflang="{other}" href="{cfg["site"]}/{DOCS[key][other][0]}">
 <link rel="alternate" hreflang="{lang}" href="{cfg["site"]}/{fname}">

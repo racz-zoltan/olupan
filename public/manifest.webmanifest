@@ -3,12 +3,12 @@
   "name": "Olupan",
   "short_name": "Olupan",
   "lang": "hu",
-  "description": "Offline edzésnapló – sablonok, testadatok, étkezés, statisztikák. Minden adat a készüléken marad.",
+  "description": "Offline edzésnapló és kalóriaszámláló – sablonok, étkezés, testadatok, statisztikák. Az adataidat a készülékeden tárolja.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#06080b",
-  "theme_color": "#06080b",
+  "background_color": "#0f151d",
+  "theme_color": "#0f151d",
   "categories": [
     "health",
     "fitness"
