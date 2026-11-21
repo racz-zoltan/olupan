@@ -195,7 +195,7 @@ function storeCard(){
 /* ===== Téma ===== */
 const mq=matchMedia('(prefers-color-scheme: dark)');
 function curTheme(){return S.settings.theme||(mq.matches?'dark':'light')}
-function applyTheme(){const t=curTheme(),de=document.documentElement;de.dataset.theme=t;de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content=t==='dark'?'#08090b':'#dfe5ee'}
+function applyTheme(){const t=curTheme(),de=document.documentElement;de.dataset.theme=t;de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content=t==='dark'?'#141619':'#dfe5ee'}
 mq.addEventListener?.('change',()=>{if(!S.settings.theme)applyTheme()});
 
 /* ===== Állapot ===== */
