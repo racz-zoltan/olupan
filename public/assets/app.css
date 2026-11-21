@@ -51,7 +51,7 @@
   --c-weight:#a3e635;--c-fat:#fb923c;--c-waist:#2dd4bf;--c-steps:#22d3ee;--c-workout:#fb7185;--c-kcal:#60a5fa;--c-protein:#a78bfa;--c-carb:#fbbf24;--c-fatm:#f472b6;--c-fiber:#34d399;--c-cardio:#f472b6;--c-volume:#dc2626;
 }
 [data-accent="orange"]{--kj-blue:#c2410c;--kj-blue-ink:#fff7ed;--kj-blue-line:#c2410c;--kj-blue-soft:rgba(234,88,12,.12);--kj-focus:rgba(234,88,12,.30)}
-[data-theme="dark"][data-accent="orange"]{--kj-blue:#c2410c;--kj-blue-ink:#fff7ed;--kj-blue-line:#f97316;--kj-blue-soft:rgba(234,88,12,.16);--kj-focus:rgba(249,115,22,.32)}
+[data-theme="dark"][data-accent="orange"]{--kj-blue:#fb7a1e;--kj-blue-ink:#2a1003;--kj-blue-line:#fb923c;--kj-blue-soft:rgba(251,146,60,.16);--kj-focus:rgba(251,146,60,.34)}
 [data-accent="pink"]{--kj-blue:#db2777;--kj-blue-ink:#ffffff;--kj-blue-line:#db2777;--kj-blue-soft:rgba(219,39,119,.12);--kj-focus:rgba(219,39,119,.30)}
 [data-theme="dark"][data-accent="pink"]{--kj-blue:#db2777;--kj-blue-ink:#ffffff;--kj-blue-line:#f472b6;--kj-blue-soft:rgba(244,114,182,.16);--kj-focus:rgba(244,114,182,.32)}
 .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:0}.sw-cyan{background:#22d3ee}.sw-orange{background:#c2410c}.sw-pink{background:#db2777}
@@ -320,6 +320,8 @@ body.home header h1{display:flex;flex-direction:column;line-height:1.15}
 .mic>.ic{position:absolute;left:0;top:0;width:28px;height:28px}
 .mclip{position:absolute;left:0;bottom:0;width:28px;overflow:hidden;color:var(--mc)}
 .mclip .ic{position:absolute;left:0;bottom:0;width:28px;height:28px}
+/* fekete kártyán az áttetsző színkeverés sötétbe, „piszkosba” húz: sötét módban telítettebb rétegek */
+[data-theme="dark"] .mbox{background:color-mix(in srgb,var(--mc) 10%,#000);border-color:color-mix(in srgb,var(--mc) 32%,transparent)}[data-theme="dark"] .mfill{background:color-mix(in srgb,var(--mc) 24%,#000)}[data-theme="dark"] .mic{color:color-mix(in srgb,var(--mc) 80%,transparent)}
 .ic.filled{fill:currentColor;fill-opacity:.85}
 .mbadge{position:absolute;bottom:4px;right:4px;padding:0 5px;border-radius:8px;background:var(--mc);color:#fff;font:600 10px/16px var(--mono)}
 .ml{font-size:11px;color:var(--kj-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
