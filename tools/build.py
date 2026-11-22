@@ -8,7 +8,7 @@ Kimenet:
   public/sw.js                 service worker (a gyorsítótár verziója a tartalom hash-e)
   public/olupan-offline.html   egyetlen önálló fájl, beágyazott betűkkel (letölthető offline változat)
 
-Ikonok: Lucide (ISC). Betűk: Instrument Sans, Bricolage Grotesque, JetBrains Mono (SIL OFL 1.1) – @fontsource csomagokból.
+Ikonok: Lucide (ISC). Betűk: Instrument Sans, Bricolage Grotesque, JetBrains Mono, Press Start 2P (SIL OFL 1.1) – @fontsource csomagokból.
 Használat (a repó gyökeréből):  python3 tools/build.py
 """
 import base64, hashlib, io, json, re, shutil, pathlib
@@ -18,7 +18,7 @@ from fontTools.ttLib import TTFont
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 NM, SRC, PUB = ROOT / "node_modules", ROOT / "src", ROOT / "public"
 ICONDIR = SRC / "icons"
-ICONS = ["dumbbell","arrow-up-down","printer","repeat","calendar-plus","triangle-alert","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
+ICONS = ["dumbbell","arrow-up-down","snowflake","heart","star","gift","ghost","egg","flower","flower-2","party-popper","printer","repeat","calendar-plus","triangle-alert","lightbulb","calendar-days","chart-no-axes-combined","settings","plus","x","check",
          "chevron-left","chevron-right","chevron-down","chevron-up","arrow-up","arrow-down","timer","trophy","sun","moon","trash-2","rotate-ccw",
          "save","download","upload","pencil","party-popper","minus","flame","info","share","folder-open","smartphone","footprints","clipboard-paste",
          "circle-help","utensils","target","copy","external-link","shield-check","wifi-off","square-plus","hard-drive","person-standing","archive","archive-restore","notebook-pen","drumstick","wheat","droplet","leaf","footprints","calendar-days","chevron-left","trending-up","disc","history","link","monitor-down","scan-barcode","search","sparkles","chef-hat","cooking-pot","shopping-basket","thumbs-up","thumbs-down","lock","lock-open","eye","eye-off","dices","clipboard-list","sliders-horizontal","arrow-left-right","list-plus","key-round","house","camera"]
@@ -26,7 +26,8 @@ LATIN = "U+0020-007E,U+00A0-00FF,U+2013,U+2014,U+2019,U+201C-201E,U+2026,U+2212,
 HU = "U+0150,U+0151,U+0170,U+0171"
 FONTS = [("Instrument Sans", w, "instrument-sans") for w in (400, 500, 600)] + \
         [("Bricolage Grotesque", 600, "bricolage-grotesque")] + \
-        [("JetBrains Mono", w, "jetbrains-mono") for w in (400, 500, 600)]
+        [("JetBrains Mono", w, "jetbrains-mono") for w in (400, 500, 600)] + \
+        [("Press Start 2P", 400, "press-start-2p")]
 
 def rng(r):
     r = r.replace("U+", ""); a, _, b = r.partition("-"); return range(int(a, 16), int(b or a, 16) + 1)
