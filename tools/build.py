@@ -171,7 +171,7 @@ html = html.replace('<meta name="apple-mobile-web-app-capable" content="yes">\n'
 manifest = {"id": "/", "name": "Olupan", "short_name": "Olupan", "lang": "hu",
             "description": "Offline edzésnapló és kalóriaszámláló – sablonok, étkezés, testadatok, statisztikák. Az adataidat a készülékeden tárolja.",
             "start_url": "/", "scope": "/", "display": "standalone",
-            "background_color": "#0f151d", "theme_color": "#0f151d", "categories": ["health", "fitness"],
+            "background_color": "#000000", "theme_color": "#000000", "categories": ["health", "fitness"],
             "icons": [{"src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
                       {"src": "/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}]}
