@@ -240,11 +240,23 @@ for key, langs in DOCS.items():
 
 site = cfg["site"].rstrip("/")
 (PUB / "robots.txt").write_text(f"User-agent: *\nAllow: /\n\nSitemap: {site}/sitemap.xml\n", encoding="utf-8")
-sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">', f"  <url><loc>{site}/</loc></url>"]
+# lastmod: csak akkor kap új dátumot egy oldal, ha a tartalma ténylegesen megváltozott (a Google csak a megbízható lastmod-ot veszi figyelembe).
+import hashlib, datetime, json as _json
+_lm_path = ROOT / "tools" / "sitemap-dates.json"
+_lm = _json.loads(_lm_path.read_text(encoding="utf-8")) if _lm_path.exists() else {}
+_today = datetime.date.today().isoformat()
+def lastmod(fname):
+    f = PUB / fname
+    h = hashlib.sha256(f.read_bytes()).hexdigest()[:16] if f.exists() else ""
+    old = _lm.get(fname)
+    if not old or old[0] != h: _lm[fname] = [h, _today]
+    return _lm[fname][1]
+sm = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">', f"  <url><loc>{site}/</loc><lastmod>{lastmod('index.html')}</lastmod></url>"]
 for key, langs in DOCS.items():
     for lang, (fname, _) in langs.items():
         alts = "".join(f'<xhtml:link rel="alternate" hreflang="{l}" href="{site}/{f}"/>' for l, (f, _) in langs.items())
-        sm.append(f"  <url><loc>{site}/{fname}</loc>{alts}</url>")
+        sm.append(f"  <url><loc>{site}/{fname}</loc><lastmod>{lastmod(fname)}</lastmod>{alts}</url>")
+_lm_path.write_text(_json.dumps(_lm, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 sm.append("</urlset>")
 (PUB / "sitemap.xml").write_text("\n".join(sm) + "\n", encoding="utf-8")
 core = ["/", "/index.html", "/manifest.webmanifest", "/scanner.html"] + PAGES + sorted("/" + str(p.relative_to(PUB)).replace("\\", "/") for p in A.rglob("*") if p.is_file() and p.name not in ("og-image.png", "zxing_reader.wasm", "pwcheck.js", "qrcode.js") and "ocr" not in p.relative_to(A).parts)

@@ -1837,7 +1837,7 @@ async function saveAsTemplate(wid){const w=S.workouts.find(x=>x.id===wid);const 
 async function delWorkout(wid){const w=S.workouts.find(x=>x.id===wid);if(!await ask(`Törlöd ${az(w.name)} <b>${esc(w.name)}</b> edzést (${fmtDate(w.start)})?`,{title:'Edzés törlése',ok:'Törlés',danger:true}))return;S.workouts=S.workouts.filter(x=>x.id!==wid);save();render()}
 
 /* ===== Pihenőidő ===== */
-function startRest(exId){const t=exRest(exId);if(!t)return;rest={end:Date.now()+t*1000,total:t,ex:exName(exId)};tick()}
+function startRest(exId){const t=exRest(exId);if(!t)return;rest={end:Date.now()+t*1000,total:t,ex:exName(exId)};keepAlive(true);tick()}
 function adjRest(d){if(!rest)return;rest.end+=d*1000;rest.total=Math.max(rest.total+d,1);tick()}
 async function setExRest(exId){
   const ex=exById(exId);if(!ex)return;
@@ -1856,9 +1856,18 @@ function audioCtx(){if(!AC){const K=window.AudioContext||window.webkitAudioConte
 /* iOS: háttérbe tétel után a hangkörnyezet „running”-nak mutathatja magát, mégis néma marad (és ilyenkor a következő
    háttérbe tételnél az időzítő sem fut). Ezért visszatérés után az első érintés mindig friss hangkörnyezetet nyit. */
 let acStale=false;
+/* Háttérben futó pihenő: iOS a háttérbe tett webappot felfüggeszti, hacsak nem szól belőle hang – ezért eddig csak akkor jött
+   értesítés, ha a gomb-/gépeléshangok be voltak kapcsolva. Pihenő alatt, ha az értesítés be van kapcsolva, egy hallhatatlan
+   (‑80 dB-es, 40 Hz-es) hangot futtatunk, így az időzítő háttérben is lejár. A pihenő végén leáll. */
+let KA=null;
+function keepAlive(on){
+  if(!on||!S.settings.restNotify){if(KA){try{KA.stop()}catch(e){}KA=null}return}
+  if(KA)return;const ac=audioCtx();if(!ac)return;if(ac.state!=='running')ac.resume().catch(()=>{});
+  try{const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=40;g.gain.value=.0001;o.connect(g);g.connect(ac.destination);o.start();KA=o}catch(e){KA=null}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&AC)acStale=true});
 function unlockAudio(){let ac=audioCtx();if(!ac)return;
-  if(acStale||ac.state==='interrupted'||ac.state==='closed'){acStale=false;try{ac.close()}catch(e){}AC=null;ac=audioCtx();if(!ac)return}
+  if(acStale||ac.state==='interrupted'||ac.state==='closed'){acStale=false;KA=null;try{ac.close()}catch(e){}AC=null;ac=audioCtx();if(!ac)return}
+  if(rest&&!KA)keepAlive(true);
   if(ac.state==='running')return;
   ac.resume().catch(()=>{try{AC.close()}catch(e){}AC=null});try{const b=ac.createBuffer(1,1,22050),src=ac.createBufferSource();src.buffer=b;src.connect(ac.destination);src.start(0)}catch(e){}}
 ['pointerdown','touchend','keydown'].forEach(t=>document.addEventListener(t,unlockAudio,{passive:true,capture:true}));
@@ -1931,7 +1940,7 @@ async function setRestNotify(v){
   if(v){if(!notifSupported()){toast('Ez a böngésző nem támogatja az értesítéseket');return}
     let p=Notification.permission;if(p==='default')p=await Notification.requestPermission().catch(()=>'denied');
     if(p!=='granted'){toast('Az értesítés nincs engedélyezve a böngésző/telefon beállításaiban');S.settings.restNotify=false;save();render();return}}
-  S.settings.restNotify=v;save();render();
+  S.settings.restNotify=v;save();render();keepAlive(!!rest);
 }
 function setFx(k){if(!['uiSound','typeSound','doneSound','haptic'].includes(k))return;S.settings[k]=S.settings[k]===false;save();render();
   if(S.settings[k]!==false){if(k==='haptic')haptic();else sfx({uiSound:'tap',typeSound:'type',doneSound:'done'}[k])}}
@@ -1957,7 +1966,7 @@ function setStepGoal(v){S.settings.stepGoal=Math.max(0,Math.min(100000,parseInt(
 function setWake(v){S.settings.wakeLock=v;save();render()}
 function setSound(v){S.settings.sound=v;save();render();if(v)chime(v)}
 function testSound(){unlockAudio();chime()}
-function tick(){
+function tick(){if(!rest&&KA)keepAlive(false);
   if(S.active){const t=dur(Date.now()-S.active.start);const a=$('#elapsed'),b=$('#elapsed2');if(a)a.textContent=t;if(b)b.textContent=t}
   const rb=$('#rest');document.body.classList.toggle('resting',!!rest);
   if(rest){const left=Math.ceil((rest.end-Date.now())/1000);
@@ -3879,7 +3888,7 @@ function vMore(){
   <label>Visszajelző hangok és rezgés</label>
   <div class="chips" style="margin:0">${[['uiSound','Gombok'],['typeSound','Gépelés'],['doneSound','Kész sorozat'],['haptic','Rezgés']].map(([k,l])=>`<button class="chip ${S.settings[k]!==false?'on':''}" data-click="setFx('${k}')" aria-pressed="${S.settings[k]!==false}">${S.settings[k]!==false?I('check','sm')+' ':''}${l}</button>`).join('')}</div>
   <div class="hint">Koppintásra halk kattanás, gépeléskor finom tikk, sorozat kipipálásakor rövid „siker” dallam és enyhe rezgés. A pihenő-hangjelzéstől függetlenül kapcsolhatók. A rezgés Androidon és iPhone-on iOS 18-tól működik; iPhone-on a némító kapcsoló a hangokat is elnémítja, és ha a billentyűzet kattanása be van kapcsolva az iOS-ben, a gépelés-hangot érdemes kikapcsolni.</div>
-  <label>Értesítés a pihenő végén, ha az app háttérben van</label>
+  <label>Értesítés a pihenő végén, ha az app háttérben van</label><div class="hint" style="margin:-2px 0 8px">A fenti hangoktól függetlenül működik, akkor is, ha minden hang ki van kapcsolva.</div>
   ${notifSupported()?`<div class="chips" style="margin:0">${[[true,'Be'],[false,'Ki']].map(([v,l])=>`<button class="chip ${(S.settings.restNotify===true&&Notification.permission==='granted')===v?'on':''}" data-click="setRestNotify(${v})">${l}</button>`).join('')}</div>`:''}
   <div class="hint">Ha pihenő közben másik appra váltasz, a pihenő végén értesítés jelenik meg. Androidon, számítógépen és újabb iPhone-okon (iPhone 17-en kipróbálva) működik; régebbi iOS-en a rendszer a háttérbe tett webappot felfüggesztheti – ott visszatéréskor azonnal szól, és jelzi, mennyi ideje járt le. iPhone-on csak a főképernyőre telepített app küldhet értesítést.</div>
   <label>Képernyő ébren tartása edzés közben</label>
