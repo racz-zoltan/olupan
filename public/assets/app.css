@@ -52,6 +52,10 @@
   --c-weight:#a3e635;--c-fat:#fb923c;--c-waist:#2dd4bf;--c-steps:#22d3ee;--c-workout:#fb7185;--c-kcal:#60a5fa;--c-protein:#a78bfa;--c-carb:#fbbf24;--c-fatm:#f472b6;--c-fiber:#34d399;--c-cardio:#f472b6;--c-volume:#dc2626;
 }
 [data-accent="orange"]{--kj-blue:#c2410c;--kj-blue-ink:#fff7ed;--kj-blue-line:#c2410c;--kj-blue-soft:rgba(234,88,12,.12);--kj-focus:rgba(234,88,12,.30)}
+/* Soft stílus: lágyabb, kevésbé kontrasztos – keret és fény nélküli kártyák */
+[data-theme="light"][data-soft]{--kj-bg:#d8dce1;--kj-card:#f6f6f3;--kj-sheet:#f6f6f3;--kj-tt:#f6f6f3;--kj-card-shadow:0 1px 2px rgba(15,23,42,.05);--kj-card-line:transparent;--kj-field:#ffffff;--kj-nav:rgba(216,220,225,.9)}
+[data-theme="dark"][data-soft]{--kj-bg:#1c232c;--kj-card:#12171e;--kj-sheet:#232b35;--kj-tt:#232b35;--kj-card-shadow:none;--kj-card-line:transparent;--kj-surface:rgba(255,255,255,.07);--kj-field:rgba(255,255,255,.06);--kj-nav:rgba(28,35,44,.9)}
+[data-soft] :is(.card,.reob).ssc{box-shadow:none}
 [data-theme="dark"][data-accent="orange"]{--kj-blue:#ff8a1f;--kj-blue-ink:#2a1003;--kj-blue-line:#ff9d3d;--kj-blue-soft:rgba(255,138,31,.17);--kj-focus:rgba(255,157,61,.36)}
 [data-accent="pink"]{--kj-blue:#db2777;--kj-blue-ink:#ffffff;--kj-blue-line:#db2777;--kj-blue-soft:rgba(219,39,119,.12);--kj-focus:rgba(219,39,119,.30)}
 [data-theme="dark"][data-accent="pink"]{--kj-blue:#db2777;--kj-blue-ink:#ffffff;--kj-blue-line:#f472b6;--kj-blue-soft:rgba(244,114,182,.16);--kj-focus:rgba(244,114,182,.32)}
@@ -91,7 +95,7 @@ h3{font:500 14px var(--ui);margin:0 0 8px;color:var(--kj-muted);letter-spacing:0
 .btn.g{background:var(--kj-green-fill);border-color:var(--kj-green-fill);color:var(--kj-green-ink);font-weight:600}
 .btn.gold{background:transparent;color:var(--kj-gold);border-color:var(--kj-gold-line)}
 .btn.gold:hover{background:var(--kj-gold-soft)}
-.btn.d{color:var(--kj-red)}
+.btn.d{color:var(--kj-red);background:var(--kj-red-soft);font-weight:600}
 .btn.d:hover{border-color:var(--kj-red-line);background:var(--kj-red-soft)}
 .btn.danger{background:var(--kj-red-fill);border-color:var(--kj-red-fill);color:var(--kj-red-ink);font-weight:600}
 .btn.sm{padding:6px 12px;font-size:13px}

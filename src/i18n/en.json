@@ -736,7 +736,7 @@
 "Sötét": "Dark",
 "Kiemelőszín sötét módban": "Accent colour in dark mode",
 "Ciánkék": "Cyan",
-"Sötétnarancs": "Dark orange",
+"Narancs": "Orange",
 "A gombok, a kiválasztott elemek és az aktív menüpont színe. Világos módban mindig ciánkék.": "Colour of buttons, selected items and the active tab. Always cyan in light mode.",
 "Alapértelmezett pihenőidő (mp)": "Default rest time (s)",
 "Pipálás után indul. Gyakorlatonként felülírható (edzés közben a gyakorlat neve alatti időre koppintva, vagy lent a listában). 0 = kikapcsolva.": "Starts when you check a set. Can be set per exercise (tap the time under the exercise name during a workout, or in the list below). 0 = off.",

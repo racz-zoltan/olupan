@@ -50,6 +50,10 @@
   --c-weight:#a3e635;--c-fat:#fb923c;--c-waist:#2dd4bf;--c-steps:#22d3ee;--c-workout:#fb7185;--c-kcal:#60a5fa;--c-protein:#a78bfa;--c-carb:#fbbf24;--c-fatm:#f472b6;--c-fiber:#34d399;--c-cardio:#f472b6;--c-volume:#dc2626;
 }
 [data-accent="orange"]{--kj-blue:#c2410c;--kj-blue-ink:#fff7ed;--kj-blue-line:#c2410c;--kj-blue-soft:rgba(234,88,12,.12);--kj-focus:rgba(234,88,12,.30)}
+/* Soft stílus: lágyabb, kevésbé kontrasztos – keret és fény nélküli kártyák */
+[data-theme="light"][data-soft]{--kj-bg:#d8dce1;--kj-card:#f6f6f3;--kj-sheet:#f6f6f3;--kj-tt:#f6f6f3;--kj-card-shadow:0 1px 2px rgba(15,23,42,.05);--kj-card-line:transparent;--kj-field:#ffffff;--kj-nav:rgba(216,220,225,.9)}
+[data-theme="dark"][data-soft]{--kj-bg:#1c232c;--kj-card:#12171e;--kj-sheet:#232b35;--kj-tt:#232b35;--kj-card-shadow:none;--kj-card-line:transparent;--kj-surface:rgba(255,255,255,.07);--kj-field:rgba(255,255,255,.06);--kj-nav:rgba(28,35,44,.9)}
+[data-soft] :is(.card,.reob).ssc{box-shadow:none}
 [data-theme="dark"][data-accent="orange"]{--kj-blue:#ff8a1f;--kj-blue-ink:#2a1003;--kj-blue-line:#ff9d3d;--kj-blue-soft:rgba(255,138,31,.17);--kj-focus:rgba(255,157,61,.36)}
 [data-accent="pink"]{--kj-blue:#db2777;--kj-blue-ink:#ffffff;--kj-blue-line:#db2777;--kj-blue-soft:rgba(219,39,119,.12);--kj-focus:rgba(219,39,119,.30)}
 [data-theme="dark"][data-accent="pink"]{--kj-blue:#db2777;--kj-blue-ink:#ffffff;--kj-blue-line:#f472b6;--kj-blue-soft:rgba(244,114,182,.16);--kj-focus:rgba(244,114,182,.32)}
@@ -89,7 +93,7 @@ h3{font:500 14px var(--ui);margin:0 0 8px;color:var(--kj-muted);letter-spacing:0
 .btn.g{background:var(--kj-green-fill);border-color:var(--kj-green-fill);color:var(--kj-green-ink);font-weight:600}
 .btn.gold{background:transparent;color:var(--kj-gold);border-color:var(--kj-gold-line)}
 .btn.gold:hover{background:var(--kj-gold-soft)}
-.btn.d{color:var(--kj-red)}
+.btn.d{color:var(--kj-red);background:var(--kj-red-soft);font-weight:600}
 .btn.d:hover{border-color:var(--kj-red-line);background:var(--kj-red-soft)}
 .btn.danger{background:var(--kj-red-fill);border-color:var(--kj-red-fill);color:var(--kj-red-ink);font-weight:600}
 .btn.sm{padding:6px 12px;font-size:13px}
@@ -556,7 +560,7 @@ function storeCard(){
 /* ===== Téma ===== */
 const mq=matchMedia('(prefers-color-scheme: dark)');
 function curTheme(){return S.settings.theme||(mq.matches?'dark':'light')}
-function applyTheme(){const t=curTheme(),de=document.documentElement;de.dataset.theme=t;de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content=t==='dark'?'#000000':'#f6f7f9'}
+function applyTheme(){const t=curTheme(),de=document.documentElement,soft=S.settings.soft===true;de.dataset.theme=t;de.toggleAttribute('data-soft',soft);de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content=t==='dark'?(soft?'#1c232c':'#000000'):(soft?'#d8dce1':'#f6f7f9')}
 mq.addEventListener?.('change',()=>{if(!S.settings.theme)applyTheme()});
 
 /* ===== Állapot ===== */
@@ -1175,6 +1179,7 @@ function saveAsTplFromSummary(id){closeModal();saveAsTemplate(id)}
 function editBodyRow(d){bodyDate=d;render();scrollTo(0,0)}
 function setBodyDate(v){bodyDate=/^\d{4}-\d\d-\d\d$/.test(v)?v:today();render()}
 function setTheme(v){S.settings.theme=v;save();applyTheme();render()}
+function setSoft(v){if(v)S.settings.soft=true;else delete S.settings.soft;save();applyTheme();render()}
 function setAccent(v){if(!['cyan','orange','pink'].includes(v))return;S.settings.accent=v;save();applyTheme();render()}
 function openImport(){$('#imp').click()}
 async function importSample(){
@@ -1225,7 +1230,7 @@ function sanitizeState(d){
   return{diet:keys(f.diet,PREF_DIET),cuisine:(()=>{const c=keys(f.cuisine,PREF_CUISINE);if(Array.isArray(f.style)&&f.style.includes('hu')&&!c.includes('hu'))c.unshift('hu');return c})(),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),wish:str(f.wish||'',300),eq:keys(f.eq,PREF_EQUIP),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,cook:num(f.cook,1,4)||2,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(['cardio','reps','time'].includes(e.kind))x.kind=e.kind;if(MUSCLES.some(m=>m[0]===e.mu))x.mu=e.mu;if(Array.isArray(e.mu2)){const a=[...new Set(e.mu2.filter(k=>k!==x.mu&&MUSCLES.some(m=>m[0]===k)))];if(a.length)x.mu2=a}if(EQUIP.some(q=>q[0]===e.eq))x.eq=e.eq;if(e.m===1)x.m=1;const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
   o.exercises.forEach(e=>{if(/^KB /.test(e.name)&&KB_RENAME.has(e.name.slice(3)))e.name='Kettlebell '+e.name.slice(3)});o.exercises.forEach(fillMeta);o.exercises.forEach(fixCalf);
-  o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk','deskOk'])if(d.settings?.[k]===true)o.settings[k]=true;if(DATE_RE.test(d.settings?.legalOk))o.settings.legalOk=d.settings.legalOk;if(DATE_RE.test(d.settings?.plainOk))o.settings.plainOk=d.settings.plainOk;if(typeof d.settings?.repNote==='string')o.settings.repNote=str(d.settings.repNote,2000);
+  o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk','deskOk','soft'])if(d.settings?.[k]===true)o.settings[k]=true;if(DATE_RE.test(d.settings?.legalOk))o.settings.legalOk=d.settings.legalOk;if(DATE_RE.test(d.settings?.plainOk))o.settings.plainOk=d.settings.plainOk;if(typeof d.settings?.repNote==='string')o.settings.repNote=str(d.settings.repNote,2000);
   {const w=d.settings?.cWait;if(w&&['meals','ideas','menu','plan'].includes(w.k)&&num(w.at,0,9e15)){o.settings.cWait={k:w.k,at:+w.at};if(DATE_RE.test(w.start))o.settings.cWait.start=w.start;if(w.prep)o.settings.cWait.prep=true}
    const mo=d.settings?.menuOpt;if(mo&&typeof mo==='object')o.settings.menuOpt={days:[3,5,7].includes(mo.days)?mo.days:7,cook:mo.cook>=7?4:[1,2,3,4].includes(mo.cook)?mo.cook:3,cmax:[40,60,90].includes(mo.cmax)?mo.cmax:60,newr:[0,1,2].includes(mo.newr)?mo.newr:1,meals:(Array.isArray(mo.meals)?mo.meals:[]).filter(k=>REC_MEAL.some(x=>x[0]===k)),start:['tomorrow','week'].includes(mo.start)?mo.start:'tomorrow',pantry:typeof mo.pantry==='string'?mo.pantry.slice(0,500):''}}
   {const e=d.settings?.enc,b=v=>typeof v==='string'&&/^[A-Za-z0-9+/=]{8,200}$/.test(v),i=(v,a,z)=>Number.isInteger(v)&&v>=a&&v<=z;
@@ -1329,9 +1334,8 @@ function activeCard(){const a=S.active,all=a.exercises.reduce((n,e)=>n+e.sets.le
   return`<div class="card hcard runcard" data-click="go('workout')" role="button" tabindex="0" aria-label="Vissza a futó edzéshez">
   <div class="row" style="flex-wrap:nowrap"><span class="livedot"></span><span class="hk" style="flex:1;color:var(--kj-blue-line)">Edzés folyamatban</span><b class="mono" id="elapsed2">0:00</b></div>
   <div class="htitle">${esc(T(a.name))}</div>
-  <div class="row small mut" style="flex-wrap:nowrap;margin-top:8px"><span style="flex:1;min-width:0">${nx?L('Következő: ','Next: ')+nx:L('Minden sorozat kész','All sets done')}</span><span class="mono">${done}/${all}</span></div>
-  <div class="bar"><i style="width:${all?Math.round(done/all*100):0}%;background:var(--kj-blue-line)"></i></div>
-  <button class="btn p block" style="margin-top:12px" data-click="go('workout')">Vissza az edzéshez</button></div>`}
+  <div class="row small mut" style="flex-wrap:nowrap;margin-top:8px"><span style="flex:1;min-width:0">${nx||L('Minden sorozat kész','All sets done')}</span><span class="mono">${done}/${all}</span></div>
+  <div class="bar"><i style="width:${all?Math.round(done/all*100):0}%;background:var(--kj-blue-line)"></i></div></div>`}
 const MACS=[['p','Fehérje','drumstick','--c-protein'],['c','Szénhidrát','wheat','--c-carb'],['f','Zsír','droplet','--c-fatm'],['fib','Rost','leaf','--c-fiber']];
 /* Közös étkezés-vizuál (főképernyő és Étkezés nézet): fogyó korong + makródobozok */
 function kcalViz(ms,head){
@@ -1401,7 +1405,7 @@ function renderPlan(){const {lastOf}=lastUse(),isT=homeDay===today();
   ${used.length?`<div class="grp">Edzéseim</div>${used.map(row).join('')}`:''}
   ${fresh.length?`<div class="grp">Sablonok</div>${fresh.map(row).join('')}`:''}
   <div class="row" style="margin:12px 0 4px;gap:14px"><button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planEmpty()">${I('plus','sm')} ${L('Új edzés összeállítása','Build a new workout')}</button>${isT?`<button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planEmptyNow()">${L('Üres edzés indítása','Start an empty workout')}</button>`:''}<button class="linkbtn" style="margin:0;padding:0;width:auto" data-click="planManage()">Edzések és sablonok</button></div>
-  <div class="row" style="position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));margin:14px -16px calc(-20px - env(safe-area-inset-bottom));padding:12px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--kj-border);background:var(--kj-sheet)">${plans()[homeDay]?`<button class="btn d" data-click="clearPlan()">Terv törlése</button>`:''}<span class="sp"></span><button class="btn" data-click="savePlan()" ${planPick?'':'disabled'}>${isT?'Mai tervnek':'Tervbe'}</button>${isT?`<button class="btn p" data-click="startPick()" ${planPick?'':'disabled'}>Indítás most</button>`:''}</div>`)}
+  <div class="row" style="flex-wrap:nowrap;gap:8px;position:sticky;bottom:calc(-20px - env(safe-area-inset-bottom));margin:14px -16px calc(-20px - env(safe-area-inset-bottom));padding:12px 16px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--kj-border);background:var(--kj-sheet)">${plans()[homeDay]?`<button class="btn d" style="flex:1;justify-content:center;padding-left:8px;padding-right:8px" data-click="clearPlan()">Terv törlése</button>`:''}<button class="btn" style="flex:1;justify-content:center;padding-left:8px;padding-right:8px" data-click="savePlan()" ${planPick?'':'disabled'}>${isT?'Mai tervnek':'Tervbe'}</button>${isT?`<button class="btn p" style="flex:1;justify-content:center;padding-left:8px;padding-right:8px" data-click="startPick()" ${planPick?'':'disabled'}>Indítás most</button>`:''}</div>`)}
 function savePlan(){if(!planPick)return;plans()[homeDay]=planPick;prunePlans();save();closeModal();render()}
 function clearPlan(){delete plans()[homeDay];save();closeModal();render()}
 function startPick(){if(!planPick)return;plans()[homeDay]=planPick;prunePlans();save();closeModal();startWorkout(planPick)}
@@ -1745,7 +1749,7 @@ function vActive(){
     <span class="mut small">${pb&&cd?`${I('trophy','sm')} <span class="mono">${pb.w?fmt(pb.w,1)+' km · ':''}${pb.r} perc</span>`:pb&&kd==='time'?`${I('trophy','sm')} <span class="mono">${pb.r} mp</span>`:pb&&kd==='reps'?`${I('trophy','sm')} <span class="mono">${pb.r} ism.${pb.w?' · +'+fmt(pb.w)+' kg':''}</span>`:pb?(pb.w?`${I('trophy','sm')} <span class="mono">${fmt(pb.w)} kg · 1RM ~${fmt(pb.e,0)}</span>`:`${I('trophy','sm')} <span class="mono">${pb.r} ism.</span>`):'Első alkalom'}</span></div></div>`;
   });
   h+=`<button class="btn block gold" data-click="pickForActive()">${I('plus')} Gyakorlat hozzáadása</button>
-  <div class="row" style="margin-top:14px"><button class="btn d" data-click="discardWorkout()">${I('x','sm')} Elvetés</button><span class="sp"></span><button class="btn g" data-click="finishWorkout()">${I('check')} Edzés befejezése</button></div>`;
+  <div class="row" style="margin-top:14px;flex-wrap:nowrap"><button class="btn d" style="flex:1;justify-content:center" data-click="discardWorkout()">Edzés elvetése</button><button class="btn g" style="flex:1;justify-content:center" data-click="finishWorkout()">Edzés befejezése</button></div>`;
   return h;
 }
 function setVal(i,j,k,v){v=String(v).replace(',','.').trim();const n=parseFloat(v);S.active.exercises[i].sets[j][k]=v===''||!isFinite(n)?'':n;save();updAvol()}
@@ -3878,8 +3882,11 @@ function vMore(){
   <div class="chips" style="margin:0" translate="no">${[['hu','Magyar'],['en','English']].map(([v,l])=>`<button class="chip ${LANG===v?'on':''}" data-click="setLang('${v}')">${l}</button>`).join('')}</div>
   <label>Megjelenés</label>
   <div class="chips" style="margin:0">${[[null,'Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,l])=>`<button class="chip ${S.settings.theme===v?'on':''}" data-click="setTheme(${v?`'${v}'`:'null'})">${l}</button>`).join('')}</div>
+  <label>${L('Stílus','Style')}</label>
+  <div class="chips" style="margin:0">${[[false,L('Kontrasztos','High contrast')],[true,'Soft']].map(([v,l])=>`<button class="chip ${(S.settings.soft===true)===v?'on':''}" data-click="setSoft(${v})">${l}</button>`).join('')}</div>
+  <div class="hint">${L('Kontrasztos: sötétben fekete háttér neonos kártyakeretekkel, világosban fehér kártyák puha szürke derengéssel. Soft: lágyabb, kevésbé kontrasztos – sötétben acélszürke háttér és nála sötétebb kártyák, világosban szürkés háttér és törtfehér kártyák. A „Rendszer szerint” beállításra is érvényes.','High contrast: black background with neon card outlines in dark mode, white cards with a soft grey glow in light mode. Soft: gentler, lower contrast – steel-grey background with darker cards in dark mode, greyish background with off-white cards in light mode. Also applies to “System”.')}</div>
   <label>Kiemelőszín</label>
-  <div class="chips" style="margin:0">${[['cyan','Ciánkék'],['orange','Sötétnarancs'],['pink','Rózsaszín']].map(([v,l])=>`<button class="chip ${(S.settings.accent||'cyan')===v?'on':''}" data-click="setAccent('${v}')"><span class="sw sw-${v}"></span>${l}</button>`).join('')}</div>
+  <div class="chips" style="margin:0">${[['cyan','Ciánkék'],['orange','Narancs'],['pink','Rózsaszín']].map(([v,l])=>`<button class="chip ${(S.settings.accent||'cyan')===v?'on':''}" data-click="setAccent('${v}')"><span class="sw sw-${v}"></span>${l}</button>`).join('')}</div>
   <div class="hint">A gombok, a kiválasztott elemek és az aktív menüpont színe, világos és sötét módban is.</div>
 </div>`;
   if(setSub==='fx')return `<div class="card" style="padding-top:4px">
@@ -3946,8 +3953,8 @@ function vSetMenu(){
   const base=location.protocol==='file:'?'https://olupan.com/':'/';
   const acc=st.accent||'cyan';
   return grp('Profil és célok',row('Profil',[p.height?p.height+' cm':'',p.birthYear||''].filter(Boolean).join(' · ')||(profileMissing().length?L('hiányos','incomplete'):''),`data-click="openSub('profile')"`)+row('Kalória- és makrócélok',t.kcal?fmt(t.kcal,0)+' kcal':'',`data-click="openSub('profile','pkc')"`)+row('Napi lépéscél',st.stepGoal?fmt(st.stepGoal,0):'',`data-click="openSub('profile','stepgoal')"`))
-  +grp('Megjelenés',row('Téma',{light:L('Világos','Light'),dark:L('Sötét','Dark')}[st.theme]||L('Rendszer szerint','System'),`data-click="openSub('look')"`)
-    +`<div class="setrow sw3"><span>Kiemelőszín</span>${[['cyan','Ciánkék'],['orange','Sötétnarancs'],['pink','Rózsaszín']].map(([v,l])=>`<button class="swb sw-${v}${acc===v?' on':''}" data-click="setAccent('${v}')" aria-label="${l}" aria-pressed="${acc===v}"></button>`).join('')}</div>`
+  +grp('Megjelenés',row('Téma',({light:L('Világos','Light'),dark:L('Sötét','Dark')}[st.theme]||L('Rendszer szerint','System'))+(st.soft===true?' · Soft':''),`data-click="openSub('look')"`)
+    +`<div class="setrow sw3"><span>Kiemelőszín</span>${[['cyan','Ciánkék'],['orange','Narancs'],['pink','Rózsaszín']].map(([v,l])=>`<button class="swb sw-${v}${acc===v?' on':''}" data-click="setAccent('${v}')" aria-label="${l}" aria-pressed="${acc===v}"></button>`).join('')}</div>`
     +row('Nyelv',LANG==='en'?'English':'Magyar',`data-click="openSub('look')"`))
   +grp('Hangok és kijelző',row('Hangok és rezgés',onoff((st.sound??3)>0||st.uiSound!==false),`data-click="openSub('fx')"`)+row('Értesítés a pihenő végén',onoff(st.restNotify===true&&notifSupported()&&Notification.permission==='granted'),`data-click="openSub('fx')"`)+row('Képernyő ébren tartása',onoff(st.wakeLock!==false),`data-click="openSub('fx')"`))
   +grp('Edzés',row('Alapértelmezett pihenőidő',fmtSec(st.rest??90),`data-click="openSub('train','restset')"`)+row('Gyakorlatok',String(S.exercises.length),`data-click="openSub('train','exlist')"`))
