@@ -751,14 +751,34 @@ function wStep(eq,w){const st=eq==='db'?(w<10?1:2):eq==='bar'?2.5:eq==='mach'?(w
 const wRound=(v,st)=>Math.max(0,Math.round(v/st)*st);
 /* A cél ismétlésszámhoz illő súly a legjobb sorozatból (Epley-becslés), lefelé kerekítve a legközelebbi súlylépcsőre */
 function wForReps(sets,reps,st){const e1=Math.max(...sets.map(s=>(+s.w||0)*(1+s.r/30)));return Math.max(st,Math.floor(e1/(1+reps/30)/st)*st)}
-function suggestFor(exId,reps){if(isCardio(exId))return null;let last=null;
-  for(const w of S.workouts)for(const e of w.exercises)if(e.exId===exId&&(!last||w.start>last.t))last={t:w.start,sets:e.sets.filter(s=>!s.wu&&s.r>0)};
-  if(!last||!last.sets.length)return null;
+/* Saját kézisúlyzó-készlet (Beállítások → Edzés): ha meg van adva, a javaslat csak meglévő súlyt ad. */
+function dbList(){return(S.settings.dbs||[]).filter(x=>x>0).sort((a,b)=>a-b)}
+function dbDown(w){const l=dbList();if(!l.length)return w;const c=l.filter(x=>x<=w+1e-9);return c.length?c[c.length-1]:l[0]}
+function dbUp(w){const l=dbList();if(!l.length)return null;return l.find(x=>x>w+1e-9)??null}
+/* Edzésjavaslat. Biztonsági elvek:
+   – csökkenteni egyetlen edzés alapján is lehet;
+   – emelni csak megerősítés után („2 a 2-ből”): a legutóbbi 2 edzésen, két különböző napon és legfeljebb SUGG_WIN nap
+     különbséggel minden tervezett munkasorozat azonos súllyal elérte a tartomány tetejét, és legalább annyi sorozat volt,
+     amennyi most tervezett; hosszabb kihagyás után az előző edzés már nem számít megerősítésnek;
+   – a becsült súly soha nem lehet nagyobb a legutóbbi csúcssúlynál, ha az nem ment végig. */
+const SUGG_WIN=16;
+/* Két egymást követő edzés megerősíti egymást, ha különböző napon voltak, és legfeljebb SUGG_WIN nap telt el köztük. */
+function sgConfirm(hist,ok){if(!(hist[0]&&hist[1]&&ok(hist[0])&&ok(hist[1])))return{ok:false,n:hist[0]&&ok(hist[0])?1:0};
+  const d=Math.round((pYmd(ymd(new Date(hist[0].t))).getTime()-pYmd(ymd(new Date(hist[1].t))).getTime())/DAY);
+  return{ok:d>=1&&d<=SUGG_WIN,n:d>=1&&d<=SUGG_WIN?2:1,d}}
+function sgWait(prevTxt,c){return c.d>SUGG_WIN?L(`legutóbb ${prevTxt} – megvolt a cél teteje, de az előző ilyen edzés óta ${c.d} nap telt el. Emelés előtt erősítsd meg még egy edzésen, ${SUGG_WIN} napon belül`,`last time ${prevTxt} – you hit the top of the range, but ${c.d} days have passed since the previous such session. Confirm it once more within ${SUGG_WIN} days before going up`)
+  :c.d===0?L(`legutóbb ${prevTxt} – megvolt a cél teteje. Ugyanazon a napon két edzés egynek számít; erősítsd meg egy másik napon, ${SUGG_WIN} napon belül`,`last time ${prevTxt} – you hit the top of the range. Two sessions on the same day count as one; confirm it on another day within ${SUGG_WIN} days`)
+  :L(`legutóbb ${prevTxt} – megvolt a cél teteje. Emelés előtt erősítsd meg a következő edzésen is, ${SUGG_WIN} napon belül (most: 1/2)`,`last time ${prevTxt} – you hit the top of the range. Confirm it at your next session too, within ${SUGG_WIN} days (now: 1/2)`)}
+function suggestFor(exId,reps,plan){if(isCardio(exId))return null;
+  const hist=[];for(const w of S.workouts)for(const e of w.exercises)if(e.exId===exId){const st=e.sets.filter(s=>!s.wu&&s.r>0);if(st.length)hist.push({t:w.start,sets:st})}
+  hist.sort((a,b)=>b.t-a.t);const last=hist[0];
+  if(!last)return null;
   const sets=last.sets,eq=exEquip(exId),ws=sets.map(s=>+s.w||0),top=Math.max(...ws),rr=repRange(reps)||[sets[0].r,sets[0].r],[lo,hi]=rr;
   const prevTxt=sets.map(s=>(s.w?hu(s.w,2)+'×':'')+s.r).join(', '),rangeT=lo===hi?`${lo}`:`${lo}–${hi}`;
   const fmtS=(w,r)=>({w,r,txt:(w?hu(w,2)+' kg × ':'')+r+(w?'':' '+L('ism.','reps'))});
   // saját testsúly vagy kettlebell: ismétlésben haladunk
   if(!top||eq==='kb'){const mn=Math.min(...sets.map(s=>s.r));
+    if(mn>=hi){const c=sgConfirm(hist,h=>h.sets.length>=Math.max(1,plan||sets.length)&&h.sets.every(s=>(+s.w||0)===top&&s.r>=hi));if(!c.ok)return Object.assign(fmtS(top,hi),{why:sgWait(prevTxt,c)})}
     if(mn>=hi)return Object.assign(fmtS(top,hi),{why:L(`legutóbb ${prevTxt} – elérted a cél tetejét (${rangeT}); nehezíts (nagyobb súly, lassabb tempó vagy nehezebb változat)`,`last time ${prevTxt} – you hit the top of the range (${rangeT}); make it harder (heavier, slower tempo or a harder variation)`)});
     return Object.assign(fmtS(top,Math.min(hi,Math.max(lo,mn+1))),{why:L(`legutóbb ${prevTxt} – egy ismétléssel több a leggyengébb sorozaton`,`last time ${prevTxt} – one more rep on your weakest set`)})}
   const dropped=ws.some(w=>w<top),allTop=sets.every(s=>(+s.w||0)===top),minR=Math.min(...sets.map(s=>s.r));
@@ -766,18 +786,24 @@ function suggestFor(exId,reps){if(isCardio(exId))return null;let last=null;
   if(!repRange(reps)&&(dropped||minR<lo))return Object.assign(fmtS(top,lo),{why:L(`legutóbb ${prevTxt} – ismételd meg; ha minden sorozatot ezzel a súllyal végig tudod csinálni, utána emelünk`,`last time ${prevTxt} – repeat it; once you can do every set at this weight, we’ll go up`)});
   // menet közben csökkenteni kellett a súlyt: a csúcssúly még sok, maradj annál, amelyik végig ment
   if(dropped){const ok=[...new Set(ws)].filter(w=>w<top&&sets.filter(s=>(+s.w||0)===w).every(s=>s.r>=lo)).sort((a,b)=>b-a)[0],st=wStep(eq,top);
-    const w=ok!=null&&ok>0?ok:wForReps(sets,lo,st),rAt=sets.filter(s=>(+s.w||0)===w&&s.r>=lo).map(s=>s.r),r=rAt.length?Math.min(hi,Math.min(...rAt)+1):lo;
+    let w=ok!=null&&ok>0?ok:Math.min(top-st,wForReps(sets,lo,st));w=Math.max(st,Math.floor(w/st+1e-9)*st);if(eq==='db')w=dbDown(w);const rAt=sets.filter(s=>(+s.w||0)===w&&s.r>=lo).map(s=>s.r),r=rAt.length?Math.min(hi,Math.min(...rAt)+1):lo;
     return Object.assign(fmtS(w,r),{why:ws.includes(w)?L(`legutóbb ${prevTxt} – a ${hu(top,2)} kg-ot nem bírtad végig, ezért maradj ennél, amíg minden sorozat megvan (cél: ${rangeT})`,`last time ${prevTxt} – you couldn’t hold ${hu(top,2)} kg for every set, so stay here until all sets are done (target: ${rangeT})`)
       :L(`legutóbb ${prevTxt} – a cél ${rangeT} ismétlés, ehhez a ${hu(top,2)} kg sok volt; a legjobb sorozatod alapján ennyivel fér bele`,`last time ${prevTxt} – the target is ${rangeT} reps and ${hu(top,2)} kg was too much; based on your best set, this weight fits`)})}
   // azonos súly, de valamelyik sorozat a tartomány alja alatt: túl nehéz
-  if(minR<lo){const st=wStep(eq,top),w=Math.min(top-st,wForReps(sets,lo,st));
+  if(minR<lo){const st=wStep(eq,top);let w=Math.min(top-st,wForReps(sets,lo,st));w=Math.max(st,Math.floor(w/st+1e-9)*st);if(eq==='db')w=dbDown(w);
     return Object.assign(fmtS(w,lo),{why:L(`legutóbb ${prevTxt} – a cél ${rangeT} ismétlés, ehhez ez a súly sok volt; a legjobb sorozatod alapján ennyivel fér bele`,`last time ${prevTxt} – the target is ${rangeT} reps and this weight was too much; based on your best set, this weight fits`)})}
   // minden sorozat azonos súllyal elérte a tartomány tetejét → óvatos emelés
-  if(allTop&&minR>=hi){const st=wStep(eq,top),inc=Math.max(st,wRound(top*0.05,st)),w=Math.min(top+inc,Math.max(top+st,wRound(top*1.1,st)));
-    return Object.assign(fmtS(w,lo),{why:L(`legutóbb ${prevTxt} – minden sorozat elérte a cél tetejét (${hi}); kicsit nehezebb súly, a tartomány aljáról`,`last time ${prevTxt} – every set reached the top of the range (${hi}); slightly heavier, starting from the bottom of the range`)})}
+  if(allTop&&minR>=hi){const need=Math.max(1,plan||sets.length);
+    const ok=h=>h.sets.length>=need&&h.sets.every(s=>(+s.w||0)===top&&s.r>=hi);
+    if(sets.length<need)return Object.assign(fmtS(top,hi),{why:L(`legutóbb csak ${sets.length} sorozat volt (${prevTxt}); előbb mind a ${need} sorozat menjen meg ezzel a súllyal, utána emelünk`,`last time only ${sets.length} set(s) (${prevTxt}); first do all ${need} sets at this weight, then we’ll go up`)});
+    const c=sgConfirm(hist,ok);
+    if(!c.ok)return Object.assign(fmtS(top,hi),{why:sgWait(prevTxt,c)});
+    const st=wStep(eq,top),inc=Math.max(st,wRound(top*0.05,st));let w=Math.min(top+inc,Math.max(top+st,wRound(top*1.1,st)));
+    if(eq==='db'&&dbList().length){const u=dbUp(top);if(u==null||u>top*1.15+st)return Object.assign(fmtS(top,hi),{why:L(`legutóbb ${prevTxt} – megerősítve megvolt a cél teteje, de nincs következő súlyú kézisúlyzód (a listád szerint). Nehezíts tempóval, szünettel vagy nehezebb változattal`,`last time ${prevTxt} – you confirmed the top of the range, but you have no heavier dumbbell (per your list). Make it harder with tempo, pauses or a harder variation`)});w=u}
+    return Object.assign(fmtS(w,lo),{up:true,why:L(`${hist.length>1?'az utóbbi edzéseken':'legutóbb'} ${prevTxt} – minden sorozat megerősítve elérte a cél tetejét (${hi}); kicsit nehezebb súly, a tartomány aljáról. Előtte melegíts be (Bemelegítés gomb).`,`${prevTxt} – every set reached the top of the range (${hi}), confirmed; slightly heavier, starting from the bottom of the range. Warm up first (Warm-up button).`)})}
   // a tartományon belül: marad a súly, +1 ismétlés
   return Object.assign(fmtS(top,Math.min(hi,minR+1)),{why:L(`legutóbb ${prevTxt} – maradj ennél a súlynál, és próbálj egy ismétléssel többet (cél: ${rangeT})`,`last time ${prevTxt} – stay at this weight and try one more rep (target: ${rangeT})`)})}
-function applySugg(i){const e=S.active.exercises[i],sg=suggestFor(e.exId,e.reps);if(!sg)return;let n=0;for(const s of e.sets){if(s.done||s.wu)continue;if(s.w===''||s.w==null)s.w=sg.w;if(s.r===''||s.r==null)s.r=sg.r;n++}save();render();toast(n?L('Kitöltve','Filled in'):L('Nincs üres munkasorozat','No empty work sets'))}
+function applySugg(i){const e=S.active.exercises[i],sg=suggestFor(e.exId,e.reps,e.sets.filter(s=>!s.wu).length);if(!sg)return;let n=0;for(const s of e.sets){if(s.done||s.wu)continue;if(s.w===''||s.w==null)s.w=sg.w;if(s.r===''||s.r==null)s.r=sg.r;n++}save();render();toast(n?L('Kitöltve','Filled in'):L('Nincs üres munkasorozat','No empty work sets'))}
 let plateT=0,warmI=null,plateMode='bar',warmOff=new Set();
 function plateCalc(i){warmI=i;plateMode='bar';warmOff=new Set();const e=S.active.exercises[i],nx=e.sets.find(s=>!s.done&&!s.wu&&s.w!==''),sg=suggestFor(e.exId,e.reps);plateT=+(nx?.w||sg?.w||S.settings.bar||20);renderPlates()}
 function warmCalc(i){warmI=i;plateMode='warm';warmOff=new Set();const e=S.active.exercises[i],nx=e.sets.find(s=>!s.done&&!s.wu&&s.w!==''),sg=suggestFor(e.exId,e.reps);plateT=+(nx?.w||sg?.w||0);renderPlates()}
@@ -1282,6 +1308,7 @@ async function importSample(){
   await shareOrDownload(L('edzes-import-minta.csv','workout-import-sample.csv'),'\ufeff'+rows.map(r=>r.map(c=>csvCell(c,',')).join(',')).join('\r\n'),'text/csv',L('Edzés-import minta','Workout import sample'));
 }
 function openStrong(){$('#impStrong').click()}
+function setDbs(v){const a=String(v||'').split(/[;\s]+/).map(x=>parseFloat(x.replace(',','.'))).filter(x=>x>0&&x<=200);S.settings.dbs=[...new Set(a)].sort((x,y)=>x-y).slice(0,40);if(!S.settings.dbs.length)delete S.settings.dbs;save();render();toast(L('Mentve','Saved'))}
 function setDefRest(v){S.settings.rest=Math.max(0,Math.min(1800,parseInt(v)||0));save();toast('Mentve')}
 function formSubmit(){dlgClose(readForm())}
 
@@ -1315,7 +1342,7 @@ function setAiSvc(id){if(!AI_SVC.some(x=>x.id===id))return;if(S.settings.claudeU
 function sanitizeState(d){
   if(!d||typeof d!=='object'||!Array.isArray(d.exercises)||!Array.isArray(d.workouts))throw new Error('format');
   const map={},fix=id=>{const k=String(id);if(!map[k])map[k]=ID_RE.test(k)?k:uid();return map[k]};
-  const o={v:num(d.v,1,99)||2,settings:{rest:num(d.settings?.rest,0,1800)??90,sound:num(d.settings?.sound,0,3)??3,claudeUrl:typeof d.settings?.claudeUrl==='string'&&aiOfUrl(d.settings.claudeUrl)?d.settings.claudeUrl.slice(0,300):null,aiSvc:AI_SVC.some(x=>x.id===d.settings?.aiSvc)?d.settings.aiSvc:null,stepGoal:num(d.settings?.stepGoal,0,100000)??0,wakeLock:d.settings?.wakeLock!==false,uiSound:d.settings?.uiSound===true,typeSound:d.settings?.typeSound===true,doneSound:d.settings?.doneSound!==false,haptic:d.settings?.haptic!==false,restNotify:d.settings?.restNotify!==false,accent:['orange','pink'].includes(d.settings?.accent)?d.settings.accent:'cyan',lang:['hu','en'].includes(d.settings?.lang)?d.settings.lang:null,startTab:START_TABS.some(x=>x[0]===d.settings?.startTab)?d.settings.startTab:'workout',theme:['light','dark'].includes(d.settings?.theme)?d.settings.theme:null,lastBackup:num(d.settings?.lastBackup,0,9e15)||undefined,installHide:num(d.settings?.installHide,0,9e15)||undefined,adaptSeen:typeof d.settings?.adaptSeen==='string'&&DATE_RE.test(d.settings.adaptSeen)?d.settings.adaptSeen:undefined,bar:[20,15,10,7].includes(+d.settings?.bar)?+d.settings.bar:undefined,plates:Array.isArray(d.settings?.plates)?d.settings.plates.map(Number).filter(v=>[25,20,15,10,5,2.5,1.25,0.5].includes(v)):undefined,foodPrefs:(()=>{const f=d.settings?.foodPrefs;if(!f||typeof f!=='object')return undefined;const keys=(a,list)=>(Array.isArray(a)?a:[]).filter(x=>list.some(y=>y[0]===x));
+  const o={v:num(d.v,1,99)||2,settings:{rest:num(d.settings?.rest,0,1800)??90,sound:num(d.settings?.sound,0,3)??3,claudeUrl:typeof d.settings?.claudeUrl==='string'&&aiOfUrl(d.settings.claudeUrl)?d.settings.claudeUrl.slice(0,300):null,aiSvc:AI_SVC.some(x=>x.id===d.settings?.aiSvc)?d.settings.aiSvc:null,stepGoal:num(d.settings?.stepGoal,0,100000)??0,wakeLock:d.settings?.wakeLock!==false,uiSound:d.settings?.uiSound===true,typeSound:d.settings?.typeSound===true,doneSound:d.settings?.doneSound!==false,haptic:d.settings?.haptic!==false,restNotify:d.settings?.restNotify!==false,accent:['orange','pink'].includes(d.settings?.accent)?d.settings.accent:'cyan',lang:['hu','en'].includes(d.settings?.lang)?d.settings.lang:null,startTab:START_TABS.some(x=>x[0]===d.settings?.startTab)?d.settings.startTab:'workout',theme:['light','dark'].includes(d.settings?.theme)?d.settings.theme:null,lastBackup:num(d.settings?.lastBackup,0,9e15)||undefined,installHide:num(d.settings?.installHide,0,9e15)||undefined,adaptSeen:typeof d.settings?.adaptSeen==='string'&&DATE_RE.test(d.settings.adaptSeen)?d.settings.adaptSeen:undefined,bar:[20,15,10,7].includes(+d.settings?.bar)?+d.settings.bar:undefined,plates:Array.isArray(d.settings?.plates)?d.settings.plates.map(Number).filter(v=>[25,20,15,10,5,2.5,1.25,0.5].includes(v)):undefined,dbs:Array.isArray(d.settings?.dbs)?[...new Set(d.settings.dbs.map(Number).filter(v=>v>0&&v<=200))].sort((x,y)=>x-y).slice(0,40):undefined,foodPrefs:(()=>{const f=d.settings?.foodPrefs;if(!f||typeof f!=='object')return undefined;const keys=(a,list)=>(Array.isArray(a)?a:[]).filter(x=>list.some(y=>y[0]===x));
   return{diet:keys(f.diet,PREF_DIET),cuisine:(()=>{const c=keys(f.cuisine,PREF_CUISINE);if(Array.isArray(f.style)&&f.style.includes('hu')&&!c.includes('hu'))c.unshift('hu');return c})(),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),wish:str(f.wish||'',300),eq:keys(f.eq,PREF_EQUIP),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,cook:num(f.cook,1,4)||2,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(['cardio','reps','time'].includes(e.kind))x.kind=e.kind;if(MUSCLES.some(m=>m[0]===e.mu))x.mu=e.mu;if(Array.isArray(e.mu2)){const a=[...new Set(e.mu2.filter(k=>k!==x.mu&&MUSCLES.some(m=>m[0]===k)))];if(a.length)x.mu2=a}if(EQUIP.some(q=>q[0]===e.eq))x.eq=e.eq;if(e.m===1)x.m=1;const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
   o.exercises.forEach(e=>{if(/^KB /.test(e.name)&&KB_RENAME.has(e.name.slice(3)))e.name='Kettlebell '+e.name.slice(3)});o.exercises.forEach(fillMeta);o.exercises.forEach(fixCalf);
@@ -1555,7 +1582,7 @@ function adaptive(){const t=targets();if(!t.tdee||!t.adult)return null;
   const tdeeA=Math.round(avgIn-slope*7700/7),cur=t.kcal||t.suggested;
   /* Biztonsági korlát: a becslés az alapanyagcsere alatt valószínűleg hiányos rögzítést jelez – ilyenkor nem javaslunk csökkentést;
      és a keret soha nem megy a minimum, illetve a képlet szerinti energiaigény 70%-a alá. */
-  const suspect=tdeeA<t.bmr,low=Math.max(t.floor,r5(t.tdee*.7)),ideal=Math.max(low,r5(tdeeA+t.adj));
+  const suspect=tdeeA<t.bmr,low=Math.max(t.floor,t.minKcal,r5(t.tdee*.7)),ideal=Math.max(low,r5(tdeeA+t.adj));
   let step=Math.max(low,Math.max(cur-250,Math.min(cur+250,ideal)));if(suspect&&step<cur)step=cur;
   return{ready:true,days:logged.length,avgIn:Math.round(avgIn),slope,tdeeA,ideal,cur,step:r5(step),diff:r5(step)-cur,suspect}}
 function adaptCard(){const a=adaptive();if(!a)return'';
@@ -1568,7 +1595,8 @@ function adaptCard(){const a=adaptive();if(!a)return'';
   <div class="hint">${L(`Az elmúlt 4 hét ${a.days} rögzített napja és a súlytrend alapján. A célodhoz illő keret kb. ${fmt(a.ideal,0)} kcal; egyszerre legfeljebb 250 kcal-t javaslok módosítani.`,`Based on ${a.days} logged days in the last 4 weeks and your weight trend. The target for your goal is about ${fmt(a.ideal,0)} kcal; I suggest changing it by at most 250 kcal at a time.`)}</div>
   ${Math.abs(a.diff)>=50?`<div class="row" style="margin-top:10px"><span class="small" style="flex:1">${L('Javasolt keret','Suggested target')}: <b class="mono">${fmt(a.cur,0)} → ${fmt(a.step,0)} kcal</b></span><button class="btn p sm" data-click="applyAdapt()">Alkalmazás</button></div>`:`<div class="small" style="margin-top:8px;color:var(--kj-green)">${L('A mostani kereted rendben van.','Your current target is on track.')}</div>`}
   ${S.profile.kcalOverride?`<button class="linkbtn" style="justify-content:flex-start;padding:8px 0 0" data-click="resetKcal()">${L('Vissza a képlet szerinti értékre','Back to the formula value')}</button>`:''}</div>`}
-function applyAdapt(){const a=adaptive();if(!a||!a.ready)return;const old=S.profile.kcalOverride??null,k0=targets().kcal;S.profile.kcalOverride=Math.max(KCAL_MIN,a.step);logProf('kcalOverride',old,S.profile.kcalOverride,k0,'adapt');S.settings.adaptSeen=weekKey();save();render();toast(L(`Új keret: ${fmt(a.step,0)} kcal`,`New target: ${fmt(a.step,0)} kcal`))}
+const t0m=()=>targets().minKcal||0;
+function applyAdapt(){const a=adaptive();if(!a||!a.ready)return;const old=S.profile.kcalOverride??null,k0=targets().kcal;S.profile.kcalOverride=Math.max(KCAL_MIN,t0m(),a.step);logProf('kcalOverride',old,S.profile.kcalOverride,k0,'adapt');S.settings.adaptSeen=weekKey();save();render();toast(L(`Új keret: ${fmt(a.step,0)} kcal`,`New target: ${fmt(a.step,0)} kcal`))}
 function resetKcal(){const old=S.profile.kcalOverride??null,k0=targets().kcal;S.profile.kcalOverride=null;logProf('kcalOverride',old,null,k0);save();render();toast(L('A képlet szerinti érték van érvényben','Formula value restored'))}
 function dismissAdapt(){S.settings.adaptSeen=weekKey();save();render()}
 const weekKey=()=>ymd(new Date(weekStart(Date.now())));
@@ -1582,7 +1610,7 @@ function vMethods(){const en=LANG==='en',X=(h,e)=>en?e:h,f=v=>String(v).replace(
   ${fx(X('Férfi: BMR = 10 × súly (kg) + 6,25 × magasság (cm) − 5 × életkor + 5\nNő:    BMR = 10 × súly (kg) + 6,25 × magasság (cm) − 5 × életkor − 161\n\nNapi energiaigény (TDEE) = BMR × aktivitási szorzó','Male:   BMR = 10 × weight (kg) + 6.25 × height (cm) − 5 × age + 5\nFemale: BMR = 10 × weight (kg) + 6.25 × height (cm) − 5 × age − 161\n\nDaily energy needs (TDEE) = BMR × activity factor'))}
   <table class="tbl"><tr><th>${X('Aktivitás','Activity')}</th><th>${X('Szorzó','Factor')}</th></tr>${ACT_LV.map(([v,l])=>`<tr><td>${esc(T(l))}</td><td class="mono">${f(v)}</td></tr>`).join('')}</table>
   <p>${X('A súly a legutóbbi mérés. A javaslat csak felnőttekre (18+) vonatkozik.','Weight is the latest measurement. The suggestion applies to adults (18+) only.')}</p>`)
-  +sec(X('Napi keret és makrók','Daily target and macros'),`${fx(X('Javasolt napi érték = TDEE + célkorrekció, 50 kcal-ra kerekítve\nMinimum: nő 1200 kcal, férfi 1500 kcal\nSaját érték: legalább '+KCAL_MIN+' kcal; ha 500 kcal-lal a javasolt alatt van, megerősítést kér','Suggested daily value = TDEE + goal adjustment, rounded to 50 kcal\nMinimum: female 1200 kcal, male 1500 kcal\nCustom value: at least '+KCAL_MIN+' kcal; asks for confirmation if 500 kcal below the suggestion'))}
+  +sec(X('Napi keret és makrók','Daily target and macros'),`${fx(X('Javasolt napi érték = TDEE + célkorrekció, 50 kcal-ra kerekítve\nMinimum: nő 1200 kcal, férfi 1500 kcal\nSaját érték: legalább '+KCAL_MIN+' kcal, és legfeljebb '+DEF_MAX+' kcal-lal a TDEE alatt; ha 500 kcal-lal a javasolt alatt van, megerősítést kér','Suggested daily value = TDEE + goal adjustment, rounded to 50 kcal\nMinimum: female 1200 kcal, male 1500 kcal\nCustom value: at least '+KCAL_MIN+' kcal, and at most '+DEF_MAX+' kcal below TDEE; asks for confirmation if 500 kcal below the suggestion'))}
   <table class="tbl"><tr><th>${X('Cél','Goal')}</th><th>${X('Korrekció (kcal, enyhe/közepes/gyors)','Adjustment (kcal, mild/moderate/fast)')}</th><th>${X('Fehérje g/ttkg','Protein g/kg')}</th><th>${X('Zsír','Fat')}</th></tr>${goals}</table>
   ${fx(X('Fehérje = referencia-testsúly × g/ttkg\n  referencia-testsúly = min(súly, 27,5 × magasság(m)²)\nZsír = keret × zsírarány ÷ 9, de legalább 0,6 g/ttkg\nSzénhidrát = (keret − fehérje × 4 − zsír × 9) ÷ 4\nRost = keret ÷ 1000 × 14 g, de legalább 25 g\nEnergiatartalom: fehérje és szénhidrát 4, zsír 9 kcal/g','Protein = reference weight × g/kg\n  reference weight = min(weight, 27.5 × height(m)²)\nFat = target × fat share ÷ 9, but at least 0.6 g/kg\nCarbs = (target − protein × 4 − fat × 9) ÷ 4\nFiber = target ÷ 1000 × 14 g, but at least 25 g\nEnergy: protein and carbs 4, fat 9 kcal/g'))}
   <p>${X('A referencia-testsúly (BMI 27,5 felett) gyakorlati közelítés, hogy túlsúlynál ne a teljes testsúlyra számoljunk fehérjét. A napi bevitel a keret ±10%-án belül számít „rendben”-nek.','The reference weight (above BMI 27.5) is a practical approximation so protein isn’t calculated on total body weight when overweight. Daily intake within ±10% of the target counts as “on track”.')}</p>`)
@@ -1828,7 +1856,7 @@ function vActive(){
     h+=`<div class="card${ssL[i]?' ssc ssp'+((ssL[i].charCodeAt(0)-65)%4)+(e.ss?' sslink':''):''}" id="ex${i}"><div class="row" style="flex-wrap:nowrap;align-items:flex-start"><div style="flex:1;min-width:0">${ssL[i]?`<span class="sstag">${I('link','sm')} ${L('Szuperszett','Superset')} ${ssL[i]}</span>`:''}<div class="ex-title">${esc(exName(e.exId))}</div>${e.reps?`<div class="small mut">${L('Cél','Target')}: ${esc(e.reps)} ${L('ismétlés','reps')}</div>`:''}
     <button class="restbtn ${custom?'custom':''}" data-click="setExRest('${e.exId}')" title="Pihenőidő ennél a gyakorlatnál">${I('timer','sm')} ${fmtSec(exRest(e.exId))}${custom?'':' · alap'}</button></div>
     ${a.exercises.length>1?`<button type="button" class="btn sm ico" data-reo="${i}" aria-label="${L('Áthelyezés: tartsd nyomva, majd húzd','Reorder: press and hold, then drag')}" title="${L('Tartsd nyomva az áthelyezéshez','Press and hold to reorder')}">${I('arrow-up-down','sm')}</button>`:''}<button class="btn sm ico" data-click="swapEx(${i})" aria-label="${L('Csere másik gyakorlatra','Swap for another exercise')}" title="${L('Csere','Swap')}">${I('arrow-left-right','sm')}</button><button class="btn sm ico d" data-click="rmEx(${i})" aria-label="Eltávolítás">${I('x','sm')}</button></div>
-    ${(()=>{const sg=suggestFor(e.exId,e.reps);return sg?`<div class="sugg">${I('trending-up','sm')}<span><span>Javaslat:</span> <b class="mono">${sg.txt}</b><br><span class="mut small">${sg.why}</span></span><button class="btn sm" data-click="applySugg(${i})">Kitöltés</button></div>`:''})()}
+    ${(()=>{const sg=suggestFor(e.exId,e.reps,e.sets.filter(s=>!s.wu).length);return sg?`<div class="sugg">${I('trending-up','sm')}<span><span>Javaslat:</span> <b class="mono">${sg.txt}</b><br><span class="mut small">${sg.why}</span></span><button class="btn sm" data-click="applySugg(${i})">Kitöltés</button></div>`:''})()}
     <table class="sets"><tr><th>#</th><th>Előző</th><th>${cd?'km':kd==='strength'?'kg':'+kg'}</th><th>${cd?'Perc':kd==='time'?'Mp':'Ism.'}</th><th></th></tr>
     ${(()=>{let k=0,wi=0,ni=0;const pW=prev.filter(x=>x.wu),pN=prev.filter(x=>!x.wu);return e.sets.map((s,j)=>{const pj=s.wu?pW[wi++]:pN[ni++],p=pj||(s.wu?null:pN[pN.length-1]),no=s.wu?'B':(++k,SET_TAG[s.st]||k);return `<tr class="${s.done?'done':''}${s.wu?' wu':s.st==='d'?' dr':s.st==='f'?' fl':''}" id="r${i}_${j}"><td><button class="setno" data-click="toggleWu(${i},${j})" aria-label="${s.wu?L('Bemelegítő sorozat – koppints: drop','Warm-up set – tap: drop set'):s.st==='d'?L('Drop sorozat – koppints: failure','Drop set – tap: failure'):s.st==='f'?L('Failure sorozat – koppints: normál','Failure set – tap: normal'):L('Koppints: bemelegítő sorozat','Tap: warm-up set')}">${no}</button></td><td class="mut pvc"><span class="pv">${pj?setStr(pj,cd,kd):'–'}</span><button class="rmx" data-click="rmSetAt(${i},${j})" aria-label="${L('Sorozat törlése','Delete set')}">${I('x','sm')}</button></td>
       <td><input type="text" inputmode="decimal" autocomplete="off" value="${hu(s.w,2)}" placeholder="${p?hu(p.w,2):''}" class="clr" data-input="setVal(${i},${j},'w',this.value)" aria-label="${cd?'Táv (km)':kd==='strength'?'Súly':'Pluszsúly'}"></td>
@@ -2136,7 +2164,7 @@ async function delTemplate(id){if(!await ask('Törlöd a sablont? A korábbi edz
 /* ===== Profil, célok, javasolt energia- és makrócél =====
    BMR: Mifflin–St Jeor. TDEE = BMR × aktivitási szorzó. Cél = TDEE + célhoz tartozó korrekció.
    Fehérje: g/ttkg a cél szerint (túlsúlynál BMI 27,5-höz tartozó referencia-testsúllyal), zsír: az energia 25–30%-a
-   (legalább 0,6 g/ttkg), szénhidrát: a maradék. Alsó határ: nő 1200, férfi 1500 kcal. */
+   (legalább 0,6 g/ttkg), szénhidrát: a maradék. Alsó határ: nő 1200, férfi 1500 kcal; saját keret legfeljebb DEF_MAX-szal a TDEE alatt. */
 const ACT_LV=[[1.2,'Ülő – irodai munka, kevés mozgás'],[1.375,'Enyhén aktív – heti 1–3 edzés'],[1.55,'Mérsékelten aktív – heti 3–5 edzés'],[1.725,'Nagyon aktív – heti 6–7 edzés'],[1.9,'Extrém – fizikai munka + edzés']];
 const GOALS=[['lose','Fogyás'],['maintain','Szinten tartás'],['muscle','Izomépítés'],['gain','Hízás']];
 const GOAL_L={lose:['Fogyás','Weight loss'],maintain:['Szinten tartás','Maintenance'],muscle:['Izomépítés','Muscle gain'],gain:['Hízás','Weight gain']};
@@ -2145,6 +2173,9 @@ const PACE=['Enyhe','Közepes','Gyors'];
 const PPK={lose:2.0,maintain:1.6,muscle:1.9,gain:1.7},FATPCT={lose:.25,maintain:.30,muscle:.25,gain:.30};
 const lastWeight=()=>{const s=series('weight');return s.length?s[s.length-1].y:null};
 const r5=v=>Math.round(v/50)*50;
+/* Fék a szélsőséges hiányra: a keret (saját és adaptív is) legfeljebb DEF_MAX kcal-lal lehet a képlet szerinti energiaigény (TDEE) alatt.
+   Napi 500–1000 kcal-os hiány a szokásos ajánlás; a gyors tempó (−750) ezen belül van. */
+const DEF_MAX=1000;
 function targets(){
   const p=S.profile||{},w=lastWeight(),age=p.birthYear?new Date().getFullYear()-p.birthYear:null,goal=p.goal||'maintain';
   const missing=[];if(!p.sex)missing.push(L('nem','sex'));if(!p.birthYear)missing.push(L('születési év','birth year'));if(!p.height)missing.push(L('magasság','height'));if(!p.activity)missing.push(L('aktivitás','activity'));if(!w)missing.push(L('testsúly','body weight'));
@@ -2155,8 +2186,10 @@ function targets(){
     t.adj=ADJ[goal][p.pace??1];
     t.suggested=r5(t.tdee+t.adj);t.floor=p.sex==='f'?1200:1500;
     if(t.suggested<t.floor){t.suggested=t.floor;t.floored=true}
+    t.minKcal=Math.max(KCAL_MIN,Math.ceil((t.tdee-DEF_MAX)/50)*50);
   }
   t.kcal=p.kcalOverride||t.suggested||null;t.custom=!!p.kcalOverride;
+  if(t.custom&&t.minKcal&&t.kcal<t.minKcal){t.kcal=t.minKcal;t.raised=true}
   if(t.kcal){
     const refW=w?(p.height?Math.min(w,27.5*(p.height/100)**2):w):null;
     t.p=refW?Math.round(refW*PPK[goal]):Math.round(t.kcal*.25/4);
@@ -2179,9 +2212,9 @@ async function setProf(k,v){
   else if(k==='goal')p.goal=GOALS.some(g=>g[0]===v)?v:null;
   else if(k==='pace')p.pace=[0,1,2].includes(+v)?+v:1;
   else if(k==='targetWeight'){const t=parseFloat(String(v).replace(',','.'));p.targetWeight=t>=30&&t<=300?t:null}
-  else if(k==='kcalOverride'){const c=parseInt(v);
+  else if(k==='kcalOverride'){const c=parseInt(v),t0=targets(),mn=t0.minKcal||KCAL_MIN;
     if(v===''||v==null)p.kcalOverride=null;
-    else if(!(c>=KCAL_MIN&&c<=6000)){toast(L(`${KCAL_MIN}–6000 kcal között adható meg`,`Must be between ${KCAL_MIN} and 6000 kcal`));render();return}
+    else if(!(c>=mn&&c<=6000)){toast(mn>KCAL_MIN?L(`Legalább ${fmt(mn,0)} kcal adható meg: a keret legfeljebb ${DEF_MAX} kcal-lal lehet az energiaigényed (${fmt(t0.tdee,0)} kcal) alatt`,`The minimum is ${fmt(mn,0)} kcal: the target can be at most ${DEF_MAX} kcal below your energy need (${fmt(t0.tdee,0)} kcal)`):L(`${KCAL_MIN}–6000 kcal között adható meg`,`Must be between ${KCAL_MIN} and 6000 kcal`));render();return}
     else{const t=targets();
       if(t.suggested&&c<t.suggested-500&&!await ask(L(`A megadott ${fmt(c,0)} kcal jóval kevesebb, mint a profilod alapján javasolt ${fmt(t.suggested,0)} kcal. Tartósan alacsony bevitel egészségügyi kockázattal járhat; ilyen keretet orvossal vagy dietetikussal egyeztess.`,`${fmt(c,0)} kcal is far below the ${fmt(t.suggested,0)} kcal suggested for your profile. A persistently low intake can carry health risks; agree such a target with a doctor or dietitian.`),{title:L('Alacsony kalóriaérték','Low calorie target'),ok:L('Beállítom','Set it'),danger:true})){render();return}
       p.kcalOverride=c}}
@@ -2248,7 +2281,7 @@ function vProfile(){
     <div class="grid2" style="margin-top:8px">${stat('Alapanyagcsere (BMR)',t.bmr?fmt(t.bmr,0)+' kcal':null)}${stat('Napi energiaigény',t.tdee?fmt(t.tdee,0)+' kcal':null)}</div>
     <div class="grid4" style="margin-top:8px">${stat('Fehérje',fmt(t.p,0)+' g')}${stat('Szénhidrát',fmt(t.c,0)+' g')}${stat('Zsír',fmt(t.f,0)+' g')}${stat('Rost (min.)',fmt(t.fib,0)+' g')}</div>
     <div class="hint">${t.tdee?`Energiaigény: Mifflin–St Jeor × aktivitás. Korrekció a célhoz: ${t.adj>0?'+':''}${t.adj} kcal (${t.adj<0?'kb. '+fmt(-t.adj*7/7700,2)+' kg/hét fogyás':t.adj>0?'kb. '+fmt(t.adj*7/7700,2)+' kg/hét gyarapodás':'súlytartás'}).`:''}
-    ${t.floored?` A javaslat elérte az alsó határt (${t.floor} kcal), ennél kevesebbet nem javaslok.`:''}
+    ${t.floored?` A javaslat elérte az alsó határt (${t.floor} kcal), ennél kevesebbet nem javaslok.`:''}${t.raised?L(` A saját kereted (${fmt(p.kcalOverride,0)} kcal) több mint ${DEF_MAX} kcal-lal az energiaigényed alatt volt, ezért ${fmt(t.minKcal,0)} kcal-lal számolok.`,` Your custom target (${fmt(p.kcalOverride,0)} kcal) was more than ${DEF_MAX} kcal below your energy need, so I use ${fmt(t.minKcal,0)} kcal.`):''}
     ${L(`Fehérje: ${PPK[t.goal]} g/ttkg${p.height&&t.w&&t.w>27.5*(p.height/100)**2?' (referencia-testsúlyra)':''}, zsír: az energia ${Math.round(FATPCT[t.goal]*100)}%-a, szénhidrát: a maradék, rost: 14 g / 1000 kcal, de legalább 25 g (ebből a több is jó).`,`Protein: ${PPK[t.goal]} g/kg bw${p.height&&t.w&&t.w>27.5*(p.height/100)**2?' (for reference weight)':''}, fat: ${Math.round(FATPCT[t.goal]*100)}% of energy, carbs: the rest, fibre: 14 g / 1000 kcal, but at least 25 g (more is fine).`)} <button class="linkbtn" style="display:inline;width:auto;padding:0;margin:0" data-click="openSub('methods')">Számítási módszerek</button> · Tájékoztató becslés, nem orvosi tanács – egészségügyi állapot esetén egyeztesd szakemberrel.</div>`;
   const base=location.protocol==='file:'?'https://olupan.com/':'/',lg=LANG==='en'?['disclaimer.html','privacy.html']:['jogi-nyilatkozat.html','adatvedelem.html'];
   if(!S.settings.legalOk)return `<div class="card" id="profile" style="scroll-margin-top:72px"><h2>Profil és célok</h2>
@@ -4013,6 +4046,9 @@ function vMore(){
   <label for="defrest" id="restset">Alapértelmezett pihenőidő (mp)</label>
   <input id="defrest" type="number" min="0" max="1800" step="15" value="${S.settings.rest??90}" data-change="setDefRest(this.value)">
   <div class="hint">Pipálás után indul. Gyakorlatonként felülírható (edzés közben a gyakorlat neve alatti időre koppintva, vagy lent a listában). 0 = kikapcsolva.</div>
+  <label for="dbs" id="dbset">${L('Kézisúlyzóim (kg)','My dumbbells (kg)')}</label>
+  <input id="dbs" type="text" inputmode="decimal" placeholder="${L('pl. 5, 7,5, 10, 12,5, 15, 20, 23','e.g. 5, 7.5, 10, 12.5, 15, 20, 23')}" value="${esc(dbList().map(x=>hu(x,2)).join('; '))}" data-change="setDbs(this.value)">
+  <div class="hint">${L('Pontosvesszővel vagy szóközzel elválasztva. Ha megadod, az edzésjavaslat csak olyan súlyt ajánl kézisúlyzós gyakorlatnál, ami megvan.','Separated by semicolons or spaces. If set, suggestions for dumbbell exercises only use weights you own.')}</div>
 </div>
   <div class="card" id="exlist"><div class="row" style="margin-bottom:4px"><h2 style="margin:0;flex:1">Gyakorlatok <span class="mut mono" style="font-size:14px">${S.exercises.length}</span></h2><button class="btn sm gold" data-click="newExFromList()">${I('plus','sm')} Új</button></div>
   ${cats.map(c=>`<h3 style="margin-top:16px">${esc(c)}</h3>`+S.exercises.filter(e=>exGroup(e)===c).sort(byName).map(e=>`<div class="row li"><span style="flex:1;min-width:0">${esc(e.name)}<br><span class="mut small mono">${e.eq?esc(lblOf(EQUIP,e.eq))+' · ':''}${e.rest!=null?`<span style="color:var(--kj-violet)">${I('timer','sm')} ${fmtSec(e.rest)}</span>`:`${I('timer','sm')} alap`}${usage[e.id]?` · ${usage[e.id]} edzés`:''}</span></span><button class="btn sm ico" data-click="editEx('${e.id}')" aria-label="Szerkesztés">${I('pencil','sm')}</button><button class="btn sm ico d" data-click="delEx('${e.id}')" aria-label="Törlés">${I('trash-2','sm')}</button></div>`).join('')).join('')}</div>
