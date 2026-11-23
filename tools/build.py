@@ -163,7 +163,13 @@ head = f'''<meta http-equiv="Content-Security-Policy" content="default-src 'self
 <link rel="stylesheet" href="/assets/app.css" integrity="{sri(css_d)}" crossorigin="anonymous">'''
 html = re.sub(r"<style>.*?</style>", lambda m: head, src, count=1, flags=re.S)
 html = html.replace("<title>Olupan</title>", "<title>Olupan – ingyenes offline edzésnapló és kalóriaszámláló</title>", 1)
-html = html.replace("<main></main>", NOSCRIPT, 1)
+# A <main> a gyors betöltőképernyőt (#boot) tartalmazza, ezért a keresőknek/JS nélküli böngészőknek szóló
+# statikus tartalmat közvetlenül a </main> után szúrjuk be. Ha nem találjuk a helyet, a build álljon meg, ne vesszen el csendben.
+_ns = NOSCRIPT.replace("<main></main>\n", "", 1)
+_bi = html.find('<main><div id="boot"')
+_mi = html.find("</main>", _bi)
+assert _bi >= 0 and _mi > _bi, "NOSCRIPT: nem találom a <main> betöltőblokkot"
+html = html[:_mi + 7] + "\n" + _ns + html[_mi + 7:]
 html = re.sub(r"<script>.*?</script>", lambda m: f'<script src="/assets/app.js" integrity="{sri(js_d)}" crossorigin="anonymous"></script>', html, count=1, flags=re.S)
 html = html.replace('<meta name="apple-mobile-web-app-capable" content="yes">\n', '')
 (PUB / "index.html").write_text(html, encoding="utf-8")
@@ -207,7 +213,7 @@ for key, langs in DOCS.items():
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'self';">
-<title>{title} – Olupan</title>
+<title>{({"hu": "Olupan útmutató – ingyenes kalóriaszámláló és edzésnapló app", "en": "Olupan guide – free calorie counter and workout log app"}[lang] if key == "guide" else title + " – Olupan")}</title>
 <meta name="description" content="{title} – Olupan, {t("ingyenes offline edzésnapló és kalóriaszámláló, testadatnaplóval. Regisztráció nélkül, az adataidat a készülékeden tárolja.", "a free offline workout log and calorie counter with body tracking. No account – your data is stored on your device.")}">
 <link rel="canonical" href="{cfg["site"]}/{fname}">
 <link rel="alternate" hreflang="{other}" href="{cfg["site"]}/{DOCS[key][other][0]}">
