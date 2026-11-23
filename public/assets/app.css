@@ -367,8 +367,8 @@ html[data-look=code] body{background-color:#020604!important;background-image:ur
 html[data-look=code] :is(.hk,label,.sstag){font-family:var(--mono)!important;letter-spacing:.14em!important;text-transform:uppercase!important;color:#00ff88!important}
 html[data-look=code] .hk::after{content:'_';margin-left:3px;animation:neoblink 1s steps(1) infinite}@keyframes neoblink{50%{opacity:0}}
 html[data-look=code] #title .hd1,html[data-look=code] .htitle{text-shadow:0 0 12px rgba(0,255,136,.35)}
-html[data-look=code] :is(.btn,.iconbtn,.chip){border:1px solid rgba(0,255,136,.35)!important;background:rgba(0,255,136,.05)!important;color:#bfffdc!important}
-html[data-look=code] :is(.btn.p,.btn.g,.chip.on){background:#00ff88!important;color:#00140a!important;border-color:#00ff88!important;box-shadow:0 0 14px rgba(0,255,136,.45)!important}
+html[data-look=code] :is(.btn,.iconbtn,.chip:not(.tchip)){border:1px solid rgba(0,255,136,.35)!important;background:rgba(0,255,136,.05)!important;color:#bfffdc!important}
+html[data-look=code] :is(.btn.p,.btn.g,.chip.on:not(.tchip)){background:#00ff88!important;color:#00140a!important;border-color:#00ff88!important;box-shadow:0 0 14px rgba(0,255,136,.45)!important}
 html[data-look=code] .btn.d{background:rgba(255,70,90,.1)!important;color:#ff6b7d!important;border-color:rgba(255,70,90,.4)!important}
 html[data-look=code] :is(input,select,textarea){border:1px solid rgba(0,255,136,.25)!important;font-family:var(--mono)!important}
 html[data-look=code] .card.ssc{border:2px solid #00ff88!important;box-shadow:0 0 22px rgba(0,255,136,.4)!important}

@@ -380,8 +380,8 @@ html[data-look=code] body{background-color:#020604!important;background-image:ur
 html[data-look=code] :is(.hk,label,.sstag){font-family:var(--mono)!important;letter-spacing:.14em!important;text-transform:uppercase!important;color:#00ff88!important}
 html[data-look=code] .hk::after{content:'_';margin-left:3px;animation:neoblink 1s steps(1) infinite}@keyframes neoblink{50%{opacity:0}}
 html[data-look=code] #title .hd1,html[data-look=code] .htitle{text-shadow:0 0 12px rgba(0,255,136,.35)}
-html[data-look=code] :is(.btn,.iconbtn,.chip){border:1px solid rgba(0,255,136,.35)!important;background:rgba(0,255,136,.05)!important;color:#bfffdc!important}
-html[data-look=code] :is(.btn.p,.btn.g,.chip.on){background:#00ff88!important;color:#00140a!important;border-color:#00ff88!important;box-shadow:0 0 14px rgba(0,255,136,.45)!important}
+html[data-look=code] :is(.btn,.iconbtn,.chip:not(.tchip)){border:1px solid rgba(0,255,136,.35)!important;background:rgba(0,255,136,.05)!important;color:#bfffdc!important}
+html[data-look=code] :is(.btn.p,.btn.g,.chip.on:not(.tchip)){background:#00ff88!important;color:#00140a!important;border-color:#00ff88!important;box-shadow:0 0 14px rgba(0,255,136,.45)!important}
 html[data-look=code] .btn.d{background:rgba(255,70,90,.1)!important;color:#ff6b7d!important;border-color:rgba(255,70,90,.4)!important}
 html[data-look=code] :is(input,select,textarea){border:1px solid rgba(0,255,136,.25)!important;font-family:var(--mono)!important}
 html[data-look=code] .card.ssc{border:2px solid #00ff88!important;box-shadow:0 0 22px rgba(0,255,136,.4)!important}
@@ -561,7 +561,7 @@ function addDefaults(st){
   for(const[name,items]of DEF_TPL)if(!st.templates.some(t=>t.name===name)&&(st.v===0||TPL_VER(name)>st.v))
     st.templates.push({id:uid(),name,items:items.filter(([n])=>f(n)).map(([n,s])=>({exId:f(n),sets:s})),...(TPL_NOTE[name]?{notes:[{id:uid(),ts:Date.now(),text:TPL_NOTE[name],wid:null}]}:{})});
 }
-function defaults(){const st={v:0,exercises:[],templates:[],workouts:[],body:[],meals:[],foods:[],recipes:[],shop:[],profile:{pace:1},active:null,settings:{rest:90,backupEvery:7,theme:null,sound:3,wakeLock:true,stepGoal:0,uiSound:true,typeSound:true,doneSound:true,haptic:true,restNotify:false,startTab:'workout',accent:'cyan',lang:null}};addDefaults(st);st.v=DATA_V;return st}
+function defaults(){const st={v:0,exercises:[],templates:[],workouts:[],body:[],meals:[],foods:[],recipes:[],shop:[],profile:{pace:1},active:null,settings:{rest:90,backupEvery:7,theme:null,sound:3,wakeLock:true,stepGoal:0,uiSound:false,typeSound:false,doneSound:true,haptic:true,restNotify:true,startTab:'workout',accent:'cyan',lang:null,look:'soft',decoOff:true}};addDefaults(st);st.v=DATA_V;return st}
 const KEY='olupan.v1',KEY_OLD='edzesnaplo.v1';
 let S; // a betöltés a fájl végén történik (a validáló függvények után)
 function load(){try{const raw=localStorage.getItem(KEY)||localStorage.getItem(KEY_OLD);if(raw){const s=sanitizeState(JSON.parse(raw));if(s.v<DATA_V){addDefaults(s);s.v=DATA_V}return s}}catch(e){console.warn('Betöltési hiba',e)}return defaults()}
@@ -610,8 +610,8 @@ function storeCard(){
 const mq=matchMedia('(prefers-color-scheme: dark)');
 /* Szórakoztató stílusok: saját színvilág, rögzített világos/sötét alappal */
 const FUN_LOOK={code:'dark',synth:'dark'};
-const LOOKS=['soft',...Object.keys(FUN_LOOK)];
-function curLook(){return LOOKS.includes(S.settings.look)?S.settings.look:''}
+const LOOKS=['soft','contrast',...Object.keys(FUN_LOOK)];
+function curLook(){const l=LOOKS.includes(S.settings.look)?S.settings.look:'soft';return l==='contrast'?'':l}
 function curTheme(){return FUN_LOOK[curLook()]||S.settings.theme||(mq.matches?'dark':'light')}
 function applyTheme(){const lk=curLook(),t=curTheme(),de=document.documentElement,soft=lk==='soft';de.dataset.theme=t;de.toggleAttribute('data-soft',soft);if(lk&&!soft)de.dataset.look=lk;else delete de.dataset.look;de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content={code:'#020604',synth:'#14062a'}[lk]||(t==='dark'?(soft?'#1c232c':'#000000'):(soft?'#d8dce1':'#f6f7f9'));applyHoliday(t)}
 mq.addEventListener?.('change',()=>{if(!S.settings.theme&&!FUN_LOOK[curLook()])applyTheme()});
@@ -1283,7 +1283,7 @@ function decoShow(force){if(!force&&(S.settings.decoOff||S.active||FUN_LOOK[curL
   el.innerHTML=h;el.addEventListener('pointerdown',decoHide,{once:true});document.body.appendChild(el);decoT=setTimeout(decoHide,10000)}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')hiddenAt=Date.now();else if(hiddenAt&&Date.now()-hiddenAt>30*60*1000){hiddenAt=0;applyTheme();render();decoShow()}});
 function setTheme(v){S.settings.theme=v;save();applyTheme();render()}
-function setLook(v){if(LOOKS.includes(v))S.settings.look=v;else delete S.settings.look;save();applyTheme();render()}
+function setLook(v){S.settings.look=LOOKS.includes(v)?v:'contrast';save();applyTheme();render()}
 function setAccent(v){if(!['cyan','orange','pink'].includes(v))return;S.settings.accent=v;save();applyTheme();render()}
 function openImport(){$('#imp').click()}
 async function importSample(){
@@ -1330,11 +1330,11 @@ function setAiSvc(id){if(!AI_SVC.some(x=>x.id===id))return;if(S.settings.claudeU
 function sanitizeState(d){
   if(!d||typeof d!=='object'||!Array.isArray(d.exercises)||!Array.isArray(d.workouts))throw new Error('format');
   const map={},fix=id=>{const k=String(id);if(!map[k])map[k]=ID_RE.test(k)?k:uid();return map[k]};
-  const o={v:num(d.v,1,99)||2,settings:{rest:num(d.settings?.rest,0,1800)??90,sound:num(d.settings?.sound,0,3)??3,claudeUrl:typeof d.settings?.claudeUrl==='string'&&aiOfUrl(d.settings.claudeUrl)?d.settings.claudeUrl.slice(0,300):null,aiSvc:AI_SVC.some(x=>x.id===d.settings?.aiSvc)?d.settings.aiSvc:null,stepGoal:num(d.settings?.stepGoal,0,100000)??0,wakeLock:d.settings?.wakeLock!==false,uiSound:d.settings?.uiSound!==false,typeSound:d.settings?.typeSound!==false,doneSound:d.settings?.doneSound!==false,haptic:d.settings?.haptic!==false,restNotify:d.settings?.restNotify===true,accent:['orange','pink'].includes(d.settings?.accent)?d.settings.accent:'cyan',lang:['hu','en'].includes(d.settings?.lang)?d.settings.lang:null,startTab:START_TABS.some(x=>x[0]===d.settings?.startTab)?d.settings.startTab:'workout',theme:['light','dark'].includes(d.settings?.theme)?d.settings.theme:null,lastBackup:num(d.settings?.lastBackup,0,9e15)||undefined,installHide:num(d.settings?.installHide,0,9e15)||undefined,adaptSeen:typeof d.settings?.adaptSeen==='string'&&DATE_RE.test(d.settings.adaptSeen)?d.settings.adaptSeen:undefined,bar:[20,15,10,7].includes(+d.settings?.bar)?+d.settings.bar:undefined,plates:Array.isArray(d.settings?.plates)?d.settings.plates.map(Number).filter(v=>[25,20,15,10,5,2.5,1.25,0.5].includes(v)):undefined,foodPrefs:(()=>{const f=d.settings?.foodPrefs;if(!f||typeof f!=='object')return undefined;const keys=(a,list)=>(Array.isArray(a)?a:[]).filter(x=>list.some(y=>y[0]===x));
+  const o={v:num(d.v,1,99)||2,settings:{rest:num(d.settings?.rest,0,1800)??90,sound:num(d.settings?.sound,0,3)??3,claudeUrl:typeof d.settings?.claudeUrl==='string'&&aiOfUrl(d.settings.claudeUrl)?d.settings.claudeUrl.slice(0,300):null,aiSvc:AI_SVC.some(x=>x.id===d.settings?.aiSvc)?d.settings.aiSvc:null,stepGoal:num(d.settings?.stepGoal,0,100000)??0,wakeLock:d.settings?.wakeLock!==false,uiSound:d.settings?.uiSound===true,typeSound:d.settings?.typeSound===true,doneSound:d.settings?.doneSound!==false,haptic:d.settings?.haptic!==false,restNotify:d.settings?.restNotify!==false,accent:['orange','pink'].includes(d.settings?.accent)?d.settings.accent:'cyan',lang:['hu','en'].includes(d.settings?.lang)?d.settings.lang:null,startTab:START_TABS.some(x=>x[0]===d.settings?.startTab)?d.settings.startTab:'workout',theme:['light','dark'].includes(d.settings?.theme)?d.settings.theme:null,lastBackup:num(d.settings?.lastBackup,0,9e15)||undefined,installHide:num(d.settings?.installHide,0,9e15)||undefined,adaptSeen:typeof d.settings?.adaptSeen==='string'&&DATE_RE.test(d.settings.adaptSeen)?d.settings.adaptSeen:undefined,bar:[20,15,10,7].includes(+d.settings?.bar)?+d.settings.bar:undefined,plates:Array.isArray(d.settings?.plates)?d.settings.plates.map(Number).filter(v=>[25,20,15,10,5,2.5,1.25,0.5].includes(v)):undefined,foodPrefs:(()=>{const f=d.settings?.foodPrefs;if(!f||typeof f!=='object')return undefined;const keys=(a,list)=>(Array.isArray(a)?a:[]).filter(x=>list.some(y=>y[0]===x));
   return{diet:keys(f.diet,PREF_DIET),cuisine:(()=>{const c=keys(f.cuisine,PREF_CUISINE);if(Array.isArray(f.style)&&f.style.includes('hu')&&!c.includes('hu'))c.unshift('hu');return c})(),style:keys(f.style,PREF_STYLE),avoid:str(f.avoid||'',300),wish:str(f.wish||'',300),eq:keys(f.eq,PREF_EQUIP),skill:PREF_SKILL.some(y=>y[0]===f.skill)?f.skill:'intermediate',people:num(f.people,1,8)||1,cook:num(f.cook,1,4)||2,meals:num(f.meals,1,6)||4,equipment:str(f.equipment||'',300)}})()}};
   o.exercises=d.exercises.filter(e=>e&&e.name).map(e=>{const x={id:fix(e.id),name:str(e.name,100),cat:str(e.cat||'Egyéb',40)};if(['cardio','reps','time'].includes(e.kind))x.kind=e.kind;if(MUSCLES.some(m=>m[0]===e.mu))x.mu=e.mu;if(Array.isArray(e.mu2)){const a=[...new Set(e.mu2.filter(k=>k!==x.mu&&MUSCLES.some(m=>m[0]===k)))];if(a.length)x.mu2=a}if(EQUIP.some(q=>q[0]===e.eq))x.eq=e.eq;if(e.m===1)x.m=1;const r=num(e.rest,0,1800);if(r!=null&&e.rest!==''&&e.rest!=null)x.rest=r;return x});
   o.exercises.forEach(e=>{if(/^KB /.test(e.name)&&KB_RENAME.has(e.name.slice(3)))e.name='Kettlebell '+e.name.slice(3)});o.exercises.forEach(fillMeta);o.exercises.forEach(fixCalf);
-  o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk','deskOk','holiday','decoOff'])if(d.settings?.[k]===true)o.settings[k]=true;{const lk=d.settings?.soft===true?'soft':d.settings?.look;if(['soft','code','synth'].includes(lk))o.settings.look=lk}if(DATE_RE.test(d.settings?.legalOk))o.settings.legalOk=d.settings.legalOk;if(DATE_RE.test(d.settings?.plainOk))o.settings.plainOk=d.settings.plainOk;if(typeof d.settings?.repNote==='string')o.settings.repNote=str(d.settings.repNote,2000);
+  o.settings.backupEvery=[0,1,7,14].includes(d.settings?.backupEvery)?d.settings.backupEvery:7;if(d.settings?.demo===true)o.settings.demo=true;for(const k of['obSteps','obClaude','offOk','deskOk','holiday','decoOff'])if(d.settings?.[k]===true)o.settings[k]=true;{const lk=d.settings?.soft===true?'soft':d.settings?.look;o.settings.look=['soft','code','synth','contrast'].includes(lk)?lk:'contrast'}if(DATE_RE.test(d.settings?.legalOk))o.settings.legalOk=d.settings.legalOk;if(DATE_RE.test(d.settings?.plainOk))o.settings.plainOk=d.settings.plainOk;if(typeof d.settings?.repNote==='string')o.settings.repNote=str(d.settings.repNote,2000);
   {const w=d.settings?.cWait;if(w&&['meals','ideas','menu','plan'].includes(w.k)&&num(w.at,0,9e15)){o.settings.cWait={k:w.k,at:+w.at};if(DATE_RE.test(w.start))o.settings.cWait.start=w.start;if(w.prep)o.settings.cWait.prep=true}
    const mo=d.settings?.menuOpt;if(mo&&typeof mo==='object')o.settings.menuOpt={days:[3,5,7].includes(mo.days)?mo.days:7,cook:mo.cook>=7?4:[1,2,3,4].includes(mo.cook)?mo.cook:3,cmax:[40,60,90].includes(mo.cmax)?mo.cmax:60,newr:[0,1,2].includes(mo.newr)?mo.newr:1,meals:(Array.isArray(mo.meals)?mo.meals:[]).filter(k=>REC_MEAL.some(x=>x[0]===k)),start:['tomorrow','week'].includes(mo.start)?mo.start:'tomorrow',pantry:typeof mo.pantry==='string'?mo.pantry.slice(0,500):''}}
   {const e=d.settings?.enc,b=v=>typeof v==='string'&&/^[A-Za-z0-9+/=]{8,200}$/.test(v),i=(v,a,z)=>Number.isInteger(v)&&v>=a&&v<=z;
@@ -1946,7 +1946,10 @@ async function saveAsTemplate(wid){const w=S.workouts.find(x=>x.id===wid);const 
 async function delWorkout(wid){const w=S.workouts.find(x=>x.id===wid);if(!await ask(`Törlöd ${az(w.name)} <b>${esc(w.name)}</b> edzést (${fmtDate(w.start)})?`,{title:'Edzés törlése',ok:'Törlés',danger:true}))return;S.workouts=S.workouts.filter(x=>x.id!==wid);save();render()}
 
 /* ===== Pihenőidő ===== */
-function startRest(exId){const t=exRest(exId);if(!t)return;rest={end:Date.now()+t*1000,total:t,ex:exName(exId)};keepAlive(true);tick()}
+function startRest(exId){const t=exRest(exId);if(!t)return;rest={end:Date.now()+t*1000,total:t,ex:exName(exId)};keepAlive(true);
+  /* alapból be van kapcsolva a pihenő-értesítés: az engedélyt az első pihenőnél kérjük (ez felhasználói koppintásból fut) */
+  if(S.settings.restNotify&&notifSupported()&&Notification.permission==='default')try{Notification.requestPermission().catch(()=>{})}catch(e){}
+  tick()}
 function adjRest(d){if(!rest)return;rest.end+=d*1000;rest.total=Math.max(rest.total+d,1);tick()}
 async function setExRest(exId){
   const ex=exById(exId);if(!ex)return;
