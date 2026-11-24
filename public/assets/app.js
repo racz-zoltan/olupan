@@ -196,10 +196,10 @@ function storeCard(){
 const mq=matchMedia('(prefers-color-scheme: dark)');
 /* Szórakoztató stílusok: saját színvilág, rögzített világos/sötét alappal */
 const FUN_LOOK={code:'dark',synth:'dark'};
-const LOOKS=['soft','contrast',...Object.keys(FUN_LOOK)];
+const LOOKS=['soft','contrast','zen',...Object.keys(FUN_LOOK)];
 function curLook(){const l=LOOKS.includes(S.settings.look)?S.settings.look:'soft';return l==='contrast'?'':l}
 function curTheme(){return FUN_LOOK[curLook()]||S.settings.theme||(mq.matches?'dark':'light')}
-function applyTheme(){const lk=curLook(),t=curTheme(),de=document.documentElement,soft=lk==='soft';de.dataset.theme=t;de.toggleAttribute('data-soft',soft);if(lk&&!soft)de.dataset.look=lk;else delete de.dataset.look;de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content={code:'#020604',synth:'#14062a'}[lk]||(t==='dark'?(soft?'#1c232c':'#000000'):(soft?'#d8dce1':'#f6f7f9'));applyHoliday(t)}
+function applyTheme(){const lk=curLook(),t=curTheme(),de=document.documentElement,soft=lk==='soft';de.dataset.theme=t;de.toggleAttribute('data-soft',soft);if(lk&&!soft)de.dataset.look=lk;else delete de.dataset.look;de.dataset.accent=['orange','pink'].includes(S.settings.accent)?S.settings.accent:'cyan';$('#themeColor').content={code:'#020604',synth:'#14062a'}[lk]||(lk==='zen'?(t==='dark'?'#1c1b2b':'#e8ecf3'):'')||(t==='dark'?(soft?'#1c232c':'#000000'):(soft?'#d8dce1':'#f6f7f9'));applyHoliday(t)}
 mq.addEventListener?.('change',()=>{if(!S.settings.theme&&!FUN_LOOK[curLook()])applyTheme()});
 
 /* ===== Állapot ===== */
@@ -1086,7 +1086,7 @@ function bodyCard(M){const b=M.bMap[homeDay],list=S.body.filter(x=>hasMeas(x)||x
   else{const lw=lastWeight();inner=`<div class="grid3h"><div style="grid-column:span 2"><div class="midnum" style="color:var(--kj-muted)">${lw?hu(lw,1):'–'}</div><div class="small mut">${lw?L('kg · utolsó mérés','kg · last weigh-in'):L('nincs mérés','no weigh-in')}</div></div>${stepC}</div>`}
 
   const br=bodyRange(),tc=targetCheck(S.profile.targetWeight);
-  const rng=br?`<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--kj-border)">${rangeHtml(br,false)}${tc&&tc.lvl==='bad'?`<div class="small" style="color:var(--kj-red);margin-top:4px">${I('triangle-alert','sm')} ${L('A célsúlyod az egészséges tartomány alatt van – nézd meg a profilban.','Your target weight is below the healthy range – check your profile.')}</div>`:''}</div>`:'';
+  const rng=br&&tc&&tc.lvl==='bad'?`<div class="small" style="color:var(--kj-red);margin-top:14px">${I('triangle-alert','sm')} ${L('A célsúlyod az egészséges tartomány alatt van – nézd meg a profilban.','Your target weight is below the healthy range – check your profile.')}</div>`:'';
   return`<div class="card hcard" data-click="openBody()" role="button" tabindex="0" aria-label="Testadatok megnyitása"><div class="row" style="flex-wrap:nowrap;margin-bottom:16px"><span class="hk" style="flex:1">Test</span>${dayNav(list)}</div>${inner}${rng}</div>`}
 function plans(){S.plans=S.plans||{};return S.plans}
 function workoutSection(M){
@@ -3051,6 +3051,7 @@ function vBody(){
   <div class="grid3" style="margin-bottom:12px">${trendStat('Trend 14 nap',lastDays(ws,14),'kg/hét')}${trendStat('Trend 30 nap',lastDays(ws,30),'kg/hét')}${trendStat('Trend 90 nap',lastDays(ws,90),'kg/hét')}</div>
   <h3 style="margin:16px 2px 10px">Testzsír</h3>
   <div class="grid3" style="margin-bottom:12px">${stat('Utolsó testzsír',lastF?fmt(lastF.fat)+' %':null)}${trendStat('Trend 30 nap',lastDays(fs,30),'%p/hét')}${trendStat('Trend 90 nap',lastDays(fs,90),'%p/hét')}</div>
+  ${(()=>{const br=bodyRange();return br?`<div class="card" style="padding:14px 16px;margin-bottom:12px">${rangeHtml(br,true)}</div>`:''})()}
   ${(()=>{const xs=[['waist','Derék'],...BODY_X.map(([k,l])=>[k,l])].map(([k,l])=>{const ser=series(k);if(!ser.length)return'';const d90=deltaN(ser,90);return stat(l,fmt(ser[ser.length-1].y)+' cm'+(d90!=null&&Math.abs(d90)>=.1?` · ${sgn(d90)}`:''))}).filter(Boolean);return xs.length?`<h3 style="margin:16px 2px 10px">Testméretek</h3><div class="grid3" style="margin-bottom:12px">${xs.join('')}</div>`:''})()}
   <h3 style="margin:16px 2px 10px">Lépésszám</h3>
   <div class="grid3" style="margin-bottom:12px">${(()=>{const ss=series('steps'),t=S.body.find(b=>b.date===today())?.steps,g=S.settings.stepGoal;return stat('Ma'+(g?` · cél ${fmtShort(g)}`:''),t!=null?fmt(t,0):null)+stat('7 napos átlag',ss.length?fmt(avgLast(ss,7),0):null)+stat('30 napos átlag',ss.length?fmt(avgLast(ss,30),0):null)})()}</div>
@@ -3609,8 +3610,8 @@ function vMore(){
   <label>Megjelenés</label>
   <div class="chips" style="margin:0">${[[null,'Rendszer szerint'],['light','Világos'],['dark','Sötét']].map(([v,l])=>`<button class="chip ${S.settings.theme===v?'on':''}" data-click="setTheme(${v?`'${v}'`:'null'})">${l}</button>`).join('')}</div>
   <label>${L('Stílus','Style')}</label>
-  <div class="chips" style="margin:0">${[['',L('Kontrasztos','High contrast')],['soft','Soft']].map(([v,l])=>`<button class="chip ${curLook()===v?'on':''}" data-click="setLook('${v}')">${l}</button>`).join('')}</div>
-  <div class="hint">${L('Kontrasztos: sötétben fekete háttér neonos kártyakeretekkel, világosban fehér kártyák puha szürke derengéssel. Soft: lágyabb, kevésbé kontrasztos – sötétben acélszürke háttér és nála sötétebb kártyák, világosban szürkés háttér és törtfehér kártyák. A „Rendszer szerint” beállításra is érvényes.','High contrast: black background with neon card outlines in dark mode, white cards with a soft grey glow in light mode. Soft: gentler, lower contrast – steel-grey background with darker cards in dark mode, greyish background with off-white cards in light mode. Also applies to “System”.')}</div>
+  <div class="chips" style="margin:0">${[['',L('Kontrasztos','High contrast')],['soft','Soft'],['zen','Zen']].map(([v,l])=>`<button class="chip ${curLook()===v?'on':''}" data-click="setLook('${v}')">${l}</button>`).join('')}</div>
+  <div class="hint">${L('Kontrasztos: sötétben fekete háttér neonos kártyakeretekkel, világosban fehér kártyák puha szürke derengéssel. Soft: lágyabb, kevésbé kontrasztos – sötétben acélszürke háttér és nála sötétebb kártyák, világosban szürkés háttér és törtfehér kártyák. Zen: a kiemelőszínből kevert, szemcsés színátmenetes háttér, a tartalom egy lebegő, lekerekített panelen. A „Rendszer szerint” beállításra is érvényes.','High contrast: black background with neon card outlines in dark mode, white cards with a soft grey glow in light mode. Soft: gentler, lower contrast – steel-grey background with darker cards in dark mode, greyish background with off-white cards in light mode. Zen: a grainy gradient background mixed from your accent colour, with the content on a floating, rounded panel. Also applies to “System”.')}</div>
   <label>${L('Szórakoztató stílusok','Fun styles')}</label>
   <div class="chips" style="margin:0">${[['code','Cipher'],['synth','Synthwave']].map(([v,l])=>`<button class="chip ${curLook()===v?'on':''}" data-click="setLook('${v}')">${l}</button>`).join('')}</div>
   <div class="hint">${L('Saját színvilággal érkeznek, ezért náluk a fenti téma- és a lenti kiemelőszín-választás nem érvényes. A Cipher modern, neonzöld terminál-hangulat (a főképernyőn lassan pergő kódesővel), a Synthwave a 80-as évek neonos naplementéje.','They come with their own colours, so the theme and accent choices don’t apply to them. Cipher is a modern neon-green terminal look (with slowly falling code on the home screen), Synthwave an 80s neon sunset.')}</div>
